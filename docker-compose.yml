@@ -1,78 +1,20 @@
-version: '3.7'
-
-#networks:
-#  #TODO Would be a nice thing to call it after the team name or similar.
-#    transcendence:
-#        driver: bridge
+version: '3.5'
 
 services:
-#
-#FRONT-END
-#
   front:
-    container_name: "front"
-    image: "front:dev"
-    build:
-      context: ./frontend/
-    restart: "always"
-#      depends_on:
-#        - wordpress
-#      environment:
-#        - WEBDIR
-#        - DOMAIN_NAME
-#      networks:
-#        - netception
-#      ports:
-#        - "80:80"
-
-#
-#    wordpress:
-#        container_name: "phpserv"
-#        image: "wordpress:inc"
-#        build:
-#            context: ./requirements/wordpress
-#        depends_on:
-#            - mariadb
-#        environment:
-#            - WEBDIR
-#            - WP_DBNAME
-#            - WP_DB_USER
-#            - WP_DB_USER_PASSWORD
-#        networks:
-#            - netception
-#        expose:
-#            - "9000"
-#        volumes:
-#            - wp_volume:$WEBDIR
-#        restart: on-failure
-#    mariadb:
-#        container_name: "dataserv"
-#        image: "mariadb:inc"
-#        build:
-#            context: ./requirements/mariadb
-#        environment:
-#            - MYSQL_ROOT_PASSWORD
-#            - WP_DBNAME
-#            - WP_DB_USER
-#            - WP_DB_USER_PASSWORD
-#        networks:
-#            - netception
-#        expose:
-#            - "3306"
-#        volumes:
-#          - db_volume:/var/lib/mysql
-#        restart: on-failure
-#
-#volumes:
-#    db_volume:
-#        driver: local
-#        driver_opts:
-#              type: none
-#              o: bind
-#              device: ${DB_VOLUME}
-#    wp_volume:
-#          driver: local
-#          driver_opts:
-#              type: none
-#              o: bind
-#              device: ${WP_VOLUME}
+    container_name: react-service-container
+    build: ./frontend
+    volumes:
+    - ./frontend/src:/usr/src/react-app/src
+    ports:
+    - "4200:4200"
+    restart: always
+  
+  back:
+    container_name: backend-service-container
+    build: ./backend
+    volumes:
+    -  ./backend:/usr/src/node-app
+    ports:
+    - "3000:3000"
+    restart: always

@@ -1,15 +1,15 @@
-FROM node:lts-alpine AS webfront-application
+FROM node:16.15.1
 
-#TODO You know, the whole she-bang, copy&install the app using npm.
-#WORKDIR /front
-#TODO Copy just the info to install
-#COPY package*.json ./
-#TODO Install
-#RUN npm install
+RUN mkdir -p /usr/src/react-app
+COPY . /usr/src/react-app/
+WORKDIR /usr/src/react-app
+COPY package*.json ./
 
-FROM nginx:stable-alpine AS front-server
+RUN npm install -g npm@8.19.2
+RUN npm install
 
-#TODO Do the configure stuff for nginx
 
-EXPOSE 80
-ENTRYPOINT ["nginx", "-g", "daemon off;"]
+RUN mkdir node_modules/.cache && chmod -R 777 node_modules/.cache
+
+CMD [ "npm", "start" ]
+#CMD [ "sleep", "infinity" ]
