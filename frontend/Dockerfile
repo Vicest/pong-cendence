@@ -1,15 +1,21 @@
-FROM node:16.15.1
+FROM node:19 as build
 
-RUN mkdir -p /usr/src/react-app
-COPY . /usr/src/react-app/
-WORKDIR /usr/src/react-app
-COPY package*.json ./
+ENV NODE_ENV=production 
 
-RUN npm install -g npm@8.19.2
+WORKDIR /app
+
+COPY package.json ./
+COPY package-lock.json ./
 RUN npm install
+COPY . ./
+RUN npm run build
+
+FROM node:19-alpine3.16
+
+WORKDIR /app
+COPY --from=build /app .
 
 
-RUN mkdir node_modules/.cache && chmod -R 777 node_modules/.cache
-
-CMD [ "npm", "start" ]
-#CMD [ "sleep", "infinity" ]
+ENV HOST=0.0.0.0
+EXPOSE 4200
+CMD ["npm","run", "preview","--", "--host", "0.0.0.0", "--port", "4200"]

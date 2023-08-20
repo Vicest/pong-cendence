@@ -1,0 +1,15 @@
+
+main {
+    font-family: "Poppins", sans-serif;
+    height: 80vh;
+    display: flex;
+  
+    justify-content: center;
+    align-items: center; 
+}
+
+footer {
+    display: flex;
+    align-items: center; 
+    justify-content: center;
+}

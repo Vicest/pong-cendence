@@ -1,12 +1,12 @@
-FROM node:16.15.1
+FROM node:19
 
 
 RUN mkdir -p /usr/src/node-app/
-COPY . /usr/src/node-app/
-WORKDIR /usr/src/node-app
 
-RUN npm install -g npm@8.19.2
-RUN npm install --ignore-scripts
+COPY package.json ./
+COPY package-lock.json ./
+RUN npm i --ignore-scripts
+COPY . .
 
 EXPOSE 3000
 

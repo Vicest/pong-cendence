@@ -2,10 +2,10 @@ version: '3.5'
 
 services:
   front:
-    container_name: react-service-container
+    container_name: front-service-container
     build: ./frontend
-    volumes:
-    - ./frontend/src:/usr/src/react-app/src
+    # volumes:
+    # - ./frontend/src/routes:/usr/src/app/src/routes
     ports:
     - "4200:4200"
     restart: always
