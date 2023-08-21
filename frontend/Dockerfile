@@ -1,19 +1,19 @@
-FROM node:19 as build
+FROM node:18.4.0 as build
 
-ENV NODE_ENV=production 
-
+RUN mkdir app
 WORKDIR /app
-
-COPY package.json ./
-COPY package-lock.json ./
+COPY package.json .
+COPY package-lock.json .
+COPY . .
 RUN npm install
-COPY . ./
+
+
 RUN npm run build
 
 FROM node:19-alpine3.16
 
-WORKDIR /app
-COPY --from=build /app .
+WORKDIR .
+COPY --from=build ./app .
 
 
 ENV HOST=0.0.0.0
