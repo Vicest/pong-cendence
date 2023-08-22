@@ -4,7 +4,13 @@
 
 <script>
     import ponglogo from '$lib/assets/images/ponglogo.png';
+    import { shownavlinks }  from '../routes/vars.d'
     import { onMount } from "svelte";
+
+    let showNavs;
+    shownavlinks.subscribe(value => {
+		  showNavs = value;
+	  });
   
     // Show mobile icon and display menu
     let showMobileMenu = false;
@@ -38,18 +44,20 @@
   <header>
   <nav>
     <img src={ponglogo} alt="">
-    <div class="inner">
-      <div on:click={handleMobileIconClick}    class={`mobile-icon${showMobileMenu ? ' active' : ''}`}>
-        <div class="middle-line"></div>
+    {#if showNavs}
+      <div class="inner">
+        <div on:click={handleMobileIconClick}    class={`mobile-icon${showMobileMenu ? ' active' : ''}`}>
+          <div class="middle-line"></div>
+        </div>
+        <ul class={`navbar-list${showMobileMenu ? ' mobile' : ''}`}>
+          {#each navItems as item}
+            <li>
+              <a href={item.href}>{item.label}</a>
+            </li>
+          {/each}
+        </ul>
       </div>
-      <ul class={`navbar-list${showMobileMenu ? ' mobile' : ''}`}>
-        {#each navItems as item}
-          <li>
-            <a href={item.href}>{item.label}</a>
-          </li>
-        {/each}
-      </ul>
-    </div>
+    {/if}
   </nav>
 </header>
   <style>

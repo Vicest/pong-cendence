@@ -1,5 +1,6 @@
 <script>
     import axios from 'axios';
+    import { goto } from '$app/navigation';
     //import Header from '../+Header.svelte';
     var info;
 
@@ -15,7 +16,9 @@
 </script>
 <!-- <Header></Header> -->
 
-<div class="home">
-    <p>MY INFORMATION</p>
-    <p>{JSON.stringify(info)}</p>
-</div>
+<home>
+    <div class="home">
+        <p>MY INFORMATION</p>
+        <p>{JSON.stringify(info)}</p>
+    </div>
+</home>
