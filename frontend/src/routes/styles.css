@@ -1,15 +1,30 @@
 
+
+@font-face {
+    font-family: 'spicysoup';
+    src: url('$lib/assets/fonts/Spicy Soup.ttf') format('truetype');
+    src: url('$lib/assets/fonts/Spicy Soup.otf') format('opentype')
+    /* Puedes agregar más formatos aquí si es necesario */
+  }
+
+
+header {
+    font-family: 'spicysoup', sans-serif;
+    height: 10vh;
+}
 main {
-    font-family: "Poppins", sans-serif;
+    font-family: 'spicysoup', sans-serif;
     height: 80vh;
     display: flex;
-  
+
     justify-content: center;
-    align-items: center; 
+    align-items: center;
 }
 
 footer {
+    height: 10vh;
     display: flex;
-    align-items: center; 
+    align-items: center;
     justify-content: center;
+    font-family: 'spicysoup', sans-serif;
 }

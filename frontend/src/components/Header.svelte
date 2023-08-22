@@ -3,6 +3,7 @@
 
 
 <script>
+    import ponglogo from '$lib/assets/images/ponglogo.png';
     import { onMount } from "svelte";
   
     // Show mobile icon and display menu
@@ -10,14 +11,10 @@
   
     // List of navigation items
     const navItems = [
-      { label: "logo", href: "#" },
-      { label: "Item 1", href: "#" },
-      { label: "Item 2", href: "#" },
-      { label: "Item 3", href: "#" },
-      { label: "Item 4", href: "#" },
-      { label: "Item 5", href: "#" },
-      { label: "Item 6", href: "#" },
-      { label: "Item 7", href: "#" }
+      { label: "Profile", href: "#" },
+      { label: "Chat", href: "#" },
+      { label: "Leaderboard", href: "#" },
+      { label: "About", href: "#" }
     ];
   
     // Mobile menu click event handler
@@ -40,8 +37,9 @@
   </script>
   <header>
   <nav>
+    <img src={ponglogo} alt="">
     <div class="inner">
-      <div on:click={handleMobileIconClick} class={`mobile-icon${showMobileMenu ? ' active' : ''}`}>
+      <div on:click={handleMobileIconClick}    class={`mobile-icon${showMobileMenu ? ' active' : ''}`}>
         <div class="middle-line"></div>
       </div>
       <ul class={`navbar-list${showMobileMenu ? ' mobile' : ''}`}>
@@ -57,8 +55,11 @@
   <style>
     nav {
       background-color: rgba(0, 0, 0, 0.8);
-      font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-      height: 45px;
+
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 20px;
     }
   
     .inner {
@@ -70,6 +71,7 @@
       display: flex;
       align-items: center;
       height: 100%;
+      font-size: 40px;
     }
   
     .mobile-icon {

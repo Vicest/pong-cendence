@@ -1,4 +1,5 @@
 <script>
+    import logo42 from '$lib/assets/images/logo42.png';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import axios from 'axios';
@@ -24,7 +25,7 @@
 <div class="justify-content-center fadeInDown">
   <div id="formContent">
       <div class="fadeIn first">
-      <img src="https://raw.githubusercontent.com/InigoRomero/42ItTest/main/42Icon.jpeg?token=AK5DQMZPDGPOKG2TZ3CF6XDATK74Y" id="icon" alt="User Icon" />
+      <img src={logo42} id="icon" alt="User Icon" />
       </div>
       <div id="formFooter">
       <a href={`${apiBaseUrl}/login`} class="underlineHover"> Login </a>
