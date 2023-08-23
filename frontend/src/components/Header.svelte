@@ -18,7 +18,7 @@
     // List of navigation items
     const navItems = [
       { label: "Profile", href: "#" },
-      { label: "Chat", href: "#" },
+      { label: "Friends", href: "#" },
       { label: "Leaderboard", href: "#" },
       { label: "About", href: "#" }
     ];

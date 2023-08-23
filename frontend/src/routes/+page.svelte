@@ -6,16 +6,19 @@
   import { shownavlinks } from './vars.d';
   import Home from './home/Home.svelte'
 
-  shownavlinks.set(false);
+  
   let authenticated = false;
+  authenticated = true;
   const apiBaseUrl = "http://localhost:3000";
+  console.log(authenticated)
   axios.get("http://localhost:3000/me",{withCredentials: true})
   .then(
     res => {
       if(res.status === 200)
       {
         // goto("/home")
-        let authenticated = true;
+        authenticated = true;
+        // shownavlinks.set(true);
       }
         
     }
@@ -42,6 +45,5 @@
   </div>
 {:else}
   <Home></Home>
-
 {/if}
 

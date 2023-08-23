@@ -7,7 +7,7 @@ import { writable } from 'svelte/store';
 
 // Define the shownavlinks store
 const createShownavlinks = () => {
-  const { subscribe, set } = writable(true);
+  const { subscribe, set } = writable(false);
 
   return {
     subscribe,
