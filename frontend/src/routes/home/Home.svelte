@@ -32,12 +32,12 @@
 
 <home>
     <Friends></Friends>
-    <div class="home">
+    <!-- <div class="home">
         <p>MY INFORMATION</p>
         {#if info}
             <p>{JSON.stringify(info.first_name)}</p>
         {:else}
             <ProgressRadial />
         {/if}
-    </div>
+    </div> -->
 </home>
