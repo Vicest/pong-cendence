@@ -48,7 +48,7 @@ routes.get('/refresh-session', (req, res) => {
 			req.session.expires_in = response.data.expires_in;
 			req.session.created_at = response.data.created_at;
 			//res.send({session: req.session});
-            return res.redirect(`${process.env.FRONT_BASE_URI}/home`);
+            return res.redirect(`${process.env.FRONT_BASE_URI}/`);
 		})
 		.catch(function (error) {
 			res.send("Error");
@@ -147,7 +147,7 @@ routes.get("/callback", (req, res) => {
 			// 	`Bearer ${response.data.access_token}`
 			// );
             //return res.send(req.session);
-            return res.redirect(`${process.env.FRONT_BASE_URI}/home`);
+            return res.redirect(`${process.env.FRONT_BASE_URI}/`);
 
 			req.session.cookie.maxAge = new Date(
 				Date.now() + response.data.expires_in * 1000

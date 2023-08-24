@@ -4,6 +4,7 @@
 
 <script>
     import ponglogo from '$lib/assets/images/ponglogo.png';
+    import { Avatar } from '@skeletonlabs/skeleton';
     import { shownavlinks }  from '../routes/vars.d'
     import { onMount } from "svelte";
 
@@ -41,12 +42,11 @@
       mediaListener.addListener(mediaQueryHandler);
     });
   </script>
-  <header>
   <nav>
     <img src={ponglogo} alt="">
     {#if showNavs}
       <div class="inner">
-        <div on:click={handleMobileIconClick}    class={`mobile-icon${showMobileMenu ? ' active' : ''}`}>
+        <div on:click={handleMobileIconClick}  class={`mobile-icon${showMobileMenu ? ' active' : ''}`}>
           <div class="middle-line"></div>
         </div>
         <ul class={`navbar-list${showMobileMenu ? ' mobile' : ''}`}>
@@ -58,8 +58,8 @@
         </ul>
       </div>
     {/if}
+    <Avatar initials="JD" background="bg-primary-500" />
   </nav>
-</header>
   <style>
     nav {
       background-color: rgba(0, 0, 0, 0.8);

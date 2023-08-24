@@ -9,21 +9,22 @@
 
 header {
     font-family: 'spicysoup', sans-serif;
-    height: 10vh;
+    margin-bottom: 20px;
 }
 main {
     font-family: 'spicysoup', sans-serif;
-    height: 80vh;
     display: flex;
-
+    min-height: 80vh;
     justify-content: center;
     align-items: center;
 }
 
 footer {
-    height: 10vh;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'spicysoup', sans-serif;
+    background-color: rgba(0, 0, 0, 0.8);
+
+    margin-top: 20px;
 }
