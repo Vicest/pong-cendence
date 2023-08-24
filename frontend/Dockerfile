@@ -10,7 +10,7 @@ RUN npm install
 
 RUN npm run build
 
-FROM node:19-alpine3.16
+FROM node:18.4.0-alpine3.16
 
 WORKDIR .
 COPY --from=build ./app .

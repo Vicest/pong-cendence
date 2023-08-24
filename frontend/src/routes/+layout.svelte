@@ -1,9 +1,12 @@
 <script>
+	import '../app.postcss';
 	import Header from '../components/Header.svelte';
 	import Footer from '../components/Footer.svelte';
+	import '@skeletonlabs/skeleton/themes/theme-skeleton.css';
+	import '@skeletonlabs/skeleton/styles/skeleton.css';
+	import '../app.postcss';
 	import './styles.css';
 </script>
-
 
 <div class="app">
 	<header>
@@ -15,9 +18,7 @@
 	<footer>
 		<Footer />
 	</footer>
-	
 </div>
 
 <style>
-
 </style>
