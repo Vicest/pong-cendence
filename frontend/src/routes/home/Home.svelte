@@ -5,7 +5,7 @@
     import { onMount } from 'svelte';
     import { ProgressRadial } from '@skeletonlabs/skeleton';
  
-	import Friends from '../../components/Friends.svelte';
+	import Friends from '../../components/chat/Friends.svelte';
 
     shownavlinks.set(true);
 
