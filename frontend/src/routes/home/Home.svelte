@@ -7,7 +7,7 @@
     import { ProgressRadial } from '@skeletonlabs/skeleton';
  
 	import Friends from '../../components/chat/Chat.svelte';
-    import { ApiData } from '../../services/my42data';
+    import { apiData } from '../../services/my42data';
 	import { stringify } from 'postcss';
 
     shownavlinks.set(true);

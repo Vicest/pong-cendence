@@ -2,12 +2,17 @@
   import ponglogo from '$lib/assets/images/ponglogo.png';
   import { Avatar } from '@skeletonlabs/skeleton';
   import { shownavlinks }  from '../routes/vars.d'
-  import { ApiData } from '../services/my42data';
+  import { apiData } from '../services/my42data';
 
   let showNavs;
   shownavlinks.subscribe(value => {
     showNavs = value;
   });
+  let apidata;
+  apiData.subscribe(data => {
+      apidata = data;
+  });
+
 </script>
 
 <div class="topnav">
@@ -18,7 +23,7 @@
     <a href="#contact">Leaderboard</a>
     <a href="#about">About</a>
   </div>
-  <Avatar initials={ApiData.displayname.split(' ').map(palabra => palabra.charAt(0)).slice(0, 2).join('')} background="bg-primary-500" />
+  <Avatar initials={apidata.displayname.split(' ').map(palabra => palabra.charAt(0)).slice(0, 2).join('')} background="bg-primary-500" />
   {/if}
 </div>
 
