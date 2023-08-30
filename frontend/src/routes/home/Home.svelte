@@ -3,19 +3,22 @@
     import { goto } from '$app/navigation';
     import { shownavlinks } from '../vars.d';
     import { onMount } from 'svelte';
+    import { readable } from 'svelte/store';
     import { ProgressRadial } from '@skeletonlabs/skeleton';
  
-	import Friends from '../../components/chat/Friends.svelte';
+	import Friends from '../../components/chat/Chat.svelte';
+    import { ApiData } from '../../services/my42data';
+	import { stringify } from 'postcss';
 
     shownavlinks.set(true);
 
-    let info = null;
+    let myinfo = null;
     
     onMount(async () => {
     axios.get("http://localhost:3000/me",{withCredentials: true})
         .then(
             res => {
-                info = res.data
+                myinfo = res.data
                 console.log(res.data.first_name)
             }
         )
@@ -23,6 +26,11 @@
             console.log(err)
         })
     })
+
+    // export const apiData = readable(null, function start(set) {
+    //     fetchData().then(data => {
+    //         set(data);
+    // });
 </script>
 
 <style>
@@ -32,6 +40,7 @@
 
 <home>
     <Friends></Friends>
+    <!-- <div class="api-data">{JSON.stringify(ApiData.displayname)}</div> -->
     <!-- <div class="home">
         <p>MY INFORMATION</p>
         {#if info}

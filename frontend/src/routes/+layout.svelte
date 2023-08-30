@@ -1,5 +1,4 @@
 <script>
-	import '../app.postcss';
 	import Header from '../components/Header.svelte';
 	import Footer from '../components/Footer.svelte';
 	import '@skeletonlabs/skeleton/themes/theme-skeleton.css';
@@ -9,9 +8,9 @@
 </script>
 
 <div class="app">
-	<header>
+	<div id="header">
 		<Header />
-	</header>
+	</div>
 	<main>
 		<slot />
 	</main>

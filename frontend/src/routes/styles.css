@@ -7,14 +7,16 @@
   }
 
 
-header {
+#header {
     font-family: 'spicysoup', sans-serif;
+    min-height: 15vh;
     margin-bottom: 20px;
+
 }
 main {
     font-family: 'spicysoup', sans-serif;
     display: flex;
-    min-height: 80vh;
+    min-height: 70vh;
     justify-content: center;
     align-items: center;
 }
@@ -25,6 +27,6 @@ footer {
     justify-content: center;
     font-family: 'spicysoup', sans-serif;
     background-color: rgba(0, 0, 0, 0.8);
-
+    min-height: 15vh;
     margin-top: 20px;
 }
