@@ -20,11 +20,12 @@ export const apiData = readable(null, function start(set) {
     .then(
         res => {
             // myinfo = res.data
-            console.log(res.data.first_name)
+            // console.log(res.data.first_name)
             set(res.data)
         }
     )
     .catch(err => {
         console.log(err)
+        console.log("hola1")
     });
 });

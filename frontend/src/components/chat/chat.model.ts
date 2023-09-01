@@ -9,7 +9,6 @@
 		host: boolean;
 		avatar: number;
 		name: string;
-		timestamp: string;
+		date: string;
 		message: string;
-		color: string;
 	}

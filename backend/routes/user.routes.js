@@ -6,8 +6,7 @@ import axiosThrottle from 'axios-request-throttle';
 
 axiosThrottle.use(axios, { requestsPerSecond: 2 });
 
-//import userCtrl from '../controllers/user.controller')
-const routes = express.Router();
+const userroutes = express.Router();
 import { ensureAuth } from '../middlewares/authentication.js'
 import { getToken } from '../middlewares/publicApiToken.js'
 
@@ -28,7 +27,7 @@ var auth = new ClientOAuth2({
 //---------------
 // Session routes
 //---------------
-routes.get('/refresh-session', (req, res) => {
+userroutes.get('/refresh-session', (req, res) => {
     if (req.session.refresh)
 	{
 		axios({
@@ -36,12 +35,12 @@ routes.get('/refresh-session', (req, res) => {
 			url: process.env.ACCESS_TOKEN_URI,
 			headers: {'Content-Type': 'application/json'}, 
 			data: {
-		  'grant_type': 'refresh_token',
-		  'refresh_token': req.session.refresh,
-		  'client_id': process.env.CLIENT_ID,
-		  'client_secret': process.env.CLIENT_SECRET
+                'grant_type': 'refresh_token',
+                'refresh_token': req.session.refresh,
+                'client_id': process.env.CLIENT_ID,
+                'client_secret': process.env.CLIENT_SECRET
 			}
-		 })
+        })
 		.then(function (response) {
 			req.session.refresh = response.data.refresh_token;
 			req.session.token = response.data.access_token;
@@ -51,52 +50,23 @@ routes.get('/refresh-session', (req, res) => {
             return res.redirect(`${process.env.FRONT_BASE_URI}/`);
 		})
 		.catch(function (error) {
-			res.send("Error");
+			res.send("Error: " + error);
 		});
 	}
 	else
 		res.status(500).send({error: "You must log with 42 auth for refreshing tokens"});
 });
-routes.get('/logout', (req, res) => {
+userroutes.get('/logout', (req, res) => {
     req.session.destroy();
     res.status(200).send({ message: "Session destroyed" });
 });
 
-routes.get('/login', (req, res) => {
+userroutes.get('/login', (req, res) => {
     res.redirect(`${process.env.INTRA_URL}/oauth/authorize?client_id=${process.env.CLIENT_ID}&response_type=code&redirect_uri=${process.env.REDIRECT_URI}`)
 });
 
-// routes.get('/callback', async (req, res) => {
-//     if (req.session.token != undefined) {
-//         //res.send({session: req.session});
-//         return res.redirect("http://localhost:4200/home");
-//     }
-//     else {
-//         const token = await auth.code.getToken(req.originalUrl)
-//             .then(function (user, err) {
-//                 if (err || !user)
-//                     res.status(500).send({ message: "Error en la peticion" });
-//                 // Refresh the current users access token.
-//                 user.refresh().then(function (updatedUser) {
-//                     req.session.refresh = updatedUser.data.refresh_token;
-//                     req.session.token = updatedUser.accessToken;
-//                     req.session.expires_in = updatedUser.data.expires_in;
-//                     req.session.created_at = updatedUser.data.created_at;
-//                     return res.redirect("http://localhost:4200/home");
-//                 })
-//             }).catch((err) => {
-//                 //here when you reject the promise
-//                 req.session.destroy();
-//                 res.status(403).send({ error: "Not authorized, session has been destroyed" , err });
-//             });
-//     }
-// });
 
-////
-//TODO La token, boludo: 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
-//  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
-////
-routes.get('/me', ensureAuth, async (req, res) => {
+userroutes.get('/me', ensureAuth, async (req, res) => {
     console.log(`Bearer ${req.session.token}`)
 	return new Promise((resolve, reject) => {
 		axios
@@ -121,7 +91,7 @@ routes.get('/me', ensureAuth, async (req, res) => {
 });
 
 
-routes.get("/callback", (req, res) => {
+userroutes.get("/callback", (req, res) => {
 	axios.request({
 			method: "POST",
 			url: "https://api.intra.42.fr/oauth/token",
@@ -149,32 +119,12 @@ routes.get("/callback", (req, res) => {
             //return res.send(req.session);
             return res.redirect(`${process.env.FRONT_BASE_URI}/`);
 
-			req.session.cookie.maxAge = new Date(
-				Date.now() + response.data.expires_in * 1000
-			);
-            
-			req.session.save(() => {
-					res.cookie("intra.access_token", response.data.access_token, {
-						expires: new Date(Date.now() + response.data.expires_in * 1000),
-                        domain: "localhost:3000"
-					})
-					.cookie("intra.refresh_token", response.data.refresh_token, {
-						expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-                        domain: "localhost:3000"
-					})
-                    .redirect(`${process.env.FRONT_BASE_URI}/home`);
-					// .redirect(`http://localhost:3000/me`);
-			});
-            console.log(req.session)
-            return(res)
 		})
 		.catch((error) => {
 			res.status(403).send(error);
 		});
 
 });
-
-
 
 //---------------
 // User routes
@@ -190,11 +140,10 @@ const getCoalition = async function(token)
         return(data.id);
     })
     .catch(function (error) {
-        return ({Error: "userId"});
+        return ({Error: "userId" + error});
     });
 
     //console.log(userId);
-
     
     const userCoalition = await axios.get(`${process.env.INTRA_URL}/v2/users/${userId}/coalitions`, {
         headers: {
@@ -205,7 +154,7 @@ const getCoalition = async function(token)
         return (ret);
     })
     .catch(function (error) {
-        return ({Error: "userCoalition"});
+        return ({Error: "userCoalition" + error});
     });
 
     //console.log(userCoalition)
@@ -213,35 +162,7 @@ const getCoalition = async function(token)
 
 };
 
-// routes.get('/me', ensureAuth, async (req, res) => {
-    
-//     const coalition = "";
-//     //console.log(req.session);
-//     axios.get(`${process.env.INTRA_URL}/v2/me`, {
-//         headers: {
-//             "Authorization": `Bearer ${req.session.token}`
-//         }
-//     }).then(async function ({data}) {
-//         const coalition = await getCoalition(req.session.token)
-//         console.log("coalition " +coalition)
-//         if(data)
-//             res.send({
-//                 login: data.login,
-//                 data: coalition
-
-//             });
-//         else
-//             res.send("Error: no data");
-            
-//     })
-//     .catch(function (error) {
-//         res.send("MeError");
-//     });
-    
-
-// });
-
-routes.get('/user/:login', getToken, async (req, res) => {
+userroutes.get('/user/:login', getToken, async (req, res) => {
     const data = await fetch(`${process.env.INTRA_URL}/v2/users/${req.params.login}`, {
         method: "GET",
         headers: {
@@ -255,7 +176,7 @@ routes.get('/user/:login', getToken, async (req, res) => {
     res.send(user);
 })
 
-routes.get('/users', getToken, async (req, res) => {
+userroutes.get('/users', getToken, async (req, res) => {
     const data = await fetch(`${process.env.INTRA_URL}/v2/campus/22`, {
         method: "GET",
         headers: {
@@ -269,14 +190,14 @@ routes.get('/users', getToken, async (req, res) => {
     res.send( users );
 })
 
-routes.get('/test', ensureAuth, async (req, res) => {
+userroutes.get('/test', ensureAuth, async (req, res) => {
     res.status(200).send({ users: "users" });
 })
 
-routes.get('/',  async (req, res) => {
+userroutes.get('/',  async (req, res) => {
     res.status(200).send( "Welcome to API" );
 })
 
 ///users/:user_id/coalitions
 
-export { routes }
+export { userroutes }

@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@faker-js/faker": "^8.0.2",
     "@geckos.io/client": "^2.2.3",
     "@geckos.io/phaser-on-nodejs": "^1.2.7",
     "@geckos.io/server": "^2.2.3",
@@ -33,6 +34,7 @@
     "url": "^0.11.0"
   },
   "devDependencies": {
+    "eslint-plugin-node": "^11.1.0",
     "nodemon": "^2.0.19"
   }
 }

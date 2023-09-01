@@ -5,23 +5,32 @@
   -webkit-border-radius: 10px 10px 10px 10px;
   border-radius: 10px 10px 10px 10px;
   background: #fff;
-  width: 90%;
+  width: 100%;
   max-width: 450px;
-  position: relative;
+  /* position: relative; */
   padding: 30px;
 
   -webkit-box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
   box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
-  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 #formFooter {
   background-color: #f6f6f6;
+  color: black;
   border-top: 1px solid #dce8f1;
   padding: 25px;
   text-align: center;
   -webkit-border-radius: 0 0 10px 10px;
   border-radius: 0 0 10px 10px;
+}
+
+#formFooter:hover{
+  color: rgb(58, 232, 116);
 }
 
 /* ANIMATIONS */
@@ -80,9 +89,9 @@
   -webkit-animation-duration:1s;
   -moz-animation-duration:1s;
   animation-duration:1s;
-}
+} */
 
-.fadeIn.first {
+/* .fadeIn.first {
   -webkit-animation-delay: 0.4s;
   -moz-animation-delay: 0.4s;
   animation-delay: 0.4s;
@@ -90,13 +99,16 @@
 
 
 /* Simple CSS3 Fade-in Animation */
+.underlineHover{
+  color: black;
+}
 .underlineHover:after {
   display: block;
   left: 0;
   bottom: -10px;
   width: 0;
-  height: 2px;
-  background-color: #56baed;
+  height: 10px;
+  background-color: rgb(58, 232, 116);
   content: "";
   transition: width 0.2s;
 }

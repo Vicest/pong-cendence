@@ -4,14 +4,16 @@
   import { shownavlinks }  from '../routes/vars.d'
   import { apiData } from '../services/my42data';
 
-  let showNavs;
+  let showNavs = false;
   shownavlinks.subscribe(value => {
     showNavs = value;
   });
   let apidata;
-  apiData.subscribe(data => {
-      apidata = data;
-  });
+    apiData.subscribe(data => {
+        apidata = data;
+    });
+  
+
 
 </script>
 
@@ -28,7 +30,6 @@
 </div>
 
 <style>
-  /* Add a black background color to the top navigation */
   .topnav {
     background-color: rgb(0, 0, 0);
     min-height: 80px;
@@ -37,7 +38,6 @@
     justify-content: space-between;
   }
 
-  /* Style the links inside the navigation bar */
   .topnav a {
     float: left;
     color: #f2f2f2;
@@ -47,7 +47,6 @@
     font-size: 17px;
   }
 
-  /* Change the color of links on hover */
   .topnav a:hover {
     background-color: #ddd;
     color: black;

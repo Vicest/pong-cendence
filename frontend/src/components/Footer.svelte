@@ -1,21 +1,16 @@
-
-<h2>Foo - ter</h2>
-
-
-<!-- <script>
-  import { Footer, Button } from 'svelte-materialify/src';
+<script>
+	import { th } from "@faker-js/faker";
 
   const links = ['Home', 'About', 'Team', 'Services', 'Contact Us'];
 </script>
 
-<Footer padless class="indigo theme--dark justify-center flex-column">
+<div class="indigo theme--dark justify-center flex-column">
   <div class="mt-2 mb-2">
     {#each links as link}
-      <Button text rounded>{link}</Button>
+      <button >{link}</button>&nbsp;&nbsp;&nbsp;
     {/each}
   </div>
   <div class="indigo lighten-1 pa-2 text-center" style="width:100%">
-    2020 -
-    <b>Svelte Materialify</b>
+    2023 - <b>Pongscendence</b>
   </div>
-</Footer> -->
+</div>

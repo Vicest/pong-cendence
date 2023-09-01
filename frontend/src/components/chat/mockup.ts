@@ -1,7 +1,23 @@
 
 import { faker } from '@faker-js/faker';
 import type { Person, MessageFeed } from './chat.model';
-const lorem = faker.lorem.paragraph();
+//const lorem = faker.lorem.paragraph();
+
+//BACKEND ENDOPINTS
+// msgs
+// post('/msg') saveMsg() params(emmiter,receiver,msg, created_at,viewed)
+// get('/receivedmsgs/:page?) params(emmiter)
+// get('/sentmsg/:page?' getemitermsgs() params(receiver)
+// get('/unviewedmsgs') countUnviewedMsgs
+// put('/viewmsgs') setViewedMsgs()
+
+// follows
+// get('/follows') getFollows()
+// post('/follow') saveFollow()
+// delete('/follow/:id') deleteFollow()
+// get('/following/:id?/:page?) getFollowingUsers()
+// get('/followed/:id?/:page?) getFollowedUsers()
+
 // Navigation List
 export const mockpeople: Person[] = [
     { id: 0, avatar: 14, name: 'Michael' },
@@ -19,35 +35,31 @@ export const mockmessageFeed: MessageFeed[] = [
         host: true,
         avatar: 48,
         name: 'Jane',
-        timestamp: 'Yesterday @ 2:30pm',
-        message: lorem,
-        color: 'variant-soft-primary'
+        date: 'Yesterday @ 2:30pm',
+        message: faker.lorem.paragraph()
     },
     {
         id: 1,
         host: false,
         avatar: 14,
         name: 'Michael',
-        timestamp: 'Yesterday @ 2:45pm',
-        message: lorem,
-        color: 'variant-soft-primary'
+        date: 'Yesterday @ 2:45pm',
+        message: faker.lorem.paragraph()
     },
     {
         id: 2,
         host: true,
         avatar: 48,
-        name: 'Jane',
-        timestamp: 'Yesterday @ 2:50pm',
-        message: lorem,
-        color: 'variant-soft-primary'
+        name: 'Janet',
+        date: 'Yesterday @ 2:50pm',
+        message: faker.lorem.paragraph()
     },
     {
         id: 3,
         host: false,
         avatar: 14,
         name: 'Michael',
-        timestamp: 'Yesterday @ 2:52pm',
-        message: lorem,
-        color: 'variant-soft-primary'
+        date: 'Yesterday @ 2:52pm',
+        message: faker.lorem.paragraph()
     }
 ];

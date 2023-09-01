@@ -3,7 +3,8 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import express from 'express'
 const app = express();
-import { routes } from './routes/user.routes.js'
+import { userroutes } from './routes/user.routes.js'
+import { chatroutes } from "./routes/mockupchat.routes.js";
 import session from 'express-session'
 import cors from 'cors'
 import proxy from 'express-http-proxy'
@@ -40,7 +41,8 @@ app.use(cors({
 
 // }));
 
-app.use("/",routes);
+app.use("/",userroutes);
+app.use("/",chatroutes);
 
 app.use(proxy('http://localhost:4200'));
 
