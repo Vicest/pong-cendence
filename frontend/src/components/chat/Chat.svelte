@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import axios from 'axios';
 	// Components
 	import { Avatar, CodeBlock, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
 	import type { Person, MessageFeed } from './chat.model';
@@ -7,12 +8,9 @@
 
 	let messageFeed = mockmessageFeed;
 
-
-
 	let elemChat: HTMLElement;
 	let currentPerson: Person = mockpeople[0];
 
-	
 	let currentMessage = '';
 
 	// For some reason, eslint thinks ScrollBehavior is undefined...
@@ -56,8 +54,29 @@
 	// When DOM mounted, scroll to bottom
 	onMount(() => {
 		scrollChatBottom();
+		
 	});
+
+	async function avatarClick()
+	{
+		await axios.get("http://localhost:3000/receivedmsgs/foo")
+		.then(
+		res => {
+			if(res.status === 200)
+			{
+				// console.log(res.data)
+				messageFeed = res.data;
+			}
+		}
+		)
+		.catch(err => {
+			console.log(err)
+		})
+	}
 </script>
+<style>
+    /* @import './chat.css'; */
+</style>
 
 <!-- Slot: Sandbox -->
 <section class="card">
@@ -73,7 +92,7 @@
 				<small class="opacity-50">Contacts</small>
 				<ListBox active="variant-filled-primary">
 					{#each mockpeople as person}
-						<ListBoxItem bind:group={currentPerson} name="people" value={person}>
+						<ListBoxItem bind:group={currentPerson} on:click={avatarClick} name="people" value={person}>
 							<svelte:fragment slot="lead">
 								<Avatar src="https://i.pravatar.cc/?img={person.avatar}" width="w-8" />
 							</svelte:fragment>

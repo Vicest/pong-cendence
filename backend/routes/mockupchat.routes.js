@@ -20,10 +20,11 @@ import { faker } from '@faker-js/faker';
 
 const chatroutes = express.Router();
 
+
 chatroutes.get('/receivedmsgs/:userid', async (req, res) => {
     if(req.params.userid == "janet")
     {
-        res.status(200).send({
+        res.status(200).send([{
             id: 0,
             avatar: "https://i.pravatar.cc/?img=48",
             name: 'Janet',
@@ -38,11 +39,11 @@ chatroutes.get('/receivedmsgs/:userid', async (req, res) => {
             date: '20-03-2023',
             message: faker.lorem.paragraph()
     
-        });
+        }]);
 
     }
     else{
-        res.status(200).send({
+        res.status(200).send([{
             id: 2,
             avatar: "https://i.pravatar.cc/?img=12",
             name: 'Alex',
@@ -57,7 +58,7 @@ chatroutes.get('/receivedmsgs/:userid', async (req, res) => {
             date: '25-05-2023',
             message: faker.lorem.paragraph()
     
-        });
+        }]);
     }
 })
 

@@ -7,7 +7,6 @@
   background: #fff;
   width: 100%;
   max-width: 450px;
-  /* position: relative; */
   padding: 30px;
 
   -webkit-box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
@@ -16,7 +15,7 @@
   flex-wrap: wrap;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  /* align-items: center; */
 }
 
 #formFooter {

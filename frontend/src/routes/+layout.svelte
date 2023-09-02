@@ -4,20 +4,20 @@
 	import '@skeletonlabs/skeleton/themes/theme-skeleton.css';
 	import '@skeletonlabs/skeleton/styles/skeleton.css';
 	import '../app.postcss';
-	import './styles.css';
 </script>
+
+<style>
+    @import './styles.css';
+</style>
 
 <div class="app">
 	<div id="header">
 		<Header />
 	</div>
-	<main>
+	<div id="main">
 		<slot />
-	</main>
-	<footer>
+	</div>
+	<div id="footer">
 		<Footer />
-	</footer>
+	</div>
 </div>
-
-<style>
-</style>
