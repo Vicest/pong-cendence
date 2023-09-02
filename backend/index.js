@@ -8,7 +8,6 @@ import { chatroutes } from "./routes/mockupchat.routes.js";
 import session from 'express-session'
 import cors from 'cors'
 import proxy from 'express-http-proxy'
-// import jwt from 'jsonwebtoken';
 
 // CORS
 app.use(bodyParser.json());
@@ -28,21 +27,8 @@ app.use(cors({
   credentials: true
 }));
 
-// app.use(cookieParser("1234567890QWERTY"));
-// app.use(session({
-// 	secret: '1234567890QWERTY',
-// 	resave: true,
-// 	saveUninitialized: false,
-//     cookie: {
-//         sameSite: 'none',
-//         secure: false,
-//         maxAge: 30 * 60 * 60 * 1000
-//       }
-
-// }));
-
 app.use("/",userroutes);
-app.use("/",chatroutes);
+app.use("/",chatroutes); // TEST
 
 app.use(proxy('http://localhost:4200'));
 

@@ -3,6 +3,7 @@
 		id: number;
 		avatar: number;
 		name: string;
+		feed: MessageFeed[];
 	}
 	export interface MessageFeed {
 		id: number;

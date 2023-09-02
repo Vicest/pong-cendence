@@ -5,7 +5,7 @@
   import { onMount } from 'svelte';
   import { shownavlinks } from './vars.d';
   
-  let authenticated = false;
+  let authenticated = true; // ALERT: Must be in false
   let waiting = true;
 
   onMount(async () => {

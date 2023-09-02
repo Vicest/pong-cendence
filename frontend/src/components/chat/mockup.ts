@@ -20,12 +20,12 @@ import type { Person, MessageFeed } from './chat.model';
 
 // Navigation List
 export const mockpeople: Person[] = [
-    { id: 0, avatar: 14, name: 'Michael' },
-    { id: 1, avatar: 40, name: 'Janet' },
-    { id: 2, avatar: 31, name: 'Susan' },
-    { id: 3, avatar: 56, name: 'Joey' },
-    { id: 4, avatar: 24, name: 'Lara' },
-    { id: 5, avatar: 9, name: 'Melissa' }
+    { id: 0, avatar: 14, name: 'Michael' ,feed: []},
+    { id: 1, avatar: 40, name: 'Janet' ,feed: []},
+    { id: 2, avatar: 31, name: 'Susan' ,feed: []},
+    { id: 3, avatar: 56, name: 'Joey' ,feed: []},
+    { id: 4, avatar: 24, name: 'Lara' ,feed: []},
+    { id: 5, avatar: 9, name: 'Melissa' ,feed: []}
 ];
 
 // Messages

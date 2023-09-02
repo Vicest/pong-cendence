@@ -19,15 +19,28 @@ import { faker } from '@faker-js/faker';
 
 
 const chatroutes = express.Router();
+chatroutes.get('/friends', async (req, res) => {
+    res.status(200).send([{
+        id: 0,
+        name: "Janet42",
+        avatar: "https://i.pravatar.cc/?img=48"
+    },
+    {
+        id: 1,
+        name: "Alex123",
+        avatar: "https://i.pravatar.cc/?img=12"
+    }]);
+})
 
-
+// Get received msgs
 chatroutes.get('/receivedmsgs/:userid', async (req, res) => {
-    if(req.params.userid == "janet")
+    // console.log(req.params.userid)
+    if(req.params.userid == "Janet42")
     {
         res.status(200).send([{
             id: 0,
             avatar: "https://i.pravatar.cc/?img=48",
-            name: 'Janet',
+            name: 'Janet42',
             date: '20-03-2023',
             message: faker.lorem.paragraph()
     
@@ -35,7 +48,7 @@ chatroutes.get('/receivedmsgs/:userid', async (req, res) => {
         {
             id: 1,
             avatar: "https://i.pravatar.cc/?img=48",
-            name: 'Janet',
+            name: 'Janet42',
             date: '20-03-2023',
             message: faker.lorem.paragraph()
     
@@ -46,7 +59,7 @@ chatroutes.get('/receivedmsgs/:userid', async (req, res) => {
         res.status(200).send([{
             id: 2,
             avatar: "https://i.pravatar.cc/?img=12",
-            name: 'Alex',
+            name: 'Alex123',
             date: '21-03-2023',
             message: faker.lorem.paragraph()
     
@@ -54,7 +67,15 @@ chatroutes.get('/receivedmsgs/:userid', async (req, res) => {
         {
             id: 3,
             avatar: "https://i.pravatar.cc/?img=12",
-            name: 'Alex',
+            name: 'Alex123',
+            date: '25-05-2023',
+            message: faker.lorem.paragraph()
+    
+        },
+        {
+            id: 4,
+            avatar: "https://i.pravatar.cc/?img=12",
+            name: 'Alex123',
             date: '25-05-2023',
             message: faker.lorem.paragraph()
     

@@ -6,10 +6,12 @@
 	import type { Person, MessageFeed } from './chat.model';
 	import { mockpeople, mockmessageFeed } from './mockup'
 
-	let messageFeed = mockmessageFeed;
+	let messageFeed = []; //mockmessageFeed;
+	let people = [];  //mockpeople;
 
 	let elemChat: HTMLElement;
-	let currentPerson: Person = mockpeople[0];
+	let currentPerson: Person;
+	// currentPerson.feed = mockmessageFeed;
 
 	let currentMessage = '';
 
@@ -32,6 +34,7 @@
 			date: `Today @ ${getCurrentTimestamp()}`,
 			message: currentMessage
 		};
+		// alert(currentPerson.name)
 
 		// Update the message feed
 		messageFeed = [...messageFeed, newMessage];
@@ -42,6 +45,10 @@
 		setTimeout(() => {
 			scrollChatBottom('smooth');
 		}, 0);
+
+		// here logic, send server messages and save on cache those messages
+		currentPerson.feed = messageFeed;
+		console.log(currentPerson)
 	}
 
 	function onPromptKeydown(event: KeyboardEvent): void {
@@ -52,19 +59,42 @@
 	}
 
 	// When DOM mounted, scroll to bottom
-	onMount(() => {
+	onMount(async () => {
 		scrollChatBottom();
-		
-	});
-
-	async function avatarClick()
-	{
-		await axios.get("http://localhost:3000/receivedmsgs/foo")
+		await axios.get("http://localhost:3000/friends")
 		.then(
 		res => {
 			if(res.status === 200)
 			{
-				// console.log(res.data)
+				people = res.data;
+				currentPerson = people[0];
+				axios.get("http://localhost:3000/receivedmsgs/" + currentPerson.name)
+				.then(
+				res => {
+					messageFeed = res.data;
+				}).catch(err => {
+					console.log(err)
+				})
+				
+			}
+		}
+		)
+		.catch(err => {
+			console.log(err)
+		})
+		
+		
+	});
+	let selectedvalue;
+	function avatarClick(person)
+	{
+		// logic reorder server BBDD recieved mesages and sent messages
+		currentPerson = person;
+		axios.get("http://localhost:3000/receivedmsgs/" + currentPerson.name)
+		.then(
+		res => {
+			if(res.status === 200)
+			{
 				messageFeed = res.data;
 			}
 		}
@@ -89,10 +119,11 @@
 		</div>
 			<!-- List -->
 			<div class="p-4 space-y-4 overflow-y-auto">
-				<small class="opacity-50">Contacts</small>
+				<button class="opacity-50">Contacts</button>
+				<button class="opacity-50">Channels</button>
 				<ListBox active="variant-filled-primary">
-					{#each mockpeople as person}
-						<ListBoxItem bind:group={currentPerson} on:click={avatarClick} name="people" value={person}>
+					{#each people as person}
+						<ListBoxItem bind:group={currentPerson} on:click={() => {avatarClick(person)}} name="people" value={person}>
 							<svelte:fragment slot="lead">
 								<Avatar src="https://i.pravatar.cc/?img={person.avatar}" width="w-8" />
 							</svelte:fragment>
