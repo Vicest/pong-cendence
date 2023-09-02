@@ -4,7 +4,7 @@
 	// Components
 	import { Avatar, CodeBlock, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
 	import type { Person, MessageFeed } from './chat.model';
-	import { mockpeople, mockmessageFeed } from './mockup'
+	// import { mockpeople, mockmessageFeed } from './mockup'
 
 	let messageFeed = []; //mockmessageFeed;
 	let people = [];  //mockpeople;
@@ -29,10 +29,11 @@
 		const newMessage = {
 			id: messageFeed.length,
 			host: true,
-			avatar: 48,
-			name: 'Jane',
+			avatar: 13,
+			sender: 'Marcos',
+			receiver: currentPerson.name,
 			date: `Today @ ${getCurrentTimestamp()}`,
-			message: currentMessage
+			text: currentMessage
 		};
 		// alert(currentPerson.name)
 
@@ -46,9 +47,15 @@
 			scrollChatBottom('smooth');
 		}, 0);
 
-		// here logic, send server messages and save on cache those messages
+		// Here logic, send server messages and save on cache those messages
 		currentPerson.feed = messageFeed;
-		console.log(currentPerson)
+		console.log("Current Person: ", currentPerson)
+
+		axios.post("http://localhost:3000/msg", newMessage)
+		.then(res => {})
+		.catch(err => {
+			console.log(err)
+		})
 	}
 
 	function onPromptKeydown(event: KeyboardEvent): void {
@@ -88,6 +95,7 @@
 	let selectedvalue;
 	function avatarClick(person)
 	{
+		
 		// logic reorder server BBDD recieved mesages and sent messages
 		currentPerson = person;
 		axios.get("http://localhost:3000/receivedmsgs/" + currentPerson.name)
@@ -96,6 +104,11 @@
 			if(res.status === 200)
 			{
 				messageFeed = res.data;
+				axios.get("http://localhost:3000/sendedmsgs/" + currentPerson.name)
+				.then(res => {
+					messageFeed = [...messageFeed, ...res.data];
+					// console.log("sendedmsgs",res.data)
+				})
 			}
 		}
 		)
@@ -145,20 +158,20 @@
 							<Avatar src="https://i.pravatar.cc/?img={bubble.avatar}" width="w-12" />
 							<div class="card p-4 variant-soft rounded-tl-none space-y-2">
 								<div class="flex justify-between items-center">
-									<p class="font-bold">{bubble.name}</p>
+									<p class="font-bold">{bubble.sender}</p>
 									<small class="opacity-50">{bubble.date}</small>
 								</div>
-								<p>{bubble.message}</p>
+								<p>{bubble.text}</p>
 							</div>
 						</div>
 					{:else}
 						<div class="grid grid-cols-[1fr_auto] gap-2">
 							<div class="card p-4 rounded-tr-none space-y-2 variant-soft-primary">
 								<div class="flex justify-between items-center">
-									<p class="font-bold">{bubble.name}</p>
+									<p class="font-bold">{bubble.sender}</p>
 									<small class="opacity-50">{bubble.date}</small>
 								</div>
-								<p>{bubble.message}</p>
+								<p>{bubble.text}</p>
 							</div>
 							<Avatar src="https://i.pravatar.cc/?img={bubble.avatar}" width="w-12" />
 						</div>

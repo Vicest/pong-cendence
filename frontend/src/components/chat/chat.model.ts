@@ -9,7 +9,8 @@
 		id: number;
 		host: boolean;
 		avatar: number;
-		name: string;
+		sender: string;
+		receiver: string;
 		date: string;
 		message: string;
 	}
