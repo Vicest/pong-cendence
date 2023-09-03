@@ -35,8 +35,7 @@
 			date: `Today @ ${getCurrentTimestamp()}`,
 			text: currentMessage
 		};
-		// alert(currentPerson.name)
-
+		
 		// Update the message feed
 		messageFeed = [...messageFeed, newMessage];
 		// Clear prompt
@@ -73,11 +72,16 @@
 		res => {
 			if(res.status === 200)
 			{
-				people = res.data;
+				people = res.data; 
+				
 				currentPerson = people[0];
+				// console.log(people)
+				
 				axios.get("http://localhost:3000/receivedmsgs/" + currentPerson.name)
 				.then(
 				res => {
+					// people = people.map((p)=>{  p.feed = []});
+					currentPerson.feed = messageFeed;
 					messageFeed = res.data;
 				}).catch(err => {
 					console.log(err)
@@ -89,6 +93,7 @@
 		.catch(err => {
 			console.log(err)
 		})
+		
 		
 		
 	});
@@ -119,10 +124,14 @@
 </script>
 <style>
     /* @import './chat.css'; */
+	.chat-card{
+		height: 72vh;
+		width: 100%;
+	}
 </style>
 
 <!-- Slot: Sandbox -->
-<section class="card">
+<section class="card chat-card">
 	<div class="chat w-full h-full grid grid-cols-1 lg:grid-cols-[30%_1fr]">
 		<!-- Navigation -->
 		<div class="hidden lg:grid grid-rows-[auto_1fr_auto] border-r border-surface-500/30">

@@ -29,37 +29,41 @@ export const mockpeople: Person[] = [
 ];
 
 // Messages
-// export const mockmessageFeed: MessageFeed[] = [
-//     {
-//         id: 0,
-//         host: true,
-//         avatar: 48,
-//         name: 'Jane',
-//         date: 'Yesterday @ 2:30pm',
-//         message: faker.lorem.paragraph()
-//     },
-//     {
-//         id: 1,
-//         host: false,
-//         avatar: 14,
-//         name: 'Michael',
-//         date: 'Yesterday @ 2:45pm',
-//         message: faker.lorem.paragraph()
-//     },
-//     {
-//         id: 2,
-//         host: true,
-//         avatar: 48,
-//         name: 'Janet',
-//         date: 'Yesterday @ 2:50pm',
-//         message: faker.lorem.paragraph()
-//     },
-//     {
-//         id: 3,
-//         host: false,
-//         avatar: 14,
-//         name: 'Michael',
-//         date: 'Yesterday @ 2:52pm',
-//         message: faker.lorem.paragraph()
-//     }
-// ];
+export const mockmessageFeed: MessageFeed[] = [
+    {
+        id: 0,
+        host: true,
+        avatar: 48,
+        sender: 'Jane',
+        receiver: 'Marcos',
+        date: 'Yesterday @ 2:30pm',
+        message: faker.lorem.paragraph()
+    },
+    {
+        id: 1,
+        host: false,
+        avatar: 14,
+        sender: 'Michael',
+        receiver: 'Marcos',
+        date: 'Yesterday @ 2:45pm',
+        message: faker.lorem.paragraph()
+    },
+    {
+        id: 2,
+        host: true,
+        avatar: 48,
+        sender: 'Janet',
+        receiver: 'Marcos',
+        date: 'Yesterday @ 2:50pm',
+        message: faker.lorem.paragraph()
+    },
+    {
+        id: 3,
+        host: false,
+        avatar: 14,
+        sender: 'Michael',
+        receiver: 'Marcos',
+        date: 'Yesterday @ 2:52pm',
+        message: faker.lorem.paragraph()
+    }
+];

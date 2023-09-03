@@ -13,7 +13,10 @@
         apidata = data;
     });
   
+  function openProfile()
+  {
 
+  }
 
 </script>
 
@@ -21,11 +24,11 @@
   <a class="active" href="/"><img src={ponglogo} alt=""></a>
   {#if showNavs}
   <div class="links">
-    <a href="#news">Friends</a>
-    <a href="#contact">Leaderboard</a>
-    <a href="#about">About</a>
+    <button>Friends</button>
+    <button >Leaderboard</button>
+    <button >About</button>
   </div>
-  <Avatar initials={apidata.displayname.split(' ').map(palabra => palabra.charAt(0)).slice(0, 2).join('')} background="bg-primary-500" />
+  <Avatar on:click={() => openProfile} initials={apidata.displayname.split(' ').map(palabra => palabra.charAt(0)).slice(0, 2).join('')} background="bg-primary-500" />
   {/if}
 </div>
 
@@ -36,9 +39,10 @@
     overflow: hidden;
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
 
-  .topnav a {
+  .topnav button {
     float: left;
     color: #f2f2f2;
     text-align: center;
@@ -47,13 +51,13 @@
     font-size: 17px;
   }
 
-  .topnav a:hover {
+  .topnav button:hover {
     background-color: #ddd;
     color: black;
   }
 
-  .topnav a.active {
+  /* .topnav button.active {
     background-color: rgb(0, 0, 0);
-  }
+  } */
 
 </style>

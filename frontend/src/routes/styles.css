@@ -11,8 +11,8 @@
 }
 
 #header {
-    min-height: 15vh;
-    margin-bottom: 20px;
+    min-height: 12vh;
+    /* margin-bottom: 20px; */
 }
 
 #main {

@@ -82,9 +82,7 @@ chatroutes.post('/msg', (req, res) => {
       }
       newMessage.avatar = "https://i.pravatar.cc/?img=13";
       newMessage.sender = "Marcos";
-
       sendedMsgs.push(newMessage);
-      console.log()
   
       res.status(200).send({ message: 'Message added' });
     } catch (error) {
