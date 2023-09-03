@@ -126,7 +126,7 @@
     /* @import './chat.css'; */
 	.chat-card{
 		height: 72vh;
-		width: 100%;
+		width: 90vw;
 	}
 </style>
 

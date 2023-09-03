@@ -2,6 +2,7 @@
   import ponglogo from '$lib/assets/images/ponglogo.png';
   import { Avatar } from '@skeletonlabs/skeleton';
   import { shownavlinks }  from '../routes/vars.d'
+  import { activePage } from '../routes/vars.d';
   import { apiData } from '../services/my42data';
 
   let showNavs = false;
@@ -12,23 +13,28 @@
     apiData.subscribe(data => {
         apidata = data;
     });
-  
-  function openProfile()
-  {
-
-  }
-
 </script>
 
 <div class="topnav">
-  <a class="active" href="/"><img src={ponglogo} alt=""></a>
+  <button class="nohover-btn" on:click={() => {activePage.set("home")}}><img src={ponglogo} alt="pongcendence"></button>
   {#if showNavs}
   <div class="links">
-    <button>Friends</button>
-    <button >Leaderboard</button>
-    <button >About</button>
+    <div>
+      <img src="" alt="">
+      <button on:click={() => {activePage.set("friends")}}>Friends</button>
+    </div>
+    <div>
+      <img src="" alt="">
+      <button on:click={() => {activePage.set("leaderboard")}}>Leaderboard</button>
+    </div>
+    <div>
+      <img src="" alt="">
+      <button on:click={() => {activePage.set("about")}}>About</button>
+    </div>
   </div>
-  <Avatar on:click={() => openProfile} initials={apidata.displayname.split(' ').map(palabra => palabra.charAt(0)).slice(0, 2).join('')} background="bg-primary-500" />
+  <button class="nohover-btn" on:click={() => {activePage.set("profile")}}>
+    <Avatar initials={apidata.displayname.split(' ').map(palabra => palabra.charAt(0)).slice(0, 2).join('')} background="bg-primary-500" />
+  </button>
   {/if}
 </div>
 
@@ -40,6 +46,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0 20px 0 20px;
   }
 
   .topnav button {
@@ -56,8 +63,16 @@
     color: black;
   }
 
-  /* .topnav button.active {
-    background-color: rgb(0, 0, 0);
-  } */
-
+  .links {
+    width: 30%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  button.nohover-btn:hover{
+    /* pointer-events: none; */
+    background-color: unset !important;
+    color: unset !important;
+}
+ 
 </style>

@@ -15,4 +15,6 @@ const createShownavlinks = () => {
   };
 };
 
+export const activePage = writable('home'); 
+
 export const shownavlinks = createShownavlinks();

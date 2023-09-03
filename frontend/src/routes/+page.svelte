@@ -2,8 +2,27 @@
   import axios from 'axios';
   import Home from './home/Home.svelte'
   import Login from './login/Login.svelte'
+  import Profile from './profile/Profile.svelte';
   import { onMount } from 'svelte';
   import { shownavlinks } from './vars.d';
+  import { activePage } from './vars.d';
+
+  // activePage.set("home") 
+
+  let currentPage;
+  $: {
+      const page = $activePage;
+      switch (page) {
+          case 'home':
+              currentPage = Home;
+              break;
+          case 'profile':
+              currentPage = Profile;
+              break;
+          default:
+              currentPage = null;
+      }
+  }
   
   let authenticated = false; // ALERT: Must be in false
   let waiting = true;
@@ -33,6 +52,10 @@
 {#if authenticated == false}
   <Login waiting={waiting}></Login>
 {:else}
-  <Home></Home>
+  {#if currentPage}
+        <svelte:component this={currentPage} />
+    {:else}
+        <p>Page not found</p>
+  {/if}
 {/if}
 
