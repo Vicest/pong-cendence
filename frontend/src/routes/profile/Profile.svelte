@@ -7,6 +7,14 @@
         console.log(apidata, apidata.image.versions.medium)
 
     });
+
+    let showAll = false; // Initially, don't show all items
+  let maxItemsToShow = 5; // Number of items to show initially
+
+  function toggleShow() {
+    showAll = !showAll;
+    maxItemsToShow = showAll ? apidata.achievements.length : 5;
+  }
 </script>
 <style>
     .profile-card{
@@ -35,15 +43,15 @@
                     <div class="flex justify-center py-4 lg:pt-4 pt-8">
                       <div class="mr-4 p-3 text-center">
                         <span class="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
-                          22
+                          {apidata.projects_users.length}
                         </span>
-                        <span class="text-sm text-blueGray-400">Friends</span>
+                        <span class="text-sm text-blueGray-400">Proyects</span>
                       </div>
                       <div class="mr-4 p-3 text-center">
                         <span class="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
-                          10
+                          {apidata.achievements.length}
                         </span>
-                        <span class="text-sm text-blueGray-400">Photos</span>
+                        <span class="text-sm text-blueGray-400">Achivements</span>
                       </div>
                       <div class="lg:mr-4 p-3 text-center">
                         <span class="text-xl font-bold block uppercase tracking-wide text-blueGray-600">
@@ -60,30 +68,41 @@
                   </h3>
                   <div class="text-sm leading-normal mt-0 mb-2 text-blueGray-400 font-bold uppercase">
                     <i class="fas fa-map-marker-alt mr-2 text-lg text-blueGray-400"></i>
-                    Los Angeles, California
+                    {apidata.campus[0].name}
                   </div>
                   <div class="mb-2 text-blueGray-600 mt-10">
-                    <i class="fas fa-briefcase mr-2 text-lg text-blueGray-400"></i>
-                    Solution Manager - Creative Tim Officer
+                    <i class="fas fa-star mr-2 text-lg text-blueGray-400"></i>
+                    239 points
                   </div>
                   <div class="mb-2 text-blueGray-600">
-                    <i class="fas fa-university mr-2 text-lg text-blueGray-400"></i>
-                    University of Computer Science
+                    <i class="fas fa-gamepad mr-2 text-lg text-blueGray-400"></i>
+                    35 games played
                   </div>
                 </div>
                 <div class="mt-10 py-10 border-t border-blueGray-200 text-center">
+                  <h3 class="text-xl font-semibold leading-normal mb-2 text-blueGray-700 mb-2">
+                    Achievements
+                  </h3>
                   <div class="flex flex-wrap justify-center">
                     <div class="w-full lg:w-9/12 px-4">
                       <p class="mb-4 text-lg leading-relaxed text-blueGray-700">
-                        An artist of considerable range, Jenna the name taken
-                        by Melbourne-raised, Brooklyn-based Nick Murphy
-                        writes, performs and records all of his own music,
-                        giving it a warm, intimate feel with a solid groove
-                        structure. An artist of considerable range.
-                      </p>
-                      <a href="/" class="font-normal text-pink-500">
-                        Show more
-                      </a>
+                        <p>
+                          {#each apidata.achievements.slice(0, maxItemsToShow) as achievement, index}
+                            {achievement.name} <br>
+                          {/each}
+                        </p>
+                        
+                        {#if !showAll}
+                          <button class="font-normal text-pink-500" on:click={toggleShow}>
+                            Show more
+                          </button>
+                        {/if}
+                        
+                        {#if showAll}
+                          <button class="font-normal text-pink-500" on:click={toggleShow}>
+                            Show less
+                          </button>
+                        {/if}
                     </div>
                   </div>
                 </div>

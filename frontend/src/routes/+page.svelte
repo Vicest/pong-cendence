@@ -6,6 +6,8 @@
   import { onMount } from 'svelte';
   import { shownavlinks } from './vars.d';
   import { activePage } from './vars.d';
+	import Leaderboard from './leaderboard/Leaderboard.svelte';
+	import About from './about/About.svelte';
 
   // activePage.set("home") 
 
@@ -18,6 +20,12 @@
               break;
           case 'profile':
               currentPage = Profile;
+              break;
+          case 'leaderboard':
+              currentPage = Leaderboard;
+              break;
+          case 'about':
+              currentPage = About;
               break;
           default:
               currentPage = null;
