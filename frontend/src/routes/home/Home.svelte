@@ -1,5 +1,5 @@
 <script>
-	import Chat from '../../components/chat/Chat.svelte';
+    import Friends from "../../components/friends/Friends.svelte";
 </script>
 
 <style>
@@ -8,5 +8,6 @@
 </style>
 
 <home>
-    <Chat></Chat>
+    <h1 style="font-size: 80px;">GAME</h1>
+    
 </home>

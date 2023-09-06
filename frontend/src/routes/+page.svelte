@@ -3,6 +3,7 @@
   import Home from './home/Home.svelte'
   import Login from './login/Login.svelte'
   import Profile from './profile/Profile.svelte';
+  import Friends from '../components/friends/Friends.svelte';
   import { onMount } from 'svelte';
   import { shownavlinks } from './vars.d';
   import { activePage } from './vars.d';
@@ -26,6 +27,9 @@
               break;
           case 'about':
               currentPage = About;
+              break;
+          case 'friends':
+              currentPage = Friends;
               break;
           default:
               currentPage = null;
