@@ -1,14 +1,15 @@
 <script>
   import axios from 'axios';
-  import Home from './home/Home.svelte'
+  import Home from './home/+page.svelte'
   import Login from './login/Login.svelte'
-  import Profile from './profile/Profile.svelte';
+  import Profile from './profile/+page.svelte';
   import Friends from '../components/friends/Friends.svelte';
   import { onMount } from 'svelte';
   import { shownavlinks } from './vars.d';
   import { activePage } from './vars.d';
-	import Leaderboard from './leaderboard/Leaderboard.svelte';
-	import About from './about/About.svelte';
+	import Leaderboard from './leaderboard/+page.svelte';
+	import About from './about/+page.svelte';
+  import { apiData } from '../services/my42data';
 
   // activePage.set("home") 
 
@@ -64,10 +65,11 @@
 {#if authenticated == false}
   <Login waiting={waiting}></Login>
 {:else}
-  {#if currentPage}
+  <!-- {#if currentPage}
         <svelte:component this={currentPage} />
     {:else}
         <p>Page not found</p>
-  {/if}
+  {/if} -->
+  <Home></Home>
 {/if}
 

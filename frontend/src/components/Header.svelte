@@ -3,6 +3,7 @@
   import { Avatar } from '@skeletonlabs/skeleton';
   import { shownavlinks }  from '../routes/vars.d'
   import { activePage } from '../routes/vars.d';
+  import { activeChat } from '../routes/vars.d';
   import { apiData } from '../services/my42data';
 
   let showNavs = false;
@@ -12,29 +13,39 @@
   let apidata;
     apiData.subscribe(data => {
         apidata = data;
-    });
+  });
+  let showchat=false;
+	activeChat.subscribe(value => {
+		showchat = value;
+	});
 </script>
 
 <div class="topnav">
   <button class="nohover-btn" on:click={() => {activePage.set("home")}}><img src={ponglogo} alt="pongcendence"></button>
   {#if showNavs}
   <div class="links">
-    <div>
+    <div class="nav-links">
       <img src="" alt="">
-      <button on:click={() => {activePage.set("friends")}}>Friends</button>
+      <button class="nohover-btn" on:click={() => {activeChat.set(!showchat)}}>Friends</button>
+      <!-- <a href="/friends">Friends</a> -->
     </div>
-    <div>
-      <img src="" alt="">
-      <button on:click={() => {activePage.set("leaderboard")}}>Leaderboard</button>
+    <div class="nav-links">
+      <img src="/" alt="">
+      <!-- <button on:click={() => {activePage.set("leaderboard")}}>Leaderboard</button> -->
+      <a  href="/leaderboard">Leaderboard</a>
     </div>
-    <div>
+    <div class="nav-links">
       <img src="" alt="">
-      <button on:click={() => {activePage.set("about")}}>About</button>
+      <!-- <button on:click={() => {activePage.set("about")}}>About</button> -->
+      <a  href="/about">About</a>
+
     </div>
   </div>
-  <button class="nohover-btn" on:click={() => {activePage.set("profile")}}>
+  <!-- <button class="nohover-btn" on:click={() => {activePage.set("profile")}}> -->
+  <a href="/profile">
     <Avatar initials={apidata.displayname.split(' ').map(palabra => palabra.charAt(0)).slice(0, 2).join('')} background="bg-primary-500" />
-  </button>
+  </a>
+  <!-- </button> -->
   {/if}
 </div>
 
@@ -47,6 +58,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0 20px 0 20px;
+    z-index: 3;
   }
 
   .topnav button {
@@ -68,6 +80,20 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+
+  .nav-links{
+    width: 100%;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+
+  }
+  .nav-links:hover{
+    background-color: white;
+    color: black;
   }
   button.nohover-btn:hover{
     /* pointer-events: none; */

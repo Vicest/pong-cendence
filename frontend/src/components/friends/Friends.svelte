@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { draggable } from '@neodrag/svelte';
 	import { Avatar, CodeBlock, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
 
 	import { onMount } from 'svelte';
@@ -15,9 +16,16 @@
 	let currentPerson: Person;
 	let displayChat = false;
 	//CSS PROPERTIES
-	let widthlist =100;
-	let widthcard = 30;
-	let leftcard = "4.8vw";
+	let cssDeployChat;
+	$:{
+		 cssDeployChat={
+			widthlist: 100,
+			widthcard: 30,
+			leftcard: "4.8vw"
+
+		}
+	}
+
 	// currentPerson.feed = mockmessageFeed;
 
 
@@ -64,10 +72,12 @@
 
 	function avatarClick(person)
 	{
+		
 		displayChat = true;
-		widthlist =30;
-		widthcard = 90;
-		leftcard = "auto";
+		cssDeployChat.widthlist =30;
+		cssDeployChat.widthcard = 90;
+		cssDeployChat.leftcard = "auto";
+		
 
 		// logic reorder server BBDD recieved mesages and sent messages
 		currentPerson = person;
@@ -94,7 +104,6 @@
     /* @import './chat.css'; */
 	.chat-card{
 		position: fixed;
-		/* top: 0px; */
 		height: 72vh;
 		width: 50vw;
 		/* left: auto; */
@@ -102,8 +111,8 @@
 </style>
 
 <!-- Slot: Sandbox -->
-<section class="card chat-card" style="width: {widthcard}vw;  left: {leftcard}">
-	<div class="chat w-full h-full grid grid-cols-1 lg:grid-cols-[{widthlist}%_1fr]">
+<section use:draggable class="card chat-card" style="width: {cssDeployChat.widthcard}vw;  left: {cssDeployChat.leftcard}">
+	<div class="chat w-full h-full grid grid-cols-1 lg:grid-cols-[{cssDeployChat.widthlist}%_1fr]">
 		<!-- Navigation -->
 		<div class="hidden lg:grid grid-rows-[auto_1fr_auto] border-r border-surface-500/30">
 			<!-- Header -->

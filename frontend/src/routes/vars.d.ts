@@ -16,5 +16,6 @@ const createShownavlinks = () => {
 };
 
 export const activePage = writable('home'); 
+export const activeChat = createShownavlinks();
 
 export const shownavlinks = createShownavlinks();
