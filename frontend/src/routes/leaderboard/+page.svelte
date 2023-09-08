@@ -1,5 +1,8 @@
 
-
+<script>
+  import { isAuth } from "../../services/isAuth";
+  isAuth();
+</script>
 <section class="card">
     <div class="flex flex-col">
         <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">

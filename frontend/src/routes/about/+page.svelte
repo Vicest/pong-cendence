@@ -1,6 +1,8 @@
 
 <script>
     import ponglogo from '$lib/assets/images/ponglogo_big.png';
+    import { isAuth } from "../../services/isAuth";
+    isAuth();
 </script>
 <!-- Navbar (you can include your own navigation bar here) -->
 

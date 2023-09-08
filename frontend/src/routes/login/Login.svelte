@@ -2,8 +2,12 @@
 <script>
     import logo42 from '$lib/assets/images/logo42.png';
     import { ProgressRadial } from '@skeletonlabs/skeleton';
+    import { isAuth } from "../../services/isAuth";
+
+
     const apiBaseUrl = "http://localhost:3000";
     export let waiting;
+    
 
     function handleLoginClick()
     {

@@ -1,5 +1,7 @@
 <script>
     import { apiData } from "../../services/my42data";
+    import { isAuth } from "../../services/isAuth";
+    isAuth();
 
       let apidata;
     apiData.subscribe(data => {

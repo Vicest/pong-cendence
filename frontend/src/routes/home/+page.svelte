@@ -1,5 +1,7 @@
 <script>
-    import Friends from "../../components/friends/Friends.svelte";
+    import { isAuth } from "../../services/isAuth";
+    isAuth();
+
 </script>
 
 <style>

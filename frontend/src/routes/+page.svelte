@@ -1,63 +1,23 @@
-<script>
-  import axios from 'axios';
+<script lang="ts">
   import Home from './home/+page.svelte'
   import Login from './login/Login.svelte'
-  import Profile from './profile/+page.svelte';
-  import Friends from '../components/friends/Friends.svelte';
   import { onMount } from 'svelte';
-  import { shownavlinks } from './vars.d';
-  import { activePage } from './vars.d';
-	import Leaderboard from './leaderboard/+page.svelte';
-	import About from './about/+page.svelte';
+  import { auth } from './vars.d';
   import { apiData } from '../services/my42data';
+  import { waitingD } from './vars.d';
 
-  // activePage.set("home") 
+  let authenticated=false;
+	auth.subscribe(value => {
+		authenticated = value;
+	});
 
-  let currentPage;
-  $: {
-      const page = $activePage;
-      switch (page) {
-          case 'home':
-              currentPage = Home;
-              break;
-          case 'profile':
-              currentPage = Profile;
-              break;
-          case 'leaderboard':
-              currentPage = Leaderboard;
-              break;
-          case 'about':
-              currentPage = About;
-              break;
-          case 'friends':
-              currentPage = Friends;
-              break;
-          default:
-              currentPage = null;
-      }
-  }
+  let waiting=true;
+	waitingD.subscribe(value => {
+		waiting = value;
+	});
   
-  let authenticated = false; // ALERT: Must be in false
-  let waiting = true;
-
   onMount(async () => {
-    
-    await axios.get("http://localhost:3000/me",{withCredentials: true})
-    .then(
-      res => {
-        if(res.status === 200)
-        {
-          waiting = false;
-          authenticated = true;
-          shownavlinks.set(true);
-        }
-          
-      }
-    )
-    .catch(err => {
-        waiting = false;
-        console.log(err)
-    })
+
   })
 
 </script>

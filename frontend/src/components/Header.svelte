@@ -24,22 +24,21 @@
   <button class="nohover-btn" on:click={() => {activePage.set("home")}}><img src={ponglogo} alt="pongcendence"></button>
   {#if showNavs}
   <div class="links">
-    <div class="nav-links">
+    <div  class="nav-links">
       <img src="" alt="">
       <button class="nohover-btn" on:click={() => {activeChat.set(!showchat)}}>Friends</button>
       <!-- <a href="/friends">Friends</a> -->
     </div>
-    <div class="nav-links">
-      <img src="/" alt="">
-      <!-- <button on:click={() => {activePage.set("leaderboard")}}>Leaderboard</button> -->
-      <a  href="/leaderboard">Leaderboard</a>
-    </div>
-    <div class="nav-links">
-      <img src="" alt="">
-      <!-- <button on:click={() => {activePage.set("about")}}>About</button> -->
-      <a  href="/about">About</a>
-
-    </div>
+    <a  class="nav-links" href="/leaderboard">
+        <img src="/" alt="">
+        <!-- <button on:click={() => {activePage.set("leaderboard")}}>Leaderboard</button> -->
+        Leaderboard
+    </a>
+    <a class="nav-links" href="/about">
+        <img src="" alt="">
+        <!-- <button on:click={() => {activePage.set("about")}}>About</button> -->
+        About
+    </a>
   </div>
   <!-- <button class="nohover-btn" on:click={() => {activePage.set("profile")}}> -->
   <a href="/profile">

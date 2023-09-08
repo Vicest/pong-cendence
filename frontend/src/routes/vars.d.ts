@@ -6,8 +6,8 @@
 import { writable } from 'svelte/store';
 
 // Define the shownavlinks store
-const createShownavlinks = () => {
-  const { subscribe, set } = writable(false);
+const createBooleanVar = (state) => {
+  const { subscribe, set } = writable(state);
 
   return {
     subscribe,
@@ -15,7 +15,38 @@ const createShownavlinks = () => {
   };
 };
 
-export const activePage = writable('home'); 
-export const activeChat = createShownavlinks();
+export const activePage = writable('home')
 
-export const shownavlinks = createShownavlinks();
+export const activeChat = createBooleanVar(false);
+
+export const shownavlinks = createBooleanVar(false);
+
+export const auth = createBooleanVar(false);
+
+export const waitingD = createBooleanVar(true);
+
+
+// activePage.set("home") 
+// let currentPage;
+// $: {
+//     const page = $activePage;
+//     switch (page) {
+//         case 'home':
+//             currentPage = Home;
+//             break;
+//         case 'profile':
+//             currentPage = Profile;
+//             break;
+//         case 'leaderboard':
+//             currentPage = Leaderboard;
+//             break;
+//         case 'about':
+//             currentPage = About;
+//             break;
+//         case 'friends':
+//             currentPage = Friends;
+//             break;
+//         default:
+//             currentPage = null;
+//     }
+// }
