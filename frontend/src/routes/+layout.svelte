@@ -17,10 +17,10 @@
 <style>
     @import './styles.css';
 
-.grey-layer {
+.active-grey-layer {
 
   /* position: block; */
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
 
@@ -36,17 +36,21 @@
 
 </style>
 
-<div class="app" >
-	<div id="header">
+<div class="app"  >
+	
+	<div id="header" >
 		<Header />
 	</div>
-	<div id="main">
+	<div style="height: 15vh;"></div>
+	<div  id="main">
 		{#if showFriendsPanel}
-  			<div class="grey-layer">
-				<Friends></Friends>
-			</div>
+		<div class:active-grey-layer={showFriendsPanel}>
+			<Friends></Friends>
+		</div>
 		{/if}
+		
 		<slot />
+
 	</div>
 	<div id="footer">
 		<Footer />

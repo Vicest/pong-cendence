@@ -89,6 +89,7 @@
 <style>
     /* @import './chat.css'; */
 	.chat-card{
+		z-index: 4;
 		position: fixed;
 		height: 72vh;
 		width: 50vw;

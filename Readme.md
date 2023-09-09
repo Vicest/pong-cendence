@@ -34,10 +34,9 @@
 ### BIBLIOGRAPHY
 
 https://programacionymas.com/blog/jwt-vs-cookies-y-sesiones
+
 https://github.com/sveltejs/vite-plugin-svelte/blob/main/docs/faq.md#where-should-i-put-my-global-styles
 
 # TODOS
 
- importar variable de servicio, en login y autenticarme con eso
- menu con paginas y history, no precargando componentes
- mover chat con transform: translate
+- 

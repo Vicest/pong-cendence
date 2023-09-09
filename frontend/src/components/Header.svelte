@@ -24,11 +24,11 @@
   <button class="nohover-btn" on:click={() => {activePage.set("home")}}><img src={ponglogo} alt="pongcendence"></button>
   {#if showNavs}
   <div class="links">
-    <a href="/" class="nav-links" class:active-button={showchat} on:click={() => {activeChat.set(!showchat)}}>
+    <button  class="nav-links" class:active-button={showchat} on:click={() => {activeChat.set(!showchat)}}>
       <img src="" alt="">
       Friends
       <!-- <a href="/friends">Friends</a> -->
-    </a>
+    </button>
     <a  class="nav-links" href="/leaderboard">
         <img src="/" alt="">
         <!-- <button on:click={() => {activePage.set("leaderboard")}}>Leaderboard</button> -->
