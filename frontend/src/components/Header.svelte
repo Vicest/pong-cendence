@@ -24,11 +24,11 @@
   <button class="nohover-btn" on:click={() => {activePage.set("home")}}><img src={ponglogo} alt="pongcendence"></button>
   {#if showNavs}
   <div class="links">
-    <div  class="nav-links">
+    <a href="/" class="nav-links" class:active-button={showchat} on:click={() => {activeChat.set(!showchat)}}>
       <img src="" alt="">
-      <button class="nohover-btn" on:click={() => {activeChat.set(!showchat)}}>Friends</button>
+      Friends
       <!-- <a href="/friends">Friends</a> -->
-    </div>
+    </a>
     <a  class="nav-links" href="/leaderboard">
         <img src="/" alt="">
         <!-- <button on:click={() => {activePage.set("leaderboard")}}>Leaderboard</button> -->
@@ -49,6 +49,10 @@
 </div>
 
 <style>
+  .active-button{
+    background-color: #ddd;
+
+  }
   .topnav {
     background-color: rgb(0, 0, 0);
     min-height: 80px;

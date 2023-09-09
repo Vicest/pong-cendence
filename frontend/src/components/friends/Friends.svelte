@@ -15,17 +15,6 @@
 	let elemChat: HTMLElement;
 	let currentPerson: Person;
 	let displayChat = false;
-	//CSS PROPERTIES
-	let cssDeployChat;
-	$:{
-		 cssDeployChat={
-			widthlist: 100,
-			widthcard: 30,
-			leftcard: "4.8vw"
-
-		}
-	}
-
 	// currentPerson.feed = mockmessageFeed;
 
 
@@ -74,10 +63,7 @@
 	{
 		
 		displayChat = true;
-		cssDeployChat.widthlist =30;
-		cssDeployChat.widthcard = 90;
-		cssDeployChat.leftcard = "auto";
-		
+
 
 		// logic reorder server BBDD recieved mesages and sent messages
 		currentPerson = person;
@@ -106,13 +92,21 @@
 		position: fixed;
 		height: 72vh;
 		width: 50vw;
-		/* left: auto; */
+	}
+	.active-chat{
+
+		 grid-template-columns: 30% 1fr;
+		 
+	}
+	.active-friends{
+		width: 90vw !important;
+		left: auto;
 	}
 </style>
 
 <!-- Slot: Sandbox -->
-<section use:draggable class="card chat-card" style="width: {cssDeployChat.widthcard}vw;  left: {cssDeployChat.leftcard}">
-	<div class="chat w-full h-full grid grid-cols-1 lg:grid-cols-[{cssDeployChat.widthlist}%_1fr]">
+<section use:draggable={{bounds: 'parent'}} class:active-friends={displayChat} class="card chat-card" style="width: 30vw;  left: 4.8vw">
+	<div class:active-chat={displayChat} class="chat w-full h-full grid grid-cols-1 lg:grid-cols-[100%_1fr]">
 		<!-- Navigation -->
 		<div class="hidden lg:grid grid-rows-[auto_1fr_auto] border-r border-surface-500/30">
 			<!-- Header -->
