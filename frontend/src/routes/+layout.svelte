@@ -41,7 +41,7 @@
 	<div id="header" >
 		<Header />
 	</div>
-	<div style="height: 15vh;"></div>
+	<div style="height: 20vh;"></div>
 	<div  id="main">
 		{#if showFriendsPanel}
 		<div class:active-grey-layer={showFriendsPanel}>
