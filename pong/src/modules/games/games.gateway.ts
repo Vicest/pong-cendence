@@ -99,6 +99,7 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 			this.server.to(challengerUUID).socketsJoin(roomId);
 			this.logger.verbose('Games gateway sends roomId: ' + roomId)
 			this.server.to(roomId).emit('roomId', roomId);
+			//TODO update to have the gameserver handle the ids?
 			this.ogs.newMatch(roomId, [challengerUUID, opponentUUID]);
 			this.logger.log('Started match: ' + roomId)
 		}
@@ -128,16 +129,72 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		match:string,
 		actions:number //TODO Actions could be more/different
 	}): void {
-		this.logger.log("Bored, got player input: " + data.player)
+		//TODO(?) Shall the gateway be the one to emit?
 		this.ogs.update(this.server, data.match, data.player, data.actions);
 	}
 
-	//Check opponent availability
-	opponentAvailable(userId: string) {
-		//userExists();
-		//userId != userId
-		//!userInGame();
-		//!userInQueue();
-		return true;
+	@SubscribeMessage('watch')
+	onWatch(@ConnectedSocket() socket: Socket,
+					@MessageBody() data: {
+						targetType:string,
+						targetString:string,
+					}):void {
+		let matchKey:string | undefined = undefined;
+		switch (data.targetType) {
+			default: {
+				this.logger.warn(`Games gateway: watch unknown target ${data.targetType}`)
+				return
+			} case 'user': {
+				//TODO check if user exists?
+				matchKey = this.ogs.getMatchOf(data.targetString)
+				if (matchKey === undefined) {
+					this.logger.warn(`Games gateway: watch player ${data.targetString} not in a game`)
+					return
+				}
+				break
+			} case 'match': {//TODO FILL
+				//TODO Shall I consider filtering people spectating themselves...?
+				if (!this.ogs.matchIsWatchable(data.targetString)) {
+					this.logger.warn(`Games gateway: watch match ${data.targetString} does not exsist`)
+					return
+				}
+				matchKey = data.targetString
+				break
+			}
+		}
+		//TODO Join only on socket or the whole session?
+//		const spectatorUUID:string = socket.handshake.auth.token
+//		this.server.to(spectatorUUID).join(matchKey)
+		socket.join(matchKey)
 	}
+
+	//TODO unwatch
+//	@SubscribeMessage('')
+//	onWatch(@ConnectedSocket() socket: Socket,
+//					@MessageBody() data: {
+//						targetType:string,
+//						targetString:string,
+//					}):void {
+//		let matchKey:string | undefined = undefined;
+//		switch (data.targetType) {
+//			default: {
+//				this.logger.warn(`Games gateway: watch unknown target ${data.targetType}`)
+//				return
+//			} case 'user': {
+//				//TODO check if user exists?
+//				matchKey = this.ogs.getMatchOf(targetString)
+//				if (matchKey === undefined) {
+//					this.logger.warn(`Games gateway: watch player ${data.targetString} not in a game`)
+//					return
+//				}
+//				//TODO Shall I consider filtering people spectating themselves..
+//				break
+//			} case 'match': {//TODO FILL
+//				matchKey = this.ogs.getMatch(targetString)
+//				break
+//			}
+//		}
+//		const spectatorUUID:string = socket.handshake.auth.token
+//		this.server.to(spectatorUUID).join(matchKey)
+//	}
 }

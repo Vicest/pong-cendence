@@ -201,7 +201,7 @@ class Paddle {
 }
 
 export class Match {
-	constructor(players:[string, string], targetScore:[number, number] = [5, 5]) {//FIXME Tragett score
+	constructor(players:[string, string], targetScore:[number, number] = [10, 10]) {
 		//Constants
 		this.width = 10
 		this.height = 10
@@ -214,7 +214,7 @@ export class Match {
 			new Paddle(players[1], new Vector([this.width, startHeight]), this.paddleLength)
 		]
 		this.map = [
-			new LineSegment(new Vector([0, 0]), new Vector([this.width, 0]), false),//FIXME DEBUG
+			new LineSegment(new Vector([0, 0]), new Vector([this.width, 0]), false),
 			new LineSegment(new Vector([0, this.height]), new Vector([this.width, this.height]), false),
 		]
 		this.score = [0, 0]
@@ -243,7 +243,11 @@ export class Match {
 	*	-1: P1 scored a match point
 	*	-2: P2 scored a match point
 	*/
- //FIXME This logic right now is completely broken.
+	//FIXME This logic right now is incomplete.
+	//	-We need to check for the closest collision
+	//	-We need to apply momentum to the paddle collision
+	//	-Maybe place all collision checks in the same loop and in a separate function
+	//	-Repeat the collision loop until all movement is consumed, maybe emit maybe not.
 	public gameTick():number {
 		//FIXME annotate types
 		let chivato:boolean = false
@@ -263,14 +267,8 @@ export class Match {
 				//Rebuild the vector
 				this.ballVector = reflected.substract(lineIntersection.coords)
 				this.ballVector = this.ballVector.normalize().scale(ballSpeed)
-//------OLD FIXME
-				//FIXME use the right vector lenght
-//				this.ball.values = reflected.values
-//				this.ballVector = lineIntersection.coords.substract(this.ball)
-//				this.ballVector = this.ball.substract(lineIntersection.coords)
-//END OLD FIXME
 				chivato = true
-				break //FIXME get shortest distance colllision.
+				break //FIXME get shortest distance collision.
 			}
 		}
 		if (!chivato) {
@@ -296,25 +294,7 @@ export class Match {
 				}
 			}
 		}
-		/*
-		let intersects:boolean;
-		//TODO so... this is actually just a standard while?
-		do {
-			intersects = false;
-			//TODO Handle map and paddles differently
-			for (let wall of ([this.map, this.players[0].line, this.players[1].line]).flat()) {
-				if (wall.intersects(this.ball, this.ballVector)) {
-					//TODO, do something hold temporary ball and vector values.
-					//wall.rebound (probably rotations, go, math, go!)
-					//add[intersectionDistance, wall];
-					//Keep the min(intersectionDistance)
-					//TODO re include momentum
-					intersects = true;
-					break ;
-				}
-			}
-		} while (intersects *//* TODO && tmpBallDir.length > 0 *//*);
-		*/
+		//FIXME The chivato function feels odd within the logic.
 		//Unhindered move
 		if (!chivato) //DEBUG remove TODO
 			this.ball.values = this.ball.add(this.ballVector).values
