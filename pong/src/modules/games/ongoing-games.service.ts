@@ -15,8 +15,18 @@ export class OngoingGamesService {
 //		setInterval(() => { this.tick(); }, 250);//TODO set tickDelay as evironment?
 	}
 
-	public newMatch(matchKey: string, players: [string, string]): void {
+	public newMatch(matchKey:string, players:[string, string]): void {
 		this.games.set(matchKey, new Match(players))
+	}
+
+	public matchIsWatchable(matchKey:string):boolean {
+		this.logger.verbose(`Queried match: ${matchKey}-Watchable ${this.games.has(matchKey)}`)
+		return this.games.has(matchKey)
+	}
+
+	public getMatchOf(player:string):string {
+		//foreach find the match or retur undefined (maybe use array instead?? TODO
+		return ''
 	}
 
 	public update(gateway: Server, matchKey: string, player:string, actions: number): void {
@@ -55,20 +65,19 @@ export class OngoingGamesService {
 					default: {
 						this.logger.warn(`Unhandled match ${key} event '${updateEvent}'`)
 						return
-					}
-					case 0:
+					} case 0: {
 						return
-					case -1: {
+					} case -1: {
 						winner = match.players[0].id
 						loser = match.players[1].id
 						break
-					}
-					case -2: {
+					} case -2: {
 						loser = match.players[0].id
 						winner = match.players[1].id
 						break
 					}
 				}
+				//TODO emit to spectators as well. But only them.
 				gateway.to(winner).emit('win');
 				gateway.to(loser).emit('lose');
 				gateway.to(key).socketsLeave(key);
