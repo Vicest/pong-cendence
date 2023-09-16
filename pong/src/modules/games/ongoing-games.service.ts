@@ -24,9 +24,12 @@ export class OngoingGamesService {
 		return this.games.has(matchKey)
 	}
 
-	public getMatchOf(player:string):string {
-		//foreach find the match or retur undefined (maybe use array instead?? TODO
-		return ''
+	public getMatchOf(player:string):string | undefined {
+		for (let [key, match] of this.games) {
+			if (match.playing(player))
+				return key
+		}
+		return undefined
 	}
 
 	public update(gateway: Server, matchKey: string, player:string, actions: number): void {
@@ -57,7 +60,6 @@ export class OngoingGamesService {
 		this.games.forEach((match, key) => {
 			let updateEvent:number = match.gameTick()
 			gateway.to(key).emit('gameUpdate', match.status())
-			//TODO emit to watchers
 			{
 				let winner:string
 				let loser:string

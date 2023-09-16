@@ -105,24 +105,6 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		}
 	}
 
-	/*
-	@SubscribeMessage('joinMatch')
-	onJoinMatch(@ConnectedSocket() socket: Socket,
-						 @MessageBody() data: duelRequest): void {
-		if (!this.opponentAvailable(data.opponent))
-			console.log("Can't duel that user.");
-		let match:[string, string] = this.duelWaitingRoom.find((match) => match[]);
-		//if (match == undefined)
-		//	new duelWaitingRoom;
-		//else if (!match.awating(data.sender))
-		//	console.log("Can't duel that user.");
-		//else
-		//	new match(data.opponent, data.sender);
-		//	remove expectingDuel(match);
-		console.log(socket.id + " joined " + data);
-	}
-	*/
-
 	@SubscribeMessage('playerMoves')
 	onPlayerMoves(@MessageBody() data: {
 		player:string,
@@ -169,7 +151,7 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	//TODO unwatch
-//	@SubscribeMessage('')
+//	@SubscribeMessage('leave')
 //	onWatch(@ConnectedSocket() socket: Socket,
 //					@MessageBody() data: {
 //						targetType:string,
