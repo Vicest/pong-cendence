@@ -12,7 +12,7 @@ class LineSegment {
 	public constructor(origin:Point, end:Point, end_is_vector:boolean) {
 		this.origin_ = new Vector(origin.values)
 		this.direction_ = new Vector(end.values)
-		if (!end_is_vector) this.direction_ = this.direction_.substract(origin)
+		if (!end_is_vector) this.direction_ = this.direction_.subtract(origin)
 	}
 
 	get origin():Vector {
@@ -42,17 +42,17 @@ class LineSegment {
 //		return false;
 		return {
 			inSegment:(
-				inRange(collision.substract(origin).length(), 0, direction.length())
-				&& collision.substract(origin).dot(direction) > 0
-				&& inRange(collision.substract(this.origin).length(), 0, this.direction.length())
-				&& collision.substract(this.origin).dot(this.direction) > 0),
+				inRange(collision.subtract(origin).length(), 0, direction.length())
+				&& collision.subtract(origin).dot(direction) > 0
+				&& inRange(collision.subtract(this.origin).length(), 0, this.direction.length())
+				&& collision.subtract(this.origin).dot(this.direction) > 0),
 			coords:collision,
 		}
 	}
 
 	public reflect(incidencePoint:Point, source:Point):Point {
 		//TODO translation before reflection
-		let reflectedPoint:Point = new Vector(source.values).substract(incidencePoint)
+		let reflectedPoint:Point = new Vector(source.values).subtract(incidencePoint)
 		//----
 		//TODO other private function?
 		//TODO MATH
@@ -255,17 +255,17 @@ export class Match {
 			const lineIntersection = wall.intersection(this.ball, this.ballVector)
 			if (lineIntersection.inSegment) {
 				const reflected:Point = wall.reflect(lineIntersection.coords, this.ball)
-				const displacementToCollision:number = lineIntersection.coords.substract(this.ball).length()
+				const displacementToCollision:number = lineIntersection.coords.subtract(this.ball).length()
 				const displacementAfterCollision:number = this.ballVector.length() - displacementToCollision
 				const ballSpeed = this.ballVector.length()
 				//Go to collision
 				this.ball = this.ball.add(this.ballVector.normalize().scale(displacementToCollision))
-				this.ballVector = reflected.substract(lineIntersection.coords)
+				this.ballVector = reflected.subtract(lineIntersection.coords)
 				//Redirect after collision and move
 				this.ballVector = this.ballVector.normalize().scale(displacementAfterCollision)
 				this.ball = this.ball.add(this.ballVector)
 				//Rebuild the vector
-				this.ballVector = reflected.substract(lineIntersection.coords)
+				this.ballVector = reflected.subtract(lineIntersection.coords)
 				this.ballVector = this.ballVector.normalize().scale(ballSpeed)
 				chivato = true
 				break //FIXME get shortest distance collision.
@@ -277,17 +277,17 @@ export class Match {
 				const lineIntersection = paddle.intersection(this.ball, this.ballVector)
 				if (lineIntersection.inSegment) {
 					const reflected:Point = paddle.reflect(lineIntersection.coords, this.ball)
-					const displacementToCollision:number = lineIntersection.coords.substract(this.ball).length()
+					const displacementToCollision:number = lineIntersection.coords.subtract(this.ball).length()
 					const displacementAfterCollision:number = this.ballVector.length() - displacementToCollision
 					const ballSpeed = this.ballVector.length()
 					//Go to collision
 					this.ball = this.ball.add(this.ballVector.normalize().scale(displacementToCollision))
-					this.ballVector = reflected.substract(lineIntersection.coords)
+					this.ballVector = reflected.subtract(lineIntersection.coords)
 					//Redirect after collision and move
 					this.ballVector = this.ballVector.normalize().scale(displacementAfterCollision)
 					this.ball = this.ball.add(this.ballVector)
 					//Rebuild the vector
-					this.ballVector = reflected.substract(lineIntersection.coords)
+					this.ballVector = reflected.subtract(lineIntersection.coords)
 					this.ballVector = this.ballVector.normalize().scale(ballSpeed)
 					//
 					chivato = true

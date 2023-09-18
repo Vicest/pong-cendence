@@ -1,53 +1,9 @@
 <script lang="ts">
-    import { isAuth } from "../../services/isAuth";
+    import { isAuth } from "../../services/isAuth"
     isAuth();
-    import { io } from "socket.io-client";
-
-
-    function duel() {
-        let opponent = prompt("Duel whom?")
-        socket.emit('challenge', opponent)
-    }
-
-//TODO Meaningful names like watch player/game
-    function watch1() {
-      let player = prompt("Player id to spectate:")
-      socket.emit('watch', {targetType:'user', targetString:player})
-    }
-
-    function watch2() {
-      let match = prompt("Match id to spectate:")
-      socket.emit('watch', {targetType:'match', targetString:match})
-    }
-//TODO END
-
-    function resetCanvas() {
-        const canvas = document.querySelector("canvas") as HTMLCanvasElement;
-        const ctx = canvas.getContext("2d")
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-    }
-    function draw(match) {
-        const canvas = document.querySelector("canvas") as HTMLCanvasElement;
-        const ctx = canvas.getContext("2d")
-        document.getElementById("test").innerHTML="Width: "+canvas.width+"|Height: "+canvas.height
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-        ctx.fillStyle = "#117711"
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        ctx.fillStyle = "#FF1111" //PADDLES
-        ctx.fillRect(0, match.paddlePosition[0] * 50,
-            1 * 50, match.paddleSize[0] * 50)
-        ctx.fillRect(600, match.paddlePosition[1] * 50,
-            1 * 50, match.paddleSize[1] * 50)
-        ctx.fillStyle = "#1111FF" //BALL
-        ctx.fillRect((match.ball[0]+1) * 50, (match.ball[1]) * 50,
-            1 * 50, 1 * 50)
-    }
+    import { io } from "socket.io-client"
 
     let myToken = (Math.random() + 1).toString(36).substring(7)
-    let matchString = ""
-    let score ="";
     let socket = io('http://localhost:5000',{
         autoConnect: false,
         auth: {
@@ -57,62 +13,46 @@
 
     if (socket.disconnected) {
         socket.connect()
-        function eventListenerWrapper(mySocket) {
-            document.addEventListener('keydown', (event) => {
-                keyboardInput(event, mySocket)
-            })
-        }
-        eventListenerWrapper(socket)
     }
+
+//Chat
+    socket.on('recvMsg', (message) => {
+        const receivedMessagesDiv = document.getElementById('receivedMessages');
+        const messageElement = document.createElement('p');
+        messageElement.textContent = `From: ${message.sender}, Message: ${message.msg}`;
+        receivedMessagesDiv.appendChild(messageElement);
+        console.log("Devuelve un checkeo con -> "+ message.sender +" - " + message.msg )
+        socket.emit('check_message',  { receptorUUID: message.sender, "msg":message.msg })
+    })
+
+    socket.on('checkMsg', (message) => {
+        const receivedMessagesDiv = document.getElementById('receivedMessages');
+        const messageElement = document.createElement('p');
+        messageElement.textContent = `Yo to: ${message.sender}, Message: ${message.msg}`;
+        receivedMessagesDiv.appendChild(messageElement);
+    })
+//Chat???
+//    document.getElementById('sendButton').addEventListener('click', () => {
+//        const receptorInput = document.getElementById('receptor');
+//        const msgInput = document.getElementById('msg_text');
+//
+//        const receptor = receptorInput.value;
+//        const msg = msgInput.value;
+//        console.log("MENSAJE ESPECIAL DE "+ receptor +" :"+msg )
+//        // Emit the 'mensaje' event with the collected data
+//        socket.emit('mensaje', { receptorUUID: receptor, "msg":msg });
+//    });
 
 //Auto-accept / Events
     socket.on("connect_error", (err) => {
       console.log(`connect_error due to ${err.message}`);
     });
-
-    socket.on('beChallenged', (challenger) => {
-        socket.emit('challengeResponse', { accept:true, opponent:challenger })
-    })
-
-    socket.on('roomId', (room) => {
-        matchString = room;
-    })
-
-    socket.on('gameUpdate', (matchStatus) => {
-        draw(matchStatus);
-        score = matchStatus.score[0]+'-'+matchStatus.score[1];
-    })
-
-    socket.on('win', () => {
-        score = 'You WIN!';
-        resetCanvas();
-    })
-
-    socket.on('lose', () => {
-        score = 'You LOSE!';
-        resetCanvas();
-    })
-
-    //INPUT
-    function keyboardInput(event, emitter) {
-        var userInput = { player:myToken, match:matchString, actions:-1 }
-        switch (event.key) {
-            case 'x':
-                userInput.actions = 0;
-                break;
-            case 'z':
-                userInput.actions = 1;
-                break;
-            default: return;
-        }
-        emitter.emit('playerMoves', userInput) //TODO
-    }
 </script>
 
 
 <style>
     @import 'home.css';
-    .duel-button{
+    .duel-button {
         width: 120px;
         height: 120px;
         font-size: 300;
@@ -121,21 +61,47 @@
         color: purple;
         border-radius: 30px;
     }
+
+    .container {
+        overflow: auto; /* Clearfix */
+    }
+
+    .float-right {
+        float: right;
+        width: 50%; /* Ajusta el ancho según sea necesario */
+        padding: 10px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+    }
+
+    .received-messages {
+        overflow: auto; /* Clearfix */
+        padding: 10px;
+        width: 50%; /* Ajusta el ancho según sea necesario */
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        background-color: #f9f9f9;
+    }
 </style>
 
 <home>
-    <!-- <h1 style="font-size: 80px;">GAME</h1> -->
-    <button class="duel-button" on:click={duel}>Duel!</button>
-    <button class="duel-button" on:click={watch1}>Watch player</button>
-    <button class="duel-button" on:click={watch2}>Watch game</button>
-    <p></p>
-    <button id="myToken" type="button">{myToken}</button>
-    <p>ROOM</p>
-    <p id="room">{matchString}</p>
-    <p>TEST</p>
-    <p id="test"></p>
-    <p>SCORE</p>
-    <p id="score">{score}</p>
-    <!-- (10 + 3) * 50 -->
-    <canvas id="match" height=550 width=650></canvas>
+    <div class="container">
+      <div class="float-right">
+        <form id="messageForm">
+          <label for="receptor">ID del Receptor:</label>
+          <input type="text" id="receptor" name="receptor" required><br><br>
+
+          <label for="msg">Mensaje:</label>
+          <input type="text" id="msg_text" name="msg_text" required><br><br>
+
+          <button class="duel-button" id="sendButton">Enviar Mensaje!</button>
+          <!--          <button type="button" id="sendButton">Enviar Mensaje</button>-->
+          </form>
+      </div>
+    </div>
+    <div>
+      <h1>Mensajes Recibidos</h1>
+      <div id="receivedMessages"></div>
+    </div>
 </home>
