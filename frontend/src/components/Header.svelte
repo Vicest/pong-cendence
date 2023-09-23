@@ -29,6 +29,11 @@
       Friends
       <!-- <a href="/friends">Friends</a> -->
     </button>
+    <a  class="nav-links" href="/arena">
+        <img src="/" alt="">
+        <!-- <button on:click={() => {activePage.set("leaderboard")}}>Leaderboard</button> -->
+        Arena
+    </a>
     <a  class="nav-links" href="/leaderboard">
         <img src="/" alt="">
         <!-- <button on:click={() => {activePage.set("leaderboard")}}>Leaderboard</button> -->

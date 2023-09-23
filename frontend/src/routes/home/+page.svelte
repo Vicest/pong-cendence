@@ -74,15 +74,6 @@
         border: 1px solid #ccc;
         background-color: #f9f9f9;
     }
-
-    .received-messages {
-        overflow: auto; /* Clearfix */
-        padding: 10px;
-        width: 50%; /* Ajusta el ancho según sea necesario */
-        box-sizing: border-box;
-        border: 1px solid #ccc;
-        background-color: #f9f9f9;
-    }
 </style>
 
 <home>
