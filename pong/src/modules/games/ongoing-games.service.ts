@@ -8,15 +8,24 @@ import { Server } from 'socket.io'
 @Injectable()
 export class OngoingGamesService {
 	public constructor() {
-		this.games = new Map<string, Match>()
+		this.games_ = new Map<string, Match>()
 		this.logger = new Logger('Ongoing Games')
 		this.logger.log('Ongoing Games initialized')
 //FIXME I moved this to the GateWay
 //		setInterval(() => { this.tick(); }, 250);//TODO set tickDelay as evironment?
 	}
 
+	get games():Map<string, Match> {
+		return this.games_
+	}
+
+	get gamesCpy():Map<string, Match> {
+		return new Map(this.games_)
+	}
+
 	public newMatch(matchKey:string, players:[string, string]): void {
 		this.games.set(matchKey, new Match(players))
+		this.logger.verbose(`New game: game ${matchKey}`)
 	}
 
 	public matchIsWatchable(matchKey:string):boolean {
@@ -34,6 +43,7 @@ export class OngoingGamesService {
 
 	public update(gateway: Server, matchKey: string, player:string, actions: number): void {
 		let match:Match | undefined = this.games.get(matchKey)
+		this.logger.verbose(`Game update: game ${matchKey} request`)
 		if (match === undefined) {
 			this.logger.warn(`Game update: game ${matchKey} does not exist`)
 			return
@@ -51,6 +61,7 @@ export class OngoingGamesService {
 		//FIXME ÑAPA END
 		//FIXME ÑAPA
 		this.games.forEach((match, key) => {
+			this.logger.verbose(`Game update to ${key}`)
 			gateway.to(key).emit('gameUpdate', match.status())
 		})
 		//FIXME ÑAPA END
@@ -58,6 +69,7 @@ export class OngoingGamesService {
 
 	public tick(gateway: Server): void {
 		this.games.forEach((match, key) => {
+			this.logger.verbose(`Game tick: ${key}`)
 			let updateEvent:number = match.gameTick()
 			gateway.to(key).emit('gameUpdate', match.status())
 			{
@@ -90,5 +102,5 @@ export class OngoingGamesService {
 	}
 
 	private logger: Logger;
-	private games: Map<string, Match>;
+	private games_: Map<string, Match>;
 }

@@ -92,15 +92,15 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		//Create match on an accept.
 		//FIXME Check that the opponent actually got challenged, maybe subscribe to message once or somesuch
 		this.logger.verbose(challengerUUID + ' got response from ' + opponentUUID + ': ' + response.accept)
-		this.server.in(opponentUUID).socketsLeave(challengerUUID + 'challengers');
+		this.server.in(opponentUUID).socketsLeave(challengerUUID + 'challengers')
 		if (response.accept) {
 			const roomId:string = opponentUUID + challengerUUID + 'match'
-			this.server.to(opponentUUID).socketsJoin(roomId);
-			this.server.to(challengerUUID).socketsJoin(roomId);
+			this.server.to(opponentUUID).socketsJoin(roomId)
+			this.server.to(challengerUUID).socketsJoin(roomId)
 			this.logger.verbose('Games gateway sends roomId: ' + roomId)
-			this.server.to(roomId).emit('roomId', roomId);
+			this.server.to(roomId).emit('roomId', roomId)
 			//TODO update to have the gameserver handle the ids?
-			this.ogs.newMatch(roomId, [challengerUUID, opponentUUID]);
+			this.ogs.newMatch(roomId, [challengerUUID, opponentUUID])
 			this.logger.log('Started match: ' + roomId)
 		}
 	}
