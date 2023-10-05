@@ -69,7 +69,7 @@ export class OngoingGamesService {
 
 	public tick(gateway: Server): void {
 		this.games.forEach((match, key) => {
-			this.logger.verbose(`Game tick: ${key}`)
+			//this.logger.verbose(`Game tick: ${key}`)
 			let updateEvent:number = match.gameTick()
 			gateway.to(key).emit('gameUpdate', match.status())
 			{

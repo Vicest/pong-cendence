@@ -150,33 +150,11 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		socket.join(matchKey)
 	}
 
-	//TODO unwatch
-//	@SubscribeMessage('leave')
-//	onWatch(@ConnectedSocket() socket: Socket,
-//					@MessageBody() data: {
-//						targetType:string,
-//						targetString:string,
-//					}):void {
-//		let matchKey:string | undefined = undefined;
-//		switch (data.targetType) {
-//			default: {
-//				this.logger.warn(`Games gateway: watch unknown target ${data.targetType}`)
-//				return
-//			} case 'user': {
-//				//TODO check if user exists?
-//				matchKey = this.ogs.getMatchOf(targetString)
-//				if (matchKey === undefined) {
-//					this.logger.warn(`Games gateway: watch player ${data.targetString} not in a game`)
-//					return
-//				}
-//				//TODO Shall I consider filtering people spectating themselves..
-//				break
-//			} case 'match': {//TODO FILL
-//				matchKey = this.ogs.getMatch(targetString)
-//				break
-//			}
-//		}
-//		const spectatorUUID:string = socket.handshake.auth.token
-//		this.server.to(spectatorUUID).join(matchKey)
-//	}
+	@SubscribeMessage('stopWatching')
+	onStopWatching(@ConnectedSocket() socket:Socket, @MessageBody() targetString:string): void {
+		const spectatorUUID:string = socket.handshake.auth.token
+		if (!socket.rooms.has(targetString))
+			this.logger.warn(`Games gateway: stop watching ${spectatorUUID} on ${socket.id} is not watching ${targetString}`)
+		socket.leave(targetString)
+	}
 }

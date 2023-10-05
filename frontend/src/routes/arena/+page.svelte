@@ -1,4 +1,6 @@
 <script lang="ts">
+    //import { Card } from 'sveltestrap'
+
     import { isAuth } from "../../services/isAuth"
     isAuth();
     import { io } from "socket.io-client"
@@ -11,28 +13,19 @@
     };
 
 
-    let websocks = "Nada"
+    //TODO Is this is a component?, place it right, I guess
+    //Component card
+    //Store the matches.
+
     //FIXME I should handle requests better.
-    let matches = [];///*:{name:string,score:string}[]*/ = getLiveMatches()
+    let matches:any = [];///*:{name:string,score:string}[]*/ = getLiveMatches()
     //FIXME Hardcoded remote route
-    
+     
     //async function getLiveMatches() {
       //await
-    setInterval(() => {
-      fetch('http://localhost:5000/games/match_list', {
-        method:"GET"
-      }).then((response:Response) => {
-        if (!response.ok)
-          throw new Error("Could not update match list")
-        return response.json()
-      }).then((response_json) => {
-        matches=response_json
-        console.log(response_json)
-      }).catch((error) => {
-        console.log(error)
-      })
-    },
-    5000)
+    setInterval(async () => {
+      matches = await (await fetch('http://localhost:5000/games/match_list')).json()
+    }, 5000)
     //ENDFIXME
     
 
@@ -48,15 +41,25 @@
         socket.emit('challenge', opponent)
     }
 
+    let currentMatch:string = '';
+    //TODO WbP is not meant to exist.
     function watchByPlayer():void {
       let player:string = prompt("Player id to spectate:")
+      stopWatching(currentMatch)
       status = States.spectating
       socket.emit('watch', {targetType:'user', targetString:player})
     }
-    function watchByMatch():void {
-      let match:string = prompt("Match id to spectate:")
-      status = States.spectating
-      socket.emit('watch', {targetType:'match', targetString:match})
+
+    function watchByMatch(matchString:string):void {
+      stopWatching(currentMatch)
+      currentMatch = matchString
+      status = States.spectating //TODO Check if the watch actually happened
+      socket.emit('watch', {targetType:'match', targetString:matchString})
+    }
+
+    function stopWatching(matchString:string):void {
+      status = States.unfocused
+      socket.emit('stopWatching', matchString)
     }
     //END FUNCS
 
@@ -110,12 +113,11 @@ socket.on("connect_error", (err) => {
     });
 
     socket.on('beChallenged', (challenger:string) => {
-      websocks = "Challlenged"
         socket.emit('challengeResponse', { accept:true, opponent:challenger })
     })
 
     //TODO name is game start
-    socket.on('roomId', (room:string) => {websocks = "playing"
+    socket.on('roomId', (room:string) => {
         status = States.playing
         matchString = room;
         document.addEventListener('keydown', (event) => {
@@ -124,22 +126,18 @@ socket.on("connect_error", (err) => {
     })
 
     socket.on('gameUpdate', (matchStatus) => {
-      websocks = "me llega la update"
         draw(matchStatus)
         score = matchStatus.score[0]+'-'+matchStatus.score[1]
     })
 
     socket.on('win', () => {
         score = 'You WIN!'
-      websocks = score
         resetCanvas()
         status = States.unfocused
     })
 
     socket.on('lose', () => {
-      websocks = score
         score = 'You LOSE!'
-      websocks = score
         resetCanvas();
         status = States.unfocused
     })
@@ -176,9 +174,9 @@ socket.on("connect_error", (err) => {
   /*TODO proper cards for matches*/
   .watch-card {
       width: 120px;
-      height: 40px;
+      height: 180px;
       font-size: 150;
-      background-color: yellow;
+      background-color: rgba(255, 255, 0, 0.6);
       border: 1px solid black;
       color: purple;
       border-radius: 10px;
@@ -190,31 +188,32 @@ socket.on("connect_error", (err) => {
 </style>
 
 <arena>
-    <div>{myToken}<br>{matchString}<br>CHIVATO:  {websocks}</div>
+    <div>{myToken}<br>{matchString}</div>
     <div class="container" title="Live Games">
       {#each matches as match}
-        <button class="watch-card">{match.room}-{match.score}</button>
+        <button class="watch-card" on:click={() => watchByMatch(match.room)}>
+          {match.room}<br>vs<br>{match.room}<br><br>{match.score}</button>
+          <!--
+      {#each matches as [matchKey, match] (matchKey)}
+        <button class="watch-card" on:click={() => watchByMatch(matchKey)}>
+          {match.players[0].id_}<br>vs<br>{match.players[1].id_}<br><br>{match.score}</button> 
+          -->
       {:else}
         <div>No games running right now!</div>
       {/each}
     </div>
+    <!--Refactor the logic behind this-->
     <div>
       {#if status === States.unfocused}
         <button class="duel-button" on:click={duel}>Duel!</button>
         <button class="duel-button" on:click={queueUp}>Play</button>
         <button class="duel-button" on:click={watchByPlayer}>Watch player</button>
-        <button class="duel-button" on:click={watchByMatch}>Watch game</button>
-      {:else if status === States.playing}
-        <div>
-          <!-- (10 + 3) * 50 -->
-          <canvas id="match" height=550 width=650></canvas>
-        </div>
-      {:else if status === States.queueing}
-        <p>In queue for XX:XX.</p>
-      {:else if status === States.spectating}
-        <p>This is pretty much spectating but without playing!!</p><br>
+      {:else if status === States.playing || status === States.spectating}
         <!-- (10 + 3) * 50 -->
         <canvas id="match" height=550 width=650></canvas>
+      {:else if status === States.queueing}
+        <p>In queue for XX:XX.</p>
+        <p>TODO: Should we place an animation or something here? A timer?</p>
       {/if}
     </div>
 </arena>

@@ -217,12 +217,16 @@ export class Match {
 			new LineSegment(new Vector([0, 0]), new Vector([this.width, 0]), false),
 			new LineSegment(new Vector([0, this.height]), new Vector([this.width, this.height]), false),
 		]
-		this.score = [0, 0]
+		this._score = [0, 0]
 		this.ball = new Vector([0, 0])
 		this.ballVector = new Vector([0, 0])
 		this.newBall()
 	}
 
+	get score() {
+		return this._score
+	}
+	
 	//TODO do it with the player move range
 	public playerInput(player: string, distance: number) {
 		if (this.players[0].id == player)
@@ -301,16 +305,16 @@ export class Match {
 		//FIXME
 		//FIXME Paddles shold reposition to center.
 		if (this.ball.at(0) < 0) { //P1 TODO clean
-			this.score[1] += 1;
-			if (this.score[1] == this.winScore[1]) {
+			this._score[1] += 1;
+			if (this._score[1] == this.winScore[1]) {
 				return -2;
 			} else {
 				this.newBall();
 				return 0;
 			}
 		} else if (this.ball.at(0) > this.width) { //P2 TODO clean
-			this.score[0] += 1;
-			if (this.score[0] == this.winScore[0]) {
+			this._score[0] += 1;
+			if (this._score[0] == this.winScore[0]) {
 				return -1;
 			} else {
 				this.newBall();
@@ -339,7 +343,7 @@ export class Match {
 //		retStatus.paddleSize = [(this.players[0]).size, (this.players[1]).size]
 //		retStatus.paddleSize = this.ball
 		retStatus.ball = [this.ball.at(0), this.ball.at(1)]
-		retStatus.score = this.score
+		retStatus.score = this._score
 		return retStatus
 	}
 
@@ -353,7 +357,7 @@ export class Match {
 	public players:[Paddle, Paddle]
 	private ball:Point
 	private ballVector:Vector
-	private score:[number, number]
+	private _score:[number, number]
 
 	//TODO private point
 	private newBall():void {

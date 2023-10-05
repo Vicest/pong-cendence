@@ -7,18 +7,15 @@ export class OngoingGamesController {
 	constructor(private ogs:OngoingGamesService) {}
 
 	@Get('match_list')
-	match_list() {
-		return this.ogs.gamesCpy
-	}
+	async match_list() {
+		//TODO Maybe transfer less. Maybe use a ws to send an update?
+		let matchInfo:{room:string,score:[number,number]}[] = Array.from(this.ogs.games,
+			([key, value]) => {
+				let item:{room:string,score:[number,number]} = {room:key, score:value.score};
+				return item
+			})
 
-	@Get('mock_list')
-	mock_list() {
-		//MOCKING Match list FIXME
-		return [
-			{room:'game1', score:'4-2'},
-			{room:'game2', score:'0-3'},
-			{room:'game3', score:'6-5'},
-			{room:'game4', score:'1-4'},
-		]
+		console.log("Back: ", matchInfo)
+		return matchInfo
 	}
 }
