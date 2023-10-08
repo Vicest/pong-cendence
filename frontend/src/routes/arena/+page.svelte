@@ -12,7 +12,6 @@
       playing,
     };
 
-
     //TODO Is this is a component?, place it right, I guess
     //Component card
     //Store the matches.
@@ -31,7 +30,14 @@
 
     //TODO Should I keep utility funtions in a separate file to avoid cluttering the logic?
     //TODO 2, Mybe change prompt for input, way cleaner, dunno if worth the change for debug purposes
-    function queueUp():void {
+    async function queueUp() {
+      console.log("a: ", myToken, "b: ", myRating, "JSONed: ", JSON.stringify({user:myToken, rating:myRating}))
+      await fetch('http://localhost:5000/queue',
+      {
+        method:'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user:myToken, rating:myRating})
+      })
       status = States.queueing
       return //TODO Call backend
     }
@@ -91,7 +97,9 @@
 let matchString:string = ''
 let score:string =  ''
 let status:States = States.unfocused
+//FIXME Some debug temporary variables
 let myToken = (Math.random() + 1).toString(36).substring(7)
+let myRating = Math.random()
 let socket = io('http://localhost:5000',{
     autoConnect: false,
     auth: {
@@ -171,6 +179,11 @@ socket.on("connect_error", (err) => {
       border-radius: 30px;
   }
 
+  /*TPM*/
+  input {
+      background-color: #7e0808;
+  }
+
   /*TODO proper cards for matches*/
   .watch-card {
       width: 120px;
@@ -189,6 +202,8 @@ socket.on("connect_error", (err) => {
 
 <arena>
     <div>{myToken}<br>{matchString}</div>
+    <input disabled type="text" bind:value={myToken}>
+    <input type="text" bind:value={myRating}>
     <div class="container" title="Live Games">
       {#each matches as match}
         <button class="watch-card" on:click={() => watchByMatch(match.room)}>

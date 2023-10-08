@@ -5,13 +5,17 @@ export class QueuePlayer {
 		return 42
 	}
 
-	constructor() {
+	constructor(playerToken:string, playerRating:number) {
+		this.token_ = playerToken
+		this.rating_ = playerRating
 		this.joinTime_ = Date.now()
 		this.matchedWith_ = undefined;
 	}
 
 	get token():string { return this.token_ }
+	get rating():number { return this.rating_}
 	get matchedWith():string | undefined { return this.matchedWith_ }
+	set matchedWith(token:string | undefined) { this.matchedWith_ = token }
 
 //	public ...
 
@@ -22,7 +26,7 @@ export class QueuePlayer {
 	public ratingRange(timeStamp:number):[number, number] {
 		const timeElapsed = (timeStamp - this.joinTime_) / 1000
 		const rangeDilation:number = Math.min(timeElapsed * QueuePlayer.five_thirds, 300)
-		return [this.rating_ - rangeDilation, this.rating_ + rangeDilation]
+		return [this.rating_ - rangeDilation,  this.rating_ + rangeDilation]
 	}
 
 	private static readonly five_thirds = 5 / 3 // Rate per second: 100 / 60
