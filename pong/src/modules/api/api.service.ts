@@ -30,7 +30,7 @@ export class ApiService {
     return from(this.UserDBRepository.save(user));
   }
 
-  findOneUserById(id: number): Observable<User | null> {
+  findOneUserById(id: string): Observable<User | null> {
     return from(this.UserDBRepository.findOne({ where: { Id_Token: id } }));
   }
 
@@ -39,12 +39,12 @@ export class ApiService {
     return from(this.UserDBRepository.find());
   }
 
-  updateUser(id: number, user : User): Observable<UpdateResult>
+  updateUser(id: string, user : User): Observable<UpdateResult>
   {
     return from(this.UserDBRepository.update(id, user));
   }
 
-  deleteUser(id: number) : Observable<DeleteResult>
+  deleteUser(id: string) : Observable<DeleteResult>
   {
     return from(this.UserDBRepository.delete(id));
   }
