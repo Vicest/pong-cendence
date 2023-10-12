@@ -13,8 +13,8 @@ import { Entity, Column, PrimaryColumn, PrimaryGeneratedColumn} from 'typeorm';
 
 @Entity({name : 'Users'})
 export class User {
-  @PrimaryColumn({ type: 'integer'})
-  Id_Token: number;
+  @PrimaryColumn({ type: 'varchar', length : 20, nullable : false})
+  Id_Token: string;
 
   @Column({ type: 'varchar', length : 20, nullable : false})
   Nick: string;

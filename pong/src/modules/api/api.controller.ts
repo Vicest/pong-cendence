@@ -25,7 +25,7 @@ export class ApiController {
 
     // GET /users/:id --> { ... }
     @Get('/users/:id')
-    getOneUsers(@Param('id') id: number) : Observable<User | null>
+    getOneUsers(@Param('id') id: string) : Observable<User | null>
     {
         return this.apiService.findOneUserById(id);
     }
@@ -39,14 +39,14 @@ export class ApiController {
 
     // PUT /users/:id --> { ... }
     @Put('/users/:id')
-    updateUsers(@Param('id') id: number ,@Body() user : User ) : Observable<UpdateResult>
+    updateUsers(@Param('id') id: string ,@Body() user : User ) : Observable<UpdateResult>
     {
         return this.apiService.updateUser(id, user)
     }
 
     // DELETE /users/:id --> { ... }
     @Delete('/users/:id')
-    deleteUsers(@Param('id') id: number )  : Observable<DeleteResult>
+    deleteUsers(@Param('id') id: string )  : Observable<DeleteResult>
     {
         return this.apiService.deleteUser(id);
     }

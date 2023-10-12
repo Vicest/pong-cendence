@@ -10,6 +10,7 @@
             token: myToken
         }
     },)
+    let receivedMessage = '';
 
     if (socket.disconnected) {
         socket.connect()
@@ -17,35 +18,14 @@
 
 //Chat
     socket.on('recvMsg', (message) => {
-        const receivedMessagesDiv = document.getElementById('receivedMessages');
-        const messageElement = document.createElement('p');
-        messageElement.textContent = `From: ${message.sender}, Message: ${message.msg}`;
-        receivedMessagesDiv.appendChild(messageElement);
-        console.log("Devuelve un checkeo con -> "+ message.sender +" - " + message.msg )
-        socket.emit('check_message',  { receptorUUID: message.sender, "msg":message.msg })
+        console.log("MSG RECIBIDO!!!")
+        receivedMessage = message.msg;
     })
-
-    socket.on('checkMsg', (message) => {
-        const receivedMessagesDiv = document.getElementById('receivedMessages');
-        const messageElement = document.createElement('p');
-        messageElement.textContent = `Yo to: ${message.sender}, Message: ${message.msg}`;
-        receivedMessagesDiv.appendChild(messageElement);
-    })
-//Chat???
-//    document.getElementById('sendButton').addEventListener('click', () => {
-//        const receptorInput = document.getElementById('receptor');
-//        const msgInput = document.getElementById('msg_text');
-//
-//        const receptor = receptorInput.value;
-//        const msg = msgInput.value;
-//        console.log("MENSAJE ESPECIAL DE "+ receptor +" :"+msg )
-//        // Emit the 'mensaje' event with the collected data
-//        socket.emit('mensaje', { receptorUUID: receptor, "msg":msg });
-//    });
 
 //Auto-accept / Events
     socket.on("connect_error", (err) => {
       console.log(`connect_error due to ${err.message}`);
+      
     });
 </script>
 
@@ -77,22 +57,12 @@
 </style>
 
 <home>
-    <div class="container">
-      <div class="float-right">
-        <form id="messageForm">
-          <label for="receptor">ID del Receptor:</label>
-          <input type="text" id="receptor" name="receptor" required><br><br>
-
-          <label for="msg">Mensaje:</label>
-          <input type="text" id="msg_text" name="msg_text" required><br><br>
-
-          <button class="duel-button" id="sendButton">Enviar Mensaje!</button>
-          <!--          <button type="button" id="sendButton">Enviar Mensaje</button>-->
-          </form>
-      </div>
-    </div>
     <div>
       <h1>Mensajes Recibidos</h1>
-      <div id="receivedMessages"></div>
+      <div id="receivedMessages">
+        {#if receivedMessage}
+            <p>{receivedMessage}</p>
+        {/if}
+      </div> 
     </div>
 </home>

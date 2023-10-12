@@ -2,7 +2,15 @@
 	import { Avatar, CodeBlock, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	import axios from 'axios';
+    import { io } from 'socket.io-client';
 
+    // Inicializar la conexión de socket.io
+    let socket;
+
+    onMount(() => {
+        socket = io('http://localhost:5000'); // Reemplaza con la URL de tu servidor socket.io
+    });
+    
 
     export let messageFeed;
     export let currentPerson;
@@ -10,6 +18,7 @@
 
 
     let currentMessage = '';
+    let oauth_check = '';
 
     function getCurrentTimestamp(): string {
 		return new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
@@ -26,7 +35,13 @@
 		}
 	}
 
+    
+
     function addMessage(): void {
+
+        if (currentMessage == '')
+            return
+
 		const newMessage = {
 			id: messageFeed.length,
 			host: true,
@@ -39,8 +54,7 @@
 		
 		// Update the message feed
 		messageFeed = [...messageFeed, newMessage];
-		// Clear prompt
-		currentMessage = '';
+		
 		// Smooth scroll to bottom
 		// Timeout prevents race condition
 		setTimeout(() => {
@@ -49,13 +63,27 @@
 
 		// Here logic, send server messages and save on cache those messages
 		currentPerson.feed = messageFeed;
-		console.log("Current Person: ", currentPerson)
+		console.log("Current Person o no: ", currentPerson)
 
-		axios.post("http://localhost:3000/msg", newMessage)
-		.then(res => {})
-		.catch(err => {
-			console.log(err)
-		})
+        console.log("AMO MI VIDA, VOY A SACAR ESTA MIERDA")
+
+        //socket.handshake.auth.token
+
+        socket.emit('mensaje', {
+            receptorUUID: oauth_check,
+            emisorUUID: currentPerson.name,
+            date: `${getCurrentTimestamp()}`,
+            msg: currentMessage
+        });
+        //socket.emit('mensaje', { receptorUUID: receptor, "msg":msg });
+		// axios.post("http://localhost:3000/msg", newMessage)
+		// .then(res => {})
+		// .catch(err => {
+		// 	console.log(err)
+		// })
+
+        // Clear prompt
+		currentMessage = '';
 	}
 
 
@@ -95,6 +123,14 @@
     <section class="border-t border-surface-500/30 p-4">
         <div class="input-group input-group-divider grid-cols-[auto_1fr_auto] rounded-container-token">
             <button class="input-group-shim">+</button>
+            <textarea
+                bind:value={oauth_check}
+                class="bg-transparent border-0 ring-0"
+                name="prompt2"
+                id="prompt2"
+                placeholder="Write to send to oauth..."
+                rows="1"
+            />
             <textarea
                 bind:value={currentMessage}
                 class="bg-transparent border-0 ring-0"
