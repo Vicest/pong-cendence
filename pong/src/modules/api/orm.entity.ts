@@ -101,11 +101,11 @@ export class Match {
   @PrimaryGeneratedColumn({ type: 'integer'})
   id_match: number;
 
-  @Column({ type: 'integer', nullable : false})
-  user1: number;
+  @Column({ type: 'varchar', nullable : false})
+  user1: string;
 
-  @Column({ type: 'integer'})
-  user2: number;
+  @Column({ type: 'varchar'})
+  user2: string;
 
   @Column({ type: 'varchar', length : 20 })
   result: string;
@@ -113,8 +113,8 @@ export class Match {
   @Column({ type: 'integer'})
   mode: number;
 
-  @Column({ type: 'integer'})
-  date: Date;
+  @Column({ type: 'date'})
+  date: string;
 }
 
 /*

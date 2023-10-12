@@ -8,6 +8,7 @@ import {  User , Friend, Channels, Match, Subscription } from './orm.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([User, Friend, Channels, Match, Subscription])],
   controllers: [ApiController],
-  providers: [ApiService]
+  providers: [ApiService],
+  exports: [ApiService]
 })
 export class ApiModule {}

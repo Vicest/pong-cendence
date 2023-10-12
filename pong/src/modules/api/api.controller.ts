@@ -114,7 +114,7 @@ export class ApiController {
 
     // GET /match/:id
     @Get('/match/:id')
-    getMatch(@Param('id') id: number): Observable<Match[] | null> 
+    getMatch(@Param('id') id: string): Observable<Match[] | null> 
     {
         return this.apiService.getMatchesfromPlayer(id);
     }

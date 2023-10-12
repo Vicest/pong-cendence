@@ -104,7 +104,7 @@ export class ApiService {
     return from(this.matchDBRepository.save(match));
   }
 
-  getMatchesfromPlayer(id_user: number) : Observable<Match[] | null>
+  getMatchesfromPlayer(id_user: string) : Observable<Match[] | null>
   {
     return from(this.matchDBRepository.find(
         { 

@@ -1,13 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Match } from './classes/match/match'
-import { GamesGateway } from './games.gateway'
+import { ApiService } from '../api/api.service'
+import { Match as MatchDto } from '../api/orm.entity'
 
 //FIXME ÑAPA (?)
 import { Server } from 'socket.io'
 //
 @Injectable()
 export class OngoingGamesService {
-	public constructor() {
+	public constructor(private apiService:ApiService) {
 		this.games_ = new Map<string, Match>()
 		this.logger = new Logger('Ongoing Games')
 		this.logger.log('Ongoing Games initialized')
@@ -92,15 +93,26 @@ export class OngoingGamesService {
 					}
 				}
 				//TODO emit to spectators as well. But only them.
-				gateway.to(winner).emit('win');
-				gateway.to(loser).emit('lose');
-				gateway.to(key).socketsLeave(key);
-				this.games.delete(key);
-				//TODO send result to DB
+				gateway.to(winner).emit('win')
+				gateway.to(loser).emit('lose')
+				gateway.to(key).socketsLeave(key)
+				this.games.delete(key)
+				this.storeMatchResult(match)
 			}
 		})
 	}
 
 	private logger: Logger;
 	private games_: Map<string, Match>;
+
+	private storeMatchResult(finishedMatch:Match):void {//TODO send result to DB
+		let matchData:MatchDto = new MatchDto;
+		matchData.date = (new Date()).toISOString()
+		matchData.user1 = finishedMatch.players[0].id
+		matchData.user2 = finishedMatch.players[1].id
+		matchData.result = finishedMatch.score.toString().replace(',','-')
+		matchData.mode = 0
+		this.logger.debug(`Tick: Sent match ${matchData} update post request to DB`)
+		this.apiService.createMatch(matchData)
+	}
 }
