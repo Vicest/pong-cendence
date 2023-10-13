@@ -22,6 +22,20 @@ export class ApiService {
     private readonly subscriptionsDBRepository : Repository<Subscription>
   )
   {}
+
+  // LEADERBOARD
+  findLeaderboard(): Observable<User[]> {
+    return from(this.UserDBRepository.find({
+      select: {
+        Nick:true,
+        Rating:true
+      },
+      order: {
+        Rating:"DESC"
+      },
+      take:3
+    }));
+  }
   
   // USER
 

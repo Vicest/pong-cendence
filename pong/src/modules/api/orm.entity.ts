@@ -24,6 +24,9 @@ export class User {
 
   @Column({ type: 'boolean', nullable : false})
   Using_F2A: boolean;
+
+  @Column({ type: 'integer', nullable : false})
+  Rating: number;
 }
 
 /*

@@ -10,11 +10,13 @@ export class ApiController {
 
     constructor(private readonly apiService: ApiService){}
 
-    @Get()
-    getApi()
+    //TODO ?IS THIS TEMPORARY?
+    @Get('/leaderboard')
+    getLeaderboard() : Observable<User[]>
     {
-        return ["Prueba" , "Esto es una prueba"];
+        return this.apiService.findLeaderboard();
     }
+
     /*          USERS           */
     // GET /users --> { ... }
     @Get('/users')
