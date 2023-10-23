@@ -1,0 +1,58 @@
+version: '3.6'
+services:
+ postgres:
+  container_name: postgres
+  environment:
+   - POSTGRES_USER=postgres
+   - POSTGRES_PASSWORD=postgress
+   - POSTGRES_DB=transcendence
+  networks:
+    - net
+  restart: always
+  image: postgres:latest
+  volumes:
+    - ./postgres-data:/var/lib/postgresql/data
+  ports:
+    - 5432:5432
+
+ adminer:
+  image: adminer
+  networks:
+   - net
+  restart: always
+  ports:
+   - 8080:8080
+
+ rabbitmq:
+  container_name: rabbitmq
+  networks:
+    - net
+  restart: always
+  image: rabbitmq:3-management
+  volumes:
+    - ./rabbit/data:/var/lib/rabbitmq
+    - ./rabbit/config:/etc/rabbitmq
+#    - ./rabbit/log:/var/log/rabbitmq
+  ports:
+    - 5672:5672
+    - 15672:15672
+
+ redis:
+  image: redis:latest
+  restart: always
+  ports:
+    - "6379:6379"
+  networks:
+    - net
+  volumes:
+    - ./redis/dаta:/root/redis
+    - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+  environment:
+    - REDIS_PASSWORD=transcendence
+    - REDIS_PORT=6379
+    - REDIS_DATABASES=16
+ 
+
+networks:
+  net:
+    driver: bridge
