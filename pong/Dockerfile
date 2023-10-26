@@ -1,15 +1,13 @@
-FROM node:lts-alpine
+FROM node:alpine
 
-WORKDIR /backend
-#COPY ./tools/package*.json ./ TODO REBUILD PACKAGE-LOCK
-COPY package.json ./
+WORKDIR /usr/src/backend
 
+COPY package.json tsconfig.json .prettierrc .
+
+RUN npm update
 RUN npm install
-RUN npm -g update
-RUN npm install @nestjs/typeorm typeorm pg
-RUN npm install -g typescript
+#RUN npm install @nestjs/typeorm typeorm pg
+#RUN npm install -g typescript
 
-COPY . /backend
-
-RUN npm run build
+#RUN npm run build
 ENTRYPOINT [ "npm", "run", "start:debug" ]

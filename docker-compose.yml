@@ -9,7 +9,7 @@ services:
     ports:
     - "4200:4200"
     restart: always
-  
+
   back:
     container_name: backend-service-container
     build: ./backend
@@ -24,7 +24,7 @@ services:
     container_name: pong-service-container
     image: "pong_img"
     volumes:
-    -  ./pong/src:/pong/src
+    -  ./pong/src:/usr/src/backend/src
     expose:
       - "5000"
     ports:
