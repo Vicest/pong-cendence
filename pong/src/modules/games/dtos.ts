@@ -20,14 +20,14 @@ export class MatchResultDto {
 //TODO define these somewhere else
 enum PongActions {
 	Up,
-	Down,
+	Down
 }
 
 export class PlayerMovesDto {
-//	timestamp: number;
+	//	timestamp: number;
 	id: string;
 	match: string;
-//	match: number;
+	//	match: number;
 	direction: number;
 }
 
