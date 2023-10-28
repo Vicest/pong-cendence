@@ -1,4 +1,5 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { firstValueFrom } from 'rxjs';
 import { QueuePlayer } from './classes/queue-player';
 import { GamesGateway } from './games.gateway';
 import { ApiService } from '../api/api.service';
@@ -18,39 +19,31 @@ export class MatchMakingService {
 		}, 1000);
 	}
 
-	public joinQueue(login: string): boolean {
-		console.log(
-			'Player queue size: ' + this.queuedPlayers.length,
-			' joined: ',
-			login
+	public async joinQueue(login: string): Promise<boolean> {
+		//TODO use a logger
+		console.log(`Queue size: ${this.queuedPlayers.length}, joined: ${login}`);
+
+		const joiningPlayer: User | null = await firstValueFrom(
+			this.apiService.findOneUserById(login)
 		);
-		//FIXME find type const user:Observable<User|null> = this.apiService.findOneUserById(login)
-		//const user:any = "none"
-		this.apiService.findOneUserById(login).subscribe((user: User | null) => {
-			console.log('Obsérvame ésta: ', user);
-			if (user === null) {
-				console.log('User shoud not be null at this point');
-				return false;
-			}
-			const queuedPlayer = new QueuePlayer(login, user.Rating);
-			const joiningPlayer = (player: QueuePlayer): boolean => {
-				return player.token == queuedPlayer.token;
-			};
-			if (this.queuedPlayers.find(joiningPlayer) != undefined) return false;
-			this.queuedPlayers.push(queuedPlayer);
-			return true;
-		});
-		//TODO return values are broken now, yay FIXME
-		return false;
-		/*
-		if (user === null){
-			console.log("User shoud not be null at this point")
-			return false
-		} else {
-			console.log(user)
+		if (joiningPlayer === null) {
+			//TODO use a logger
+			console.log('User not found in database');
+			return false;
 		}
-		*/
-		//console.log(this.apiService.findOneUserById(login))
+
+		const queuedPlayer = new QueuePlayer(login, joiningPlayer.Rating);
+		if (
+			this.queuedPlayers.find((player: QueuePlayer): boolean => {
+				return player.token == queuedPlayer.token;
+			}) != undefined
+		) {
+			//TODO use a logger
+			console.log('User already in queue');
+			return false;
+		}
+		this.queuedPlayers.push(queuedPlayer);
+		return true;
 	}
 
 	public leaveQueue(player: string): void {
@@ -59,7 +52,8 @@ export class MatchMakingService {
 		};
 		const index = this.queuedPlayers.findIndex(leavingPlayer);
 		if (index == -1) {
-			console.log('Player not in queue: ', player); //TODO use a LOGGER
+			//TODO use a LOGGER
+			console.log('Player not in queue: ', player);
 			return;
 		}
 		this.queuedPlayers.splice(index, 1);
@@ -90,31 +84,17 @@ export class MatchMakingService {
 				jPlayer++
 			) {
 				let rhs: QueuePlayer = this.queuedPlayers[jPlayer];
+				//TODO use a LOGGER
 				console.log(
-					checkDate,
-					'] Matching: ',
-					lhs.token,
-					'|',
-					lhs.rating,
-					' vs',
-					rhs.token,
-					'|',
-					rhs.rating
+					`${checkDate}] Try ${lhs.token}|${lhs.rating} vs ${rhs.token}|${rhs.rating}`
 				);
 				if (rhs.matchedWith !== undefined) continue;
 				//Compare lhs with rhs.
 				const rhsRange: [number, number] = rhs.ratingRange(checkDate);
-				console.log(lhs.token, ": ", lhsRange)
-				console.log(rhs.token, ": ", rhsRange)
+				console.log(lhs.token, ': ', lhsRange);
+				console.log(rhs.token, ': ', rhsRange);
 				if (rhsRange[1] >= lhsRange[0] && rhsRange[0] <= lhsRange[1])
 					candidates.push(rhs);
-				/*
-				if (rhsRange[0] <= lhsRange[0]) {
-					if (rhsRange[1] >= lhsRange[0]) candidates.push(rhs);
-				} else {
-					if (rhsRange[1] <= lhsRange[0]) candidates.push(rhs);
-				}
-				*/
 			}
 			//Work with any non-empty candidate array.
 			if (candidates.length == 0) continue;
@@ -126,9 +106,9 @@ export class MatchMakingService {
 			});
 			lhs.matchedWith = candidates[0].token;
 			candidates[0].matchedWith = lhs.token;
-			console.log("IT'S A MATCH!!!!");
+			//TODO use a LOGGER
+			console.log(`IT'S A MATCH!!!! ${lhs.token} vs ${candidates[0].token}`);
 			this.gateway.notifyNewMatch(lhs.token, candidates[0].token, true);
-			//TODO Emit the events, or, let the gameServer create the events
 		}
 
 		//TODO

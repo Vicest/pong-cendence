@@ -227,7 +227,7 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	//Queueing
 	@SubscribeMessage('queue')
-	onQueue(@MessageBody() login: string): void {
+	async onQueue(@MessageBody() login: string): Promise<void> {
 		//this.logger.debug('Queue called with: ', temp_reqs)
 		//TODO
 		//Validate the request comes from the user with the right auth?
@@ -245,14 +245,14 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		//FIXME the parseInt part should probably be in a middleware
 		//ALSO pass the values to the service and let the service builld tha class?
 		//if (this.mms.joinQueue(new QueuePlayer(temp_reqs.login, parseInt(temp_reqs.rating)))) {
-		if (this.mms.joinQueue(login)) {
+		if (await this.mms.joinQueue(login)) {
 			this.logger.verbose('OK!');
 		} else {
 			this.logger.debug('already in queue :(!');
 		}
 	}
 
-	public notifyNewMatch(login1: string, login2: string, isRanked:boolean) {
+	public notifyNewMatch(login1: string, login2: string, isRanked: boolean) {
 		const roomId: string = login1 + 'vs' + login2;
 		this.server.to(login1).socketsJoin(roomId);
 		this.server.to(login2).socketsJoin(roomId);

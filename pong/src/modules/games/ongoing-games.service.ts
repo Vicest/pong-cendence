@@ -124,8 +124,7 @@ export class OngoingGamesService {
 				//const eloChange:number = QueuePlayer.ratingIncrease(u1.Rating, u2.Rating);
 				//this.logger.error(`Winner: ${winner} earned some ELO ${eloChange}`);
 				//this.logger.error(`Loser: ${loser} earned some ELO ${-eloChange}`);
-				
-				
+
 				gateway.to(winner).emit('win');
 				gateway.to(loser).emit('lose');
 				gateway.to(key).socketsLeave(key);
@@ -138,16 +137,28 @@ export class OngoingGamesService {
 	private logger: Logger;
 	private games_: Map<string, Match>;
 
-	private async storeMatchResult(winner:string, loser:string, finishedMatch: Match): Promise<void> {
-		let winnerUser:User|null = await firstValueFrom(this.apiService.findOneUserById(winner));
-		let loserUser:User|null = await firstValueFrom(this.apiService.findOneUserById(loser));
-		if (winnerUser === null || loserUser === null)
-			return;
+	private async storeMatchResult(
+		winner: string,
+		loser: string,
+		finishedMatch: Match
+	): Promise<void> {
+		let winnerUser: User | null = await firstValueFrom(
+			this.apiService.findOneUserById(winner)
+		);
+		let loserUser: User | null = await firstValueFrom(
+			this.apiService.findOneUserById(loser)
+		);
+		if (winnerUser === null || loserUser === null) return;
 
-		const ratingTransfer:number = QueuePlayer.ratingIncrease(winnerUser.Rating, loserUser.Rating);
-		this.logger.verbose(`${winner} earned ${ratingTransfer} rating from ${loser}`);
-		winnerUser.Rating+=ratingTransfer;
-		loserUser.Rating-=ratingTransfer;
+		const ratingTransfer: number = QueuePlayer.ratingIncrease(
+			winnerUser.Rating,
+			loserUser.Rating
+		);
+		this.logger.verbose(
+			`${winner} earned ${ratingTransfer} rating from ${loser}`
+		);
+		winnerUser.Rating += ratingTransfer;
+		loserUser.Rating -= ratingTransfer;
 		let matchData: MatchDto = new MatchDto();
 		matchData.date = new Date().toISOString();
 		matchData.user1 = finishedMatch.players[0].id;
