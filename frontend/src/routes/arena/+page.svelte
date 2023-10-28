@@ -3,7 +3,7 @@
 
     import { isAuth } from "../../services/isAuth"
     isAuth();
-    import { io } from "socket.io-client"
+    import { io, Socket } from "socket.io-client"
 
      enum States {
       unfocused,
@@ -23,24 +23,16 @@
     //async function getLiveMatches() {
       //await
     setInterval(async () => {
+      try {
       matches = await (await fetch('http://localhost:5000/games/match_list')).json()
+      } catch {
+        (e) => {
+          console.log("Hola")
+          console.log(e)
+        }
+      }
     }, 5000)
     //ENDFIXME
-    
-
-    //TODO Should I keep utility funtions in a separate file to avoid cluttering the logic?
-    //TODO 2, Mybe change prompt for input, way cleaner, dunno if worth the change for debug purposes
-    async function queueUp() {
-      console.log("a: ", myToken, "b: ", myRating, "JSONed: ", JSON.stringify({user:myToken, rating:myRating}))
-      await fetch('http://localhost:5000/queue',
-      {
-        method:'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({user:myToken, rating:myRating})
-      })
-      status = States.queueing
-      return //TODO Call backend
-    }
 
     function duel():void {
         let opponent:string = prompt("Duel whom?")
@@ -98,61 +90,36 @@ let matchString:string = ''
 let score:string =  ''
 let status:States = States.unfocused
 //FIXME Some debug temporary variables
-let myToken = (Math.random() + 1).toString(36).substring(7)
-let myRating = Math.random()
-let socket = io('http://localhost:5000',{
-    autoConnect: false,
-    auth: {
-        token: myToken
-    }
-},)
+let myToken:string = (Math.random() + 1).toString(36).substring(7)
+let login:string = ["vicmarti", "josuna-t", "aborboll", "mortiz-d", "msantos-"][Math.floor(Math.random()*5)]
+let socket:Socket = io('http://localhost:5000',{
+  autoConnect: true,
+  transports: ['websocket'],
+  auth: {
+      token: myToken,
+      login: login
+  }
+})
 
 if (socket.disconnected) {
-    socket.connect()
+  socket.connect()
 }
 
 socket.on("connect_error", (err) => {
   console.log(`connect_error due to ${err.message}`);
 });
 
-    //Auto-accept / Events
-    socket.on("connect_error", (err) => {
-      console.log(`connect_error due to ${err.message}`);
-    });
-
-    socket.on('beChallenged', (challenger:string) => {
-        socket.emit('challengeResponse', { accept:true, opponent:challenger })
-    })
-
-    //TODO name is game start
-    socket.on('roomId', (room:string) => {
-        status = States.playing
-        matchString = room;
-        document.addEventListener('keydown', (event) => {
-                keyboardInput(event, socket)
-            })
-    })
-
-    socket.on('gameUpdate', (matchStatus) => {
-        draw(matchStatus)
-        score = matchStatus.score[0]+'-'+matchStatus.score[1]
-    })
-
-    socket.on('win', () => {
-        score = 'You WIN!'
-        resetCanvas()
-        status = States.unfocused
-    })
-
-    socket.on('lose', () => {
-        score = 'You LOSE!'
-        resetCanvas();
-        status = States.unfocused
-    })
-
-    //INPUT
-    function keyboardInput(event, emitter) {
-        var userInput = { player:myToken, match:matchString, actions:-1 }
+//Auto-accept / Events
+socket.on("connect_error", (err) => {
+  console.log(`connect_error due to ${err.message}`);
+});
+socket.on('beChallenged', (challenger:string) => {
+    socket.emit('challengeResponse', { accept:true, opponent:challenger })
+})
+//TODO name is game start
+//INPUT
+function keyboardInput(event, emitter) {
+        var userInput = { match:matchString, actions:-1 }
         switch (event.key) {
             case 'x':
                 userInput.actions = 0;
@@ -164,6 +131,61 @@ socket.on("connect_error", (err) => {
         }
         emitter.emit('playerMoves', userInput) //TODO
     }
+socket.on('roomId', (room:string) => {
+    status = States.playing
+    matchString = room;
+    document.addEventListener('keydown', (event) => {
+            keyboardInput(event, socket)
+        })
+})
+socket.on('gameUpdate', (matchStatus) => {
+    draw(matchStatus)
+    score = matchStatus.score[0]+'-'+matchStatus.score[1]
+})
+socket.on('win', () => {
+    score = 'You WIN!'
+    resetCanvas()
+    status = States.unfocused
+})
+socket.on('lose', () => {
+    score = 'You LOSE!'
+    resetCanvas();
+    status = States.unfocused
+})
+    /*
+setInterval(() => {
+  console.log("Sent ping: ", Date.now())
+  socket.emit('ping')
+  }, 200)
+  */
+    
+
+    //TODO Should I keep utility funtions in a separate file to avoid cluttering the logic?
+    //TODO 2, Mybe change prompt for input, way cleaner, dunno if worth the change for debug purposes
+    async function queueUp() {
+      console.log("Emiting queue: ", login)
+      socket.emit("queue", login, () => {
+        console.log("Recieved: ", login);
+      })
+      status = States.queueing
+      /*TODO
+      console.log("a: ", myToken, "b: ", myRating, "JSONed: ", JSON.stringify({user:myToken, rating:myRating}))
+      await fetch('http://localhost:5000/queue',
+      {
+        method:'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user:myToken, rating:myRating})
+      })
+      status = States.queueing
+      return //TODO Call backend\
+      */
+    }
+
+
+
+
+
+    
 </script>
 
 
@@ -202,8 +224,8 @@ socket.on("connect_error", (err) => {
 
 <arena>
     <div>{myToken}<br>{matchString}</div>
-    <input disabled type="text" bind:value={myToken}>
-    <input type="text" bind:value={myRating}>
+    <input disabled type="text" bind:value={login}>
+    <br>
     <div class="container" title="Live Games">
       {#each matches as match}
         <button class="watch-card" on:click={() => watchByMatch(match.room)}>
