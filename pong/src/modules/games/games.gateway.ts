@@ -12,14 +12,8 @@ import { Server, Socket } from 'socket.io';
 import { OngoingGamesService } from './ongoing-games.service';
 import { MatchMakingService } from './match-making.service';
 
-//FIXME Ad-Hoc
-type duelRequest = {
-	challenger: string;
-	opponent: string;
-};
-
 @Injectable()
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({ cors: true }) //TODO use our own origin only
 export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer()
 	private server: Server;
@@ -93,13 +87,13 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.logger.verbose(opponentLogin + ' challenges ' + challengerLogin);
 		if (challengerLogin == opponentLogin) {
 			this.logger.warn(
-				challengerLogin + ' challenges self. That would be overly suicidal'
+				`${challengerLogin} challenges self. That would be overly suicidal`
 			);
 			return;
 		}
 		//TODO better way to inspect ongoing challenges
 		this.logger.verbose(
-			opponentLogin + 'joins ' + opponentLogin + 'challengers'
+			`${challengerLogin} joins ${opponentLogin} challengers`
 		);
 		//TODO rethink the room name? This belongs outside of the gateway?
 		socket.join(opponentLogin + 'challengers');
