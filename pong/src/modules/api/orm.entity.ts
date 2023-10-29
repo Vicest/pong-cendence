@@ -130,11 +130,11 @@ export class Match {
 
 @Entity({name :'Friends'})
 export class Friend {
-  @PrimaryColumn({ type: 'integer', nullable : false})
-  User1: number;
+  @PrimaryColumn({ type: 'varchar', length : 20, nullable : false})
+  User1: string;
 
-  @Column({ type: 'integer', nullable : false})
-  User2: number;
+  @Column({ type: 'varchar', length : 20, nullable : false})
+  User2: string;
 
   @Column({ type: 'boolean', nullable : false})
   Accepted: boolean;

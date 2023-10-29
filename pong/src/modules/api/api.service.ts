@@ -70,7 +70,7 @@ export class ApiService {
     return from(this.friendDBRepository.save(fri));
   }
 
-  getFriendRequest(id_s : number, id_r : number) : Observable<Friend | null>
+  getFriendRequest(id_s : string, id_r : string) : Observable<Friend | null>
   {
     return from(this.friendDBRepository.findOne(
     { 
@@ -78,7 +78,7 @@ export class ApiService {
     }));
   }
 
-  getFriends(id: number) : Observable<Friend[] | null>
+  getFriends(id: string) : Observable<Friend[] | null>
   {
     return from(this.friendDBRepository.find(
         { 

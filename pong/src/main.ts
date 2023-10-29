@@ -6,7 +6,8 @@ async function bootstrap() {
 
 	//Configure CORS options
 	app.enableCors({
-		origin: ['*'] //TODO Enable '*' or just the incoming requests'
+		origin: ["http://localhost:5000", "http://localhost:3000" , "http://localhost:4200"],//TODO Enable '*' or just the incoming requests'
+		methods : "GET,HEAD,PUT,PATCH,POST,DELETE",
 	});
 
 	await app.listen(5000); //FIXME Use evironment PORT

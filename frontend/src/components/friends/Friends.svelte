@@ -1,23 +1,37 @@
+
 <script lang="ts">
 	import { draggable } from '@neodrag/svelte';
 	import { Avatar, CodeBlock, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
 
+	// import { env } from '$env/dynamic/private'
 	import { onMount } from 'svelte';
 	import axios from 'axios';
 	// Components
 	import type { Person, MessageFeed } from './chat.model';
 	import Chat from './Chat.svelte';
-	// import { mockpeople, mockmessageFeed } from './mockup'
+	import { apiData } from '../../services/my42data';
+	import { io } from 'socket.io-client';
+	import { historical_msg } from "../../store";
 
     let messageFeed = []; //mockmessageFeed;
-	let people = [];  //mockpeople;
+	let people = [];
 
 	let elemChat: HTMLElement;
 	let currentPerson: Person;
 	let displayChat = false;
-	// currentPerson.feed = mockmessageFeed;
+	let socket;
+	let apidata;
+	let historic;
 
-
+    async function fetchData() {
+    return new Promise((resolve) => {
+        apiData.subscribe((data) => {
+        apidata = data;
+        console.log(data.login);
+        resolve();
+        });
+    });
+    }
 
 	// For some reason, eslint thinks ScrollBehavior is undefined...
 	// eslint-disable-next-line no-undef
@@ -27,64 +41,85 @@
 
 	// When DOM mounted, scroll to bottom
 	onMount(async () => {
+		await fetchData();
+		socket = io(`http://localhost:5000`); 
+		
+		
 		scrollChatBottom();
-		await axios.get("http://localhost:3000/friends")
-		.then(
-		res => {
-			if(res.status === 200)
-			{
-				people = res.data;
 
-				currentPerson = people[0];
-				console.log(people)
-
-				axios.get("http://localhost:3000/receivedmsgs/" + currentPerson.name)
-				.then(
-				res => {
-					// people = people.map((p)=>{  p.feed = []});
-					currentPerson.feed = messageFeed;
-					messageFeed = res.data;
-				}).catch(err => {
-					console.log(err)
-				})
-
+		fetch(`http://localhost:5000/api/friends/`+ apidata.login, {
+			headers : {
+				'Access-Control-Allow-Origin' : '*'
 			}
-		}
-		)
-		.catch(err => {
-			console.log(err)
 		})
+      			.then(response => {
+      			  if (!response.ok) {
+      			    throw new Error('La solicitud no se completó correctamente');
+      			  }
+      			  return response.json();
+      			})
+      			.then(data => {
 
+					const uniqueNames = new Set();
 
+            		// Agregar los nombres de "User1" a los nombres únicos
+            		// data
+            		//     .filter(item => item.User1.trim() !== apidata.login)
+            		//     .map(item => uniqueNames.add(item.User1.trim()));
+
+            		// // Agregar los nombres de "User2" a los nombres únicos
+            		// data
+            		//     .filter(item => item.User2.trim() !== apidata.login)
+            		//     .map(item => uniqueNames.add(item.User2.trim()));
+					
+
+					data
+            		    .map(item => uniqueNames.add(item.User1.trim()));
+
+            		// Agregar los nombres de "User2" a los nombres únicos
+            		data
+            		    .map(item => uniqueNames.add(item.User2.trim()));
+
+            		// Convertir el conjunto a una lista de objetos
+            		people = [...uniqueNames].map(name => ({ name }));
+
+            		console.log(people);
+      			  // Manejar los datos
+      			})
+      			.catch(error => {
+      			  console.error('Error de fetch:', error);
+      			});
+			
+				  socket.on('recv_historial_response', (res) => {
+			console.log("Historial obtenido", res);
+            historical_msg.set(res.msg)
+			// Puedes procesar la respuesta del servidor aquí
+		}).on('error', (err) => {
+			console.log("Error ? -> " + err);
+		});
+		
 
 	});
 
-	function avatarClick(person)
-	{
-		
+	function avatarClick(person) {
 		displayChat = true;
-
-
-		// logic reorder server BBDD recieved mesages and sent messages
 		currentPerson = person;
-		axios.get("http://localhost:3000/receivedmsgs/" + currentPerson.name)
-		.then(
-		res => {
-			if(res.status === 200)
-			{
-				messageFeed = res.data;
-				axios.get("http://localhost:3000/sendedmsgs/" + currentPerson.name)
-				.then(res => {
-					messageFeed = [...messageFeed, ...res.data];
-					// console.log("sendedmsgs",res.data)
-				})
-			}
-		}
-		)
-		.catch(err => {
-			console.log(err)
-		})
+		messageFeed = [];
+
+
+
+		// Emitir un evento al servidor
+		console.log("Historico establecido en amigos antes -> "+ historic);
+		socket.emit('recv_historial', { receptor: person.name, emisor: apidata.login });
+
+
+		historical_msg.subscribe((prev_val) => historic = prev_val)
+		console.log("Historico establecido en amigos despues -> "+ historic);
+		
+		
 	}
+
+
 </script>
 <style>
     /* @import './chat.css'; */
@@ -105,16 +140,16 @@
 	}
 </style>
 
-<!-- Slot: Sandbox -->
+
 <section use:draggable={{bounds: 'parent'}} class:active-friends={displayChat} class="card chat-card" style="width: 30vw;  left: 4.8vw">
 	<div class:active-chat={displayChat} class="chat w-full h-full grid grid-cols-1 lg:grid-cols-[100%_1fr]">
-		<!-- Navigation -->
+		
 		<div class="hidden lg:grid grid-rows-[auto_1fr_auto] border-r border-surface-500/30">
-			<!-- Header -->
+			
 			<div class="border-b border-surface-500/30 p-4">
 				<input class="input" type="search" placeholder="Search..." />
 			</div>
-			<!-- List -->
+			
 			<div class="p-4 space-y-4 overflow-y-auto">
 				<button class="opacity-50">Contacts</button>
 				<button class="opacity-50">Channels</button>

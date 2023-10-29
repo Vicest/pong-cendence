@@ -4,7 +4,7 @@
 all:
 	docker-compose -f ./docker-compose.yml up
 
-re: fclean re
+re: fclean all
 
 clean:
 

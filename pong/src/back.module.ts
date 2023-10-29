@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 
 //Cosas de la api
-import { ApiModule } from './modules/api/api.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ApiModule } from './modules/api/api.module';
 import { GamesModule } from './modules/games/games.module';
 import { DBconfig } from './modules/api/orm.config';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
-	imports: [ApiModule, GamesModule, TypeOrmModule.forRoot(DBconfig)],
+	imports: [ApiModule, ChatModule, GamesModule, TypeOrmModule.forRoot(DBconfig)],
 	controllers: [],
 	providers: []
 })

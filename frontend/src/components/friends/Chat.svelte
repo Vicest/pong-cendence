@@ -3,14 +3,17 @@
 	import { onMount } from 'svelte';
 	import axios from 'axios';
     import { io } from 'socket.io-client';
-
+    import { apiData } from '../../services/my42data';
     // Inicializar la conexión de socket.io
     let socket;
-
-    onMount(() => {
-        socket = io('http://localhost:5000'); // Reemplaza con la URL de tu servidor socket.io
+    
+    onMount(async () => {
+        await fetchData();
+        socket = io(`http://localhost:5000`); // Reemplaza con la URL de tu servidor socket.io
     });
     
+
+
 
     export let messageFeed;
     export let currentPerson;
@@ -18,7 +21,25 @@
 
 
     let currentMessage = '';
-    let oauth_check = '';
+    let apidata;
+
+    async function fetchData() {
+    return new Promise((resolve) => {
+        apiData.subscribe((data) => {
+        apidata = data;
+        console.log(data.login);
+        resolve();
+        });
+    });
+    }
+
+
+    // socket.emit('mensaje', {
+    //         receptorUUID: currentPerson.name,
+    //         emisorUUID: apidata.login,
+    //         date: `${getCurrentTimestamp()}`,
+    //         msg: currentMessage
+    //     });
 
     function getCurrentTimestamp(): string {
 		return new Date().toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
@@ -46,7 +67,7 @@
 			id: messageFeed.length,
 			host: true,
 			avatar: 13,
-			sender: 'Marcos',
+			sender: apidata.login,
 			receiver: currentPerson.name,
 			date: `Today @ ${getCurrentTimestamp()}`,
 			text: currentMessage
@@ -63,15 +84,15 @@
 
 		// Here logic, send server messages and save on cache those messages
 		currentPerson.feed = messageFeed;
-		console.log("Current Person o no: ", currentPerson)
+		// console.log("Current Person o no: ", currentPerson)
 
-        console.log("AMO MI VIDA, VOY A SACAR ESTA MIERDA")
+        console.log("From " + apidata.login + " to " + currentPerson.name + " :" + currentMessage )
 
         //socket.handshake.auth.token
 
         socket.emit('mensaje', {
-            receptorUUID: oauth_check,
-            emisorUUID: currentPerson.name,
+            receptorUUID: currentPerson.name,
+            emisorUUID: apidata.login,
             date: `${getCurrentTimestamp()}`,
             msg: currentMessage
         });
@@ -123,14 +144,6 @@
     <section class="border-t border-surface-500/30 p-4">
         <div class="input-group input-group-divider grid-cols-[auto_1fr_auto] rounded-container-token">
             <button class="input-group-shim">+</button>
-            <textarea
-                bind:value={oauth_check}
-                class="bg-transparent border-0 ring-0"
-                name="prompt2"
-                id="prompt2"
-                placeholder="Write to send to oauth..."
-                rows="1"
-            />
             <textarea
                 bind:value={currentMessage}
                 class="bg-transparent border-0 ring-0"

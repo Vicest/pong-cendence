@@ -56,14 +56,14 @@ export class ApiController {
     /*          FRIENDS           */
     // GET /friends
     @Get('/friends/:id')
-    getFriendos(@Param('id') id: number): Observable<Friend[] | null> 
+    getFriendos(@Param('id') id: string): Observable<Friend[] | null> 
     {
         return this.apiService.getFriends(id);
     }
 
     // GET /friends/id_rec/id_send
     @Get('/friends/:id_rec/:id_send')
-    getFriendRequest(@Param('id_rec') id_rec: number, @Param('id_send') id_send: number): Observable<Friend | null> 
+    getFriendRequest(@Param('id_rec') id_rec: string, @Param('id_send') id_send: string): Observable<Friend | null> 
     {
         return this.apiService.getFriendRequest(id_send, id_rec);
     }
