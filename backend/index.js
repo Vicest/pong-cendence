@@ -1,6 +1,5 @@
 // Main Server
 import bodyParser from "body-parser";
-import cookieParser from "cookie-parser";
 import express from 'express'
 const app = express();
 import { userroutes } from './routes/user.routes.js'
@@ -14,7 +13,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
-app.use(cookieParser());
 app.use(session({
   secret: "1234567890QWERTY",
   resave: true,

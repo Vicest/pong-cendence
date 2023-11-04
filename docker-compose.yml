@@ -4,8 +4,8 @@ services:
   front:
     container_name: front-service-container
     build: ./frontend
-    # volumes:
-    # - ./frontend/src/routes:/usr/src/app/src/routes
+    volumes:
+    - ./frontend/src/routes:/usr/src/app/src/routes
     ports:
     - "4200:4200"
     restart: always

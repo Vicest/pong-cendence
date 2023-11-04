@@ -18,7 +18,6 @@
 </script>
 <style>
     @import 'login.css';
-  
 </style>
 <div class="justify-content-center fadeInDown">
     <div id="formContent">

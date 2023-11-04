@@ -36,7 +36,3 @@
 https://programacionymas.com/blog/jwt-vs-cookies-y-sesiones
 
 https://github.com/sveltejs/vite-plugin-svelte/blob/main/docs/faq.md#where-should-i-put-my-global-styles
-
-# TODOS
-
-- 

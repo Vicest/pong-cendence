@@ -9,7 +9,6 @@ export const apiData = readable(null, function start(set) {
     axios.get("http://localhost:3000/me",{withCredentials: true})
     .then(
         res => {
-            console.log("API CALLLLLLLLl")
             shownavlinks.set(true);
             auth.set(true);
             waitingD.set(false)
