@@ -1,4 +1,5 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Interval } from '@nestjs/schedule';
 import { firstValueFrom } from 'rxjs';
 import { QueuePlayer } from './classes/queue-player';
 import { GamesGateway } from './games.gateway';
@@ -12,11 +13,7 @@ export class MatchMakingService {
 		private gateway: GamesGateway,
 		private apiService: ApiService
 	) {
-		this.queuedPlayers = [];
-
-		setInterval(() => {
-			this.tick();
-		}, 1000);
+		this.queuedPlayers = new Array;
 	}
 
 	public async joinQueue(login: string): Promise<boolean> {
@@ -31,6 +28,15 @@ export class MatchMakingService {
 			console.log('User not found in database');
 			return false;
 		}
+
+		//Debug info
+		for (
+			let iPlayer: number = 0;
+			iPlayer < this.queuedPlayers.length;
+			iPlayer++
+		)
+			console.log('>', this.queuedPlayers[iPlayer]);
+
 
 		const queuedPlayer = new QueuePlayer(login, joiningPlayer.Rating);
 		if (
@@ -59,16 +65,15 @@ export class MatchMakingService {
 		this.queuedPlayers.splice(index, 1);
 	}
 
+	//Private
 	private queuedPlayers: Array<QueuePlayer>;
 
+	@Interval(1000)
 	private tick(): void {
 		//Debug info
-		for (
-			let iPlayer: number = 0;
-			iPlayer < this.queuedPlayers.length;
-			iPlayer++
-		)
-			console.log('>', this.queuedPlayers[iPlayer]);
+		console.log(`Queue size: ${this.queuedPlayers.length}`);
+		for (const player of this.queuedPlayers)
+			console.log('>', player);
 
 		const checkDate: number = Date.now();
 		const compareMax: number = this.queuedPlayers.length - 1;
@@ -109,8 +114,17 @@ export class MatchMakingService {
 			//TODO use a LOGGER
 			console.log(`IT'S A MATCH!!!! ${lhs.token} vs ${candidates[0].token}`);
 			this.gateway.notifyNewMatch(lhs.token, candidates[0].token, true);
+			//this.leaveQueue(lhs.token);
+			//this.leaveQueue(candidates[0].token);
 		}
 
+		//this.queuedPlayers = this.queuedPlayers.filter( (qp:QueuePlayer):boolean => {
+		//	return qp.matchedWith === undefined;
+		//} )
+		//console.log("AFT: ", this.queuedPlayers)
+		//this.queuedPlayers = [...aux];
+		//console.log("AUX:",aux);
+		//console.log("QUE:",this.queuedPlayers);
 		//TODO
 		//PURGE ALL THE THINGS (move to other functions)
 		this.queuedPlayers.sort(
