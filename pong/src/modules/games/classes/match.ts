@@ -11,7 +11,7 @@ class LineSegment {
 	public constructor(origin: Point, end: Point, end_is_vector: boolean) {
 		this.origin_ = new Vector(origin.values);
 		this.direction_ = new Vector(end.values);
-		if (!end_is_vector) this.direction_ = this.direction_.subtract(origin);
+		if (!end_is_vector) this.direction_ = this.direction_.substract(origin);
 	}
 
 	get origin(): Vector {
@@ -41,21 +41,21 @@ class LineSegment {
 		//		return false;
 		return {
 			inSegment:
-				inRange(collision.subtract(origin).length(), 0, direction.length()) &&
-				collision.subtract(origin).dot(direction) > 0 &&
+				inRange(collision.substract(origin).length(), 0, direction.length()) &&
+				collision.substract(origin).dot(direction) > 0 &&
 				inRange(
-					collision.subtract(this.origin).length(),
+					collision.substract(this.origin).length(),
 					0,
 					this.direction.length()
 				) &&
-				collision.subtract(this.origin).dot(this.direction) > 0,
+				collision.substract(this.origin).dot(this.direction) > 0,
 			coords: collision
 		};
 	}
 
 	public reflect(incidencePoint: Point, source: Point): Point {
 		//TODO translation before reflection
-		let reflectedPoint: Point = new Vector(source.values).subtract(
+		let reflectedPoint: Point = new Vector(source.values).substract(
 			incidencePoint
 		);
 		//----
@@ -116,7 +116,7 @@ class LineSegment {
 		const constantTermColumn: Vector = new Vector([
 			direction.at(1) * origin.at(0) - direction.at(0) * origin.at(1),
 			this.direction.at(1) * this.origin.at(0) -
-				this.direction.at(0) * this.origin.at(1)
+			this.direction.at(0) * this.origin.at(1)
 		]);
 		let temporaryMatrixName: Matrix = new Matrix(2, 2, [
 			xColumn.values,
@@ -292,7 +292,7 @@ export class Match {
 					this.ball
 				);
 				const displacementToCollision: number = lineIntersection.coords
-					.subtract(this.ball)
+					.substract(this.ball)
 					.length();
 				const displacementAfterCollision: number =
 					this.ballVector.length() - displacementToCollision;
@@ -301,14 +301,14 @@ export class Match {
 				this.ball = this.ball.add(
 					this.ballVector.normalize().scale(displacementToCollision)
 				);
-				this.ballVector = reflected.subtract(lineIntersection.coords);
+				this.ballVector = reflected.substract(lineIntersection.coords);
 				//Redirect after collision and move
 				this.ballVector = this.ballVector
 					.normalize()
 					.scale(displacementAfterCollision);
 				this.ball = this.ball.add(this.ballVector);
 				//Rebuild the vector
-				this.ballVector = reflected.subtract(lineIntersection.coords);
+				this.ballVector = reflected.substract(lineIntersection.coords);
 				this.ballVector = this.ballVector.normalize().scale(ballSpeed);
 				chivato = true;
 				break; //FIXME get shortest distance collision.
@@ -327,7 +327,7 @@ export class Match {
 						this.ball
 					);
 					const displacementToCollision: number = lineIntersection.coords
-						.subtract(this.ball)
+						.substract(this.ball)
 						.length();
 					const displacementAfterCollision: number =
 						this.ballVector.length() - displacementToCollision;
@@ -336,14 +336,14 @@ export class Match {
 					this.ball = this.ball.add(
 						this.ballVector.normalize().scale(displacementToCollision)
 					);
-					this.ballVector = reflected.subtract(lineIntersection.coords);
+					this.ballVector = reflected.substract(lineIntersection.coords);
 					//Redirect after collision and move
 					this.ballVector = this.ballVector
 						.normalize()
 						.scale(displacementAfterCollision);
 					this.ball = this.ball.add(this.ballVector);
 					//Rebuild the vector
-					this.ballVector = reflected.subtract(lineIntersection.coords);
+					this.ballVector = reflected.substract(lineIntersection.coords);
 					this.ballVector = this.ballVector.normalize().scale(ballSpeed);
 					//
 					chivato = true;

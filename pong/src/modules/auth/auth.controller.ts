@@ -1,22 +1,22 @@
-import { Controller, Get, Req, Res , Next} from '@nestjs/common';
-import express from 'express'
-import axios from 'axios'
+import { Controller, Get, Req, Res, Next } from '@nestjs/common';
+//import express from 'express'
+// import axios from 'axios'
 // import axios from 'axios';
 // import axiosThrottle from 'axios-request-throttle';
 
 // axiosThrottle.use(axios, { requestsPerSecond: 2 });
 
 // const ensureAuth = function(req : string,res: string)
-// {   
+// {
 //     if(!req.session.token)
 //         return res.status(500).send({message: "La peticion requiere del header authorizacion valida, session data: " + req.session});
 // }
 
 @Controller('auth')
-export default class AuthController{
+export default class AuthController {
 
-    
-    @Get('me')
+
+    /*@Get('me')
     me(@Req() req: string,@Res() res: string): string {
         //ensureAuth(req,res,next);
         axios.request({
@@ -39,8 +39,8 @@ export default class AuthController{
     @Get('login')
     login(@Req() req: string,@Res() res: string) {
 
-    }
+    }*/
 
 
 
-} 
+}
