@@ -22,6 +22,7 @@
     "@nestjs/typeorm": "^10.0.0",
     "@nestjs/websockets": "^10.0.0",
     "@nestjs/schedule": "latest",
+    "@nestjs/passport": "latest",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
