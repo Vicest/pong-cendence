@@ -1,10 +1,10 @@
 <script lang="ts">
-	import '../app.postcss';
-	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
+	import '../../../app.postcss';
+	import { AppShell } from '@skeletonlabs/skeleton';
 	import { page } from '$app/stores';
-	import Sidebar from '../components/Sidebar.svelte';
-	import Header from '../components/Header.svelte';
-	import Footer from '../components/Footer.svelte';
+	import Sidebar from '../../../components/Sidebar.svelte';
+	import Header from '../../../components/Header.svelte';
+	import Footer from '../../../components/Footer.svelte';
 	let currentTile: number = 0;
 
 	/** @type {import('./$types').LayoutData}*/
