@@ -1,35 +1,17 @@
 version: '3.5'
-
 services:
-  front:
-    container_name: front-service-container
-    build: ./frontend
-    volumes:
-    - ./frontend/src/routes:/usr/src/app/src/routes
+  db:
+    image: mysql:5.7
+    platform: linux/amd64
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: transcendence
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: 1234
     ports:
-    - "4200:4200"
-    restart: always
-
-  back:
-    container_name: backend-service-container
-    build: ./backend
+      - "6033:3306"
     volumes:
-    -  ./backend:/usr/src/node-app
-    ports:
-    - "3000:3000"
-    restart: always
-
-  pong:
-    build: ./pong
-    container_name: pong-service-container
-    image: "pong_img"
-    volumes:
-    -  ./pong/src:/usr/src/backend/src
-    expose:
-      - "5000"
-    ports:
-      - "5000:5000"
-    networks:
-      - default
-    restart: "always"
-
+      - dbdata:/var/lib/mysql
+volumes:
+  dbdata:
