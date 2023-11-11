@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
-	import Sidebar from '../../components/Sidebar.svelte';
+	import Sidebar from '../../../../components/Sidebar.svelte';
 </script>
 
 <div class="container h-full mx-auto flex justify-center items-center">

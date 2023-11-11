@@ -8,17 +8,17 @@
 	let links = [
 		{
 			name: 'Leadboard',
-			href: '/leadboard',
+			href: '/app/leadboard',
 			icon: faTrophy
 		},
 		{
 			name: 'Arena',
-			href: '/arena',
+			href: '/app/arena',
 			icon: faGamepad
 		},
 		{
 			name: 'About',
-			href: '/about',
+			href: '/app/about',
 			icon: faInfo
 		}
 	];

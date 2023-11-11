@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { AppRail, AppRailAnchor, AppRailTile, Avatar } from '@skeletonlabs/skeleton';
 	import { page } from '$app/stores';
-	import { matchList, updateScore } from '../../../store/Match';
+	import { matchList, updateScore } from '../../../../../store/Match';
 
 	import Fa from 'svelte-fa';
 	import { faGamepad, faUserFriends } from '@fortawesome/free-solid-svg-icons';
