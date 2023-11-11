@@ -18,7 +18,9 @@ import { ChatModule } from './chat/chat.module';
       username: 'admin',
       password: '1234',
       database: 'transcendence',
-      entities: [],
+      entities: [
+        __dirname + '/**/*.entity{.ts,.js}',
+      ],
       synchronize: true,
     }),
     UsersModule,
