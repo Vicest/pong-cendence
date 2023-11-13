@@ -10,15 +10,15 @@ services:
     - "4200:4200"
     restart: always
 
-  back:
-    container_name: backend-service-container
-    build: ./backend
-    volumes:
-    -  ./backend:/usr/src/node-app
-    ports:
-    - "3000:3000"
-    restart: always
-
+    #  back:
+    #    container_name: backend-service-container
+    #    build: ./backend
+    #    volumes:
+    #    -  ./backend:/usr/src/node-app
+    #    ports:
+    #    - "3000:3000"
+    #    restart: always
+    #
   pong:
     build: ./pong
     container_name: pong-service-container
