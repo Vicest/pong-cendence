@@ -5,7 +5,7 @@
     import { isAuth } from "../../services/isAuth";
 
 
-    const apiBaseUrl = "http://localhost:3000";
+    const apiBaseUrl = "http://localhost:5000";
     export let waiting;
     
 
@@ -28,7 +28,7 @@
             <div class="fadeIn first">
                 <img src={logo42} id="icon" alt="User Icon" />
             </div>
-            <a href={`${apiBaseUrl}/login`} on:click={handleLoginClick} class="underlineHover">
+            <a href={`${apiBaseUrl}/auth/login`} on:click={handleLoginClick} class="underlineHover">
                 <div id="formFooter">
                 Login 
                 </div>
