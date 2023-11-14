@@ -4,8 +4,8 @@ import { redirect } from "@sveltejs/kit";
 const isUserLoggedIn = async (cookies): Promise<boolean> => {
 	return new Promise((resolve) => {
 		setTimeout(() => {
-			resolve(false);
-		}, 2000);
+			resolve(true);
+		}, 500);
 	});
 
 };
