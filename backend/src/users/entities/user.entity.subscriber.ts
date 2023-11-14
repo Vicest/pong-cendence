@@ -16,9 +16,6 @@ import {
       return User;
     }
   
-    beforeUpdate(event: UpdateEvent<User>) {
-
-      (event.updatedColumns.includes('password') || event.updatedColumns.includes('email')) return;
-      
+    beforeUpdate(event: UpdateEvent<User>) {      
     }
   }
