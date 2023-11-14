@@ -2,7 +2,6 @@ version: '3.5'
 services:
   db:
     image: mysql:5.7
-    platform: linux/amd64
     container_name: db
     environment:
       MYSQL_ROOT_PASSWORD: 1234
@@ -13,5 +12,13 @@ services:
       - "6033:3306"
     volumes:
       - dbdata:/var/lib/mysql
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
 volumes:
   dbdata:
