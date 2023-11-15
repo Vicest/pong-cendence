@@ -1,14 +1,10 @@
-FROM node:19
+FROM node:alpine
 
+WORKDIR /usr/src/backend
 
-RUN mkdir -p /usr/src/node-app/
+COPY .env backend/package.json backend/tsconfig.json backend/.prettierrc ./
 
-COPY package.json ./
-COPY package-lock.json ./
-RUN npm i --ignore-scripts
-COPY . .
+RUN npm update
+RUN npm install
 
-EXPOSE 3000
-
-CMD [ "npm", "run", "dev" ]
-#CMD [ "sleep", "infinity" ]
+ENTRYPOINT [ "npm", "run", "start" ]

@@ -8,7 +8,7 @@ import { DBconfig } from './modules/api/orm.config';
 import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
-	imports: [AuthModule, ApiModule, ChatModule, GamesModule, TypeOrmModule.forRoot(DBconfig), ConfigModule.forRoot({ envFilePath: ['src/.env'], isGlobal: true })],
+	imports: [AuthModule, ApiModule, ChatModule, GamesModule, TypeOrmModule.forRoot(DBconfig), ConfigModule.forRoot({ envFilePath: ['.env'], isGlobal: true })],
 	controllers: [],
 	providers: []
 })
