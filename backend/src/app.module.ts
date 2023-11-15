@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -12,6 +13,8 @@ import { ChatModule } from './chat/chat.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
+      //TODO keep CB config in a separate file.
+      //import { DBconfig } from './modules/api/orm.config';
       type: 'mysql',
       host: 'localhost',
       port: 6033,
@@ -22,6 +25,10 @@ import { ChatModule } from './chat/chat.module';
         __dirname + '/**/*.entity{.ts,.js}',
       ],
       synchronize: true,
+    }),
+    ConfigModule.forRoot({
+      envFilePath: ['.env'],
+      isGlobal: true
     }),
     UsersModule,
     GamesModule,
