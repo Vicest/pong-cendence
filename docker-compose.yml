@@ -1,5 +1,26 @@
 version: '3.5'
 services:
+  front:
+    container_name: front-container
+    build: ./frontend
+    ports:
+      - '${FRONTEND_PORT}:${FRONTEND_PORT}'
+    restart: always
+  back:
+    build:
+      context: ./
+      dockerfile: ./backend/Dockerfile
+    container_name: back-container
+    image: 'backend_img'
+    volumes:
+      - ./backend/src:/usr/src/backend/src
+    expose:
+      - '${BACKEND_PORT}'
+    ports:
+      - '${BACKEND_PORT}:${BACKEND_PORT}'
+    networks:
+      - default
+    restart: always
   db:
     image: mysql:5.7
     container_name: db
