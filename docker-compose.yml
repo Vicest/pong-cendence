@@ -2,7 +2,7 @@ version: '3.5'
 services:
   front:
     container_name: front-container
-    build: ./frontend
+    build: ./frontend/old
     ports:
       - '${FRONTEND_PORT}:${FRONTEND_PORT}'
     restart: always
