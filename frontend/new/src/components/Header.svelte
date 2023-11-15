@@ -20,6 +20,11 @@
 			name: 'About',
 			href: '/app/about',
 			icon: faInfo
+		},
+		{
+			name: 'Chat',
+			href: '/app/chat',
+			icon: faInfo
 		}
 	];
 </script>
