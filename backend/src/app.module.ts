@@ -12,20 +12,20 @@ import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      //TODO keep CB config in a separate file.
-      //import { DBconfig } from './modules/api/orm.config';
-      type: 'mysql',
-      host: 'localhost',
-      port: 6033,
-      username: 'admin',
-      password: '1234',
-      database: 'transcendence',
-      entities: [
-        __dirname + '/**/*.entity{.ts,.js}',
-      ],
-      synchronize: true,
-    }),
+//    TypeOrmModule.forRoot({
+//      //TODO keep CB config in a separate file.
+//      //import { DBconfig } from './modules/api/orm.config';
+//      type: 'mysql',
+//      host: 'localhost',
+//      port: 6033,
+//      username: 'admin',
+//      password: '1234',
+//      database: 'transcendence',
+//      entities: [
+//        __dirname + '/**/*.entity{.ts,.js}',
+//      ],
+//      synchronize: true,
+//    }),
     ConfigModule.forRoot({
       envFilePath: ['.env'],
       isGlobal: true
