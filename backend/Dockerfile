@@ -7,4 +7,4 @@ COPY .env backend/package.json backend/tsconfig.json backend/.prettierrc ./
 
 RUN yarn install
 
-ENTRYPOINT [ "yarn", "start" ]
+ENTRYPOINT [ "yarn", "start:dev" ]
