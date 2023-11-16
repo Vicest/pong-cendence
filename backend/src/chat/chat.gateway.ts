@@ -1,36 +1,46 @@
-import {
-	WebSocketGateway,
-	WebSocketServer,
-	SubscribeMessage,
-	ConnectedSocket,
-	MessageBody
-} from '@nestjs/websockets'
+import {WebSocketGateway, WebSocketServer, SubscribeMessage, ConnectedSocket, MessageBody} from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
+import { UserDto } from 'src/users/dto/users.dto';
 import { messagesChannelDto } from './dto/message/channel.dto';
 import { messagesUserDto } from './dto/message/user.dto';
-@WebSocketGateway(3001, { cors: true })
+
+@WebSocketGateway({ cors: true })
 export class ChatGateway{
 	@WebSocketServer()
 	private server: Server;
 
+	afterInit(server: Server) {
+		console.log('Socket initialized');
+	}
+
 	handleConnection(socket: Socket) {
 		// this.logger.debug('Socket connected: login : '+ socket.handshake.auth.login + ' | sesion : ' + socket.id + ' is ' + socket.handshake.auth.token)
+		console.log('Socket connected: login : '+ socket.handshake.auth.login + ' | sesion : ' + socket.id + ' is ' + socket.handshake.auth.token)
 		socket.join(socket.handshake.auth.login)
-		console.log("Socket connected: login : "+ socket.handshake.auth.login + " | sesion : " + socket.id + " is " + socket.handshake.auth.token);
 	}
 
 	handleDisconnect(socket: Socket) {
 		// this.logger.debug('Socket disconnected: ' + socket.id + ' was ' + socket.handshake.auth.token)
 		//TODO Handle ongoing game disconnection.
+		console.log('Socket disconnected: ' + socket.id + ' was ' + socket.handshake.auth.token)
 	}
 	
-
-	@SubscribeMessage('message')
+    @SubscribeMessage('message')
 	sendmsg(@ConnectedSocket() socket: Socket,
-	@MessageBody() data: string): void {
-		console.log("Ha llegado un mensaje -> " + data);
-		return;	
-	};
+	@MessageBody() data: messagesChannelDto | messagesUserDto): void {
+		console.log("Mensaje recibido: " + data.content);
+		if (data instanceof messagesChannelDto) {
+			// Acciones específicas para messagesChannelDto
+			console.log("Mensaje de canal recibido:", data);
+		} else if (data instanceof messagesUserDto) {
+			// Acciones específicas para messagesUserDto
+			console.log("Mensaje de usuario recibido:", data);
+		}else{
+			console.log("Mensaje de tipo desconocido recibido:", data);
+		}
+		
+		return;
+	}
 	
 
 }

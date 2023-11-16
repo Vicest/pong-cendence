@@ -1,17 +1,48 @@
 <script lang="ts">
 	import { userList, updateUser } from '../../../../store/User';
 	import { io } from "socket.io-client";
+	import { aux_socket } from '../../../../store/Socket';
 
-	let new_socket = io("http://localhost:3001",{
-                    autoConnect: false,
-                    transports: ['websocket']
-                });
+	
+	let connected = false;
+	let User = {
+		id: 0,
+		nickname: 'Miguel',
+		email: 'mortiz-d@gmail.com',
+		avatar: 'El pingudo',
+		two_factor_auth_secret: "wololo",
+		two_factor_auth_enabled: false,
+	}
+	let Msg = {
+		id: 0,
+		content: "Que mierda es esta",
+		sender: User,
+		target: User,
+		created_at: "2021-10-10 10:10:10"
+	}
 
-	function sendmessage() {
 
-		
-		new_socket.emit('message', "Hola mundo");
-		console.log("Enviando mensaje");
+	aux_socket.on("connect_error", (err) => {
+        console.log(`connect_error due to ${err.message}`);
+    });
+
+	aux_socket.on('connect', () => {
+		connected = true;
+		console.log('Connected to server');
+	});
+
+
+
+	aux_socket.on('disconnect', () => {
+		connected = false;
+		console.log('Disconnected from server');
+	});
+
+	function sendmessage()
+	{
+		aux_socket.connect();
+		aux_socket.emit('message', Msg);
+		console.log('Mensaje enviado');
 	}
 </script>
 
