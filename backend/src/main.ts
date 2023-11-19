@@ -7,7 +7,7 @@ async function bootstrap() {
   //Configure CORS options
   //WHY DOESN'T THIS WORK?
 	app.enableCors({
-		origin: ["http://localhost:3000"],//TODO Enable '*' or just the incoming requests'
+		origin: ["http://localhost:5173"],//TODO Enable '*' or just the incoming requests'
 		methods : "GET,HEAD,PUT,PATCH,POST,DELETE",
 	});
 

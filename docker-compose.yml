@@ -1,18 +1,31 @@
 version: '3.5'
 services:
+  # db:
+  #   image: mysql:5.7
+  #   container_name: db
+  #   platform: linux/x86_64
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: 1234
+  #     MYSQL_DATABASE: transcendence
+  #     MYSQL_USER: admin
+  #     MYSQL_PASSWORD: 1234
+  #   ports:
+  #     - "6033:3306"
+  #   volumes:
+  #     - dbdata:/var/lib/mysql
   db:
-    image: mysql:5.7
     container_name: db
-    platform: linux/x86_64
     environment:
-      MYSQL_ROOT_PASSWORD: 1234
-      MYSQL_DATABASE: transcendence
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: 1234
-    ports:
-      - "6033:3306"
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=postgress
+    - POSTGRES_DB=transcendence
+    restart: always
+    image: postgres:latest
     volumes:
-      - dbdata:/var/lib/mysql
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+  
   adminer:
     image: adminer
     container_name: adminer

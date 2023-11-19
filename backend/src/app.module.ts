@@ -13,11 +13,11 @@ import { SocketsModule } from './sockets/sockets.module';
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'mysql',
+      type: 'postgres',
       host: 'localhost',
-      port: 6033,
-      username: 'admin',
-      password: '1234',
+      port: 5432,
+      username: 'postgres',
+      password: 'postgress',
       database: 'transcendence',
       entities: [
         __dirname + '/**/*.entity{.ts,.js}',

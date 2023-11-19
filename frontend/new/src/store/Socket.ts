@@ -1,10 +1,5 @@
 import { io } from "socket.io-client";
+import { writable } from "svelte/store";
 
-export const aux_socket = io("http://localhost:3000",{
-    autoConnect: false,
-    transports: ['websocket'],
-    auth: {
-        token: "ejemplo",
-        login : "ejemploso"
-    },
-})
+export const aux_socket = writable();
+

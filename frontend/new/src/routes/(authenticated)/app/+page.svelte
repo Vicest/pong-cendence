@@ -1,5 +1,18 @@
 <!-- YOU CAN DELETE EVERYTHING IN THIS PAGE -->
+<script>
+	import { onMount } from "svelte";
+	import { fetchSocket } from "../../../components/data/fetchSocket.svelte"
+	import { fetchUser } from "../../../components/data/fetchUser.svelte"
+	
+	onMount(async () => {
+		console.log("- - - - - - - - - ")
+		await fetchUser("mortiz-d");
+        await fetchSocket();
+        console.log("- - - - - - - - - ")
+    });
 
+
+</script>
 <div class="container h-full mx-auto flex justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
 		<h2 class="h2">Welcome to Skeleton.</h2>

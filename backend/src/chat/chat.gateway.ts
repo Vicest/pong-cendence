@@ -15,7 +15,7 @@ export class ChatGateway{
 
 	handleConnection(socket: Socket) {
 		// this.logger.debug('Socket connected: login : '+ socket.handshake.auth.login + ' | sesion : ' + socket.id + ' is ' + socket.handshake.auth.token)
-		console.log('Socket connected: login : '+ socket.handshake.auth.login + ' | sesion : ' + socket.id + ' is ' + socket.handshake.auth.token)
+		console.log('Socket connected: login : '+ socket.handshake.auth.user + ' | sesion : ' + socket.id)
 		socket.join(socket.handshake.auth.login)
 	}
 
