@@ -27,6 +27,7 @@
     "@nestjs/platform-socket.io": "^10.0.0",
     "@nestjs/config": "latest",
     "@nestjs/passport": "latest",
+    "@nestjs/jwt": "latest",
     "@nestjs/typeorm": "^10.0.0",
     "mysql2": "^3.6.3",
     "reflect-metadata": "^0.1.13",
