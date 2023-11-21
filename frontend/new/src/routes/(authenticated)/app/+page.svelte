@@ -7,7 +7,6 @@
 	onMount(async () => {
 		console.log("- - - - - - - - - ")
 		await fetchUser("mortiz-d");
-        await fetchSocket();
         console.log("- - - - - - - - - ")
     });
 

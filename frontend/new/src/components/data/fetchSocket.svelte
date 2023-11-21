@@ -9,17 +9,17 @@
 
     apiurl.subscribe((value) => {
         url = value;
-        console.log("URL changed -> ", value)
+        // console.log("URL changed -> ", value)
     });
 
     user.subscribe((value) => {
         aux_user = value;
-        console.log("URL changed -> ", value)
+        // console.log("User changed -> ", value)
     });
 
     export async function fetchSocket() {
         return new Promise((resolve) => {
-            // console.log("Socket fetch -> ", aux_user)
+            console.log("aux_user.nickname -> ", aux_user)
             let new_socket = io(url,{
                     autoConnect: false,
                     transports: ['websocket'],

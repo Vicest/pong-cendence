@@ -43,16 +43,72 @@ export class User {
   })
   two_factor_auth_enabled: boolean;
 
-  @ManyToMany(() => Channel, (channel) => channel.members)
+
+  @ManyToMany(() => Channel, channel => channel.members)
+  @JoinTable({
+    name: 'ChannelMembers',
+    joinColumn: {
+      name: 'user_id'
+    },
+    inverseJoinColumn: {
+      name: 'channel_id'
+    }
+  })
   channels: Channel[];
+ 
+  // @ManyToMany(() => Channel, (channel) => channel.members)
+  // channels: Channel[];
 
   @OneToMany(() => ChannelMessages, message => message.user)
   channel_messages: ChannelMessages[];
-
-  @OneToMany(() => UserMessages, message => (message.sender || message.target))
-  private_messages: UserMessages[];
-
-  @OneToMany(() => UserRelation, relation => (relation.sender || relation.receptor))
-  relationshared: User[];
   
+  // message.sender || message.target
+  // @OneToMany(() => UserMessages, (message => message.sender || message.target ))
+  // messages_privatosos: UserMessages[];
+
+  @OneToMany(() => UserMessages, message => message.sender)
+  sent_messages: UserMessages[];
+
+  @OneToMany(() => UserMessages, message => message.target)
+  received_messages: UserMessages[];
+
+  _privateMessages: UserMessages[] = [];
+
+  async loadPrivateMessages(): Promise<void> {
+    const privateMessages = await Promise.all([this.sent_messages, this.received_messages]);
+    this._privateMessages = privateMessages[0].concat(privateMessages[1]);
+  }
+
+  get privateMessages(): UserMessages[] {
+    return this._privateMessages;
+  }
+
+  @OneToMany(() => UserRelation, UserRelation => (UserRelation.sender))
+  relationshared: UserRelation[];
+
+  @OneToMany(() => UserRelation, UserRelation => (UserRelation.receptor))
+  relationsharedAsReceiver: UserRelation[];
+
+  _relationList: UserRelation[] = [];
+
+  async loadrelationsList(): Promise<void> {
+    const relationList = await Promise.all([this.relationshared, this.relationsharedAsReceiver]);
+    this._relationList = relationList[0].concat(relationList[1]);
+  }
+
+  get relationsList(): UserRelation[] {
+    return this._relationList;
+  }
+
+  // @ManyToMany(() => UserRelation, UserRelation => (UserRelation.receptor))
+  // @JoinTable({
+  //   name: 'UserRelation',
+  //   joinColumn: {
+  //     name: 'receptor'
+  //   },
+  //   inverseJoinColumn: {
+  //     name: 'sender'
+  //   }
+  // })
+  // relationshared: UserRelation[];
 }

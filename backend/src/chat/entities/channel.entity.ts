@@ -24,7 +24,7 @@ export class Channel {
   })
   created_at: Date;
 
-  @ManyToMany(() => User, user => user.id)
+  @ManyToMany(() => User, user => user.channels)
   @JoinTable({
     name: 'ChannelMembers',
     joinColumn: {

@@ -1,22 +1,25 @@
-import { Entity, Column, ManyToOne, PrimaryColumn , PrimaryGeneratedColumn} from 'typeorm';
+import { Entity, Column, ManyToOne, OneToOne,PrimaryColumn , PrimaryGeneratedColumn, JoinColumn} from 'typeorm';
 import { User } from './user.entity';
 
 @Entity({
     name: 'UserRelations'
   })
 export class UserRelation {
-    
-    @PrimaryGeneratedColumn()
-    id: number;
 
-    @ManyToOne(() => User, user => user.id)
-    // @PrimaryColumn({type: 'int'})
+    @PrimaryColumn()
+    sender_id: number;
+
+    @ManyToOne(() => User)
+    @JoinColumn({ name: 'sender_id' })
     sender: User;
-    
-    @ManyToOne(() => User, user => user.id)
-    // @PrimaryColumn({type: 'int'})
+
+    @PrimaryColumn()
+    receptor_id: number;
+
+    @ManyToOne(() => User)
+    @JoinColumn({ name: 'receptor_id' })
     receptor: User;
-    
+  
     @Column({
       default : 0
     })
