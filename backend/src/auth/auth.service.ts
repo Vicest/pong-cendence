@@ -8,10 +8,12 @@ export class AuthService {
     constructor(private jwtService: JwtService, private usersService:UsersService) {}
 
     public async grantToken(login: string) {
-        //TODO should require more work on entities and having the DB up and running
-        const user:User = this.usersService.findOne(login);
-        //if (!user)
-        //    notRegistered()
-        return await this.jwtService.signAsync({login:user.nickname, mail:user.email});
+        let user:User = await this.usersService.findOne(login);
+        //TODO Ideally any user would go through a /auth/register endpoint insead of just getting added
+        if (!user) user = await this.usersService.create(login);
+        console.log('////////////////////////////////////////');
+        console.log(user);
+        console.log('////////////////////////////////////////');
+        return await this.jwtService.signAsync({login:user.nickname/*, mail:user.email FIXME*/});
     }
 }

@@ -15,7 +15,7 @@ import { UsersModule } from 'src/users/users.module';
 		}),
 		JwtModule.register({
 			secret: 'TODO use environment for this',
-			signOptions: { expiresIn: '5s' }
+			signOptions: { expiresIn: '500s' }//TODO smaller
 		})
 	],
 	controllers: [AuthController],
