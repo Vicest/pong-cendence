@@ -6,11 +6,15 @@ import { Repository , UpdateResult, DeleteResult} from 'typeorm';
 
 @Injectable()
 export class UsersService {
+    constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
 
-    public findOne(login:string): User {
-        let user:User = new User();
-        user.nickname = login;
-        user.email = login+"@"+login;
-        return user;
+    public async create(login:string): Promise<User> {
+        const newUser:User = await this.userRepository.create({nickname:login});
+        this.userRepository.save(newUser);
+        return newUser;
+    }
+
+    public async findOne(login:string): Promise<User|null> {
+        return this.userRepository.findOneBy({ nickname:login });
     }
 }
