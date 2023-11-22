@@ -17,6 +17,6 @@ export const apiData = readable(null, function start(set) {
         )
         .catch(err => {
             waitingD.set(false)
-            console.log(err.response.data.message)
+            //console.log(err.response.data.message)
         });
 });
