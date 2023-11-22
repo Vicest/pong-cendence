@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get, Res, Redirect } from '@nestjs/common';
+import { Controller, UseGuards, Get, Res, Post, Redirect, Param } from '@nestjs/common';
 import { Response } from 'express';
 import { IntraAuthGuard } from './intraAuth.guard';
 import { UsersService } from '../users/users.service';
@@ -11,8 +11,14 @@ export class AuthController {
 	//FIXME any login request should be a POST, not a GET.
     @UseGuards(IntraAuthGuard)
 	@Get('login')
-	async login() : Promise<void> {}
+	async login() : Promise<string> {
+		return "HI";
+	}
 
+	//@UseGuards(IntraAuthGuard)
+	@Get('validate')
+	async validate() {}
+	/*
 	//FIXME this endpoint should not exist, the redirect should happen towards front.
     @UseGuards(IntraAuthGuard)
 	@Get('callback')
@@ -35,17 +41,19 @@ export class AuthController {
 
 		return token;
 	}
+	*/
 
-	
-	@Get('dbg')
-	async dgb() {
-		//TODO Request auth
-		//TODO Recieve Auth code
-		//Then Request token with code
-		//Then recieve access token
-		//Then I can use access token to talk with intra but whatever
+	//@UseGuards(RegisterGuard)
+	/*@Post('register:login')
+	//@Redirect('localhost:5000/auth/dbg')
+	async register(@Param() param:{login:string}, @Res() res: Response) {
+		console.log("Register function called")
+		if (!this.authService.validateUser(param.login)) {
+			//Do the registering
+		} else {
+			//Set the httpResponse status to 'unmodified'
+		}
 
-		//console.log("This should happen after validation")
-		return 'Hello redirect!';
-	}
+		return "Register request.";
+	}*/
 }

@@ -15,6 +15,11 @@ export class User {
     length: 20
   })
   nickname: string;
+  @Column({
+    type: 'bool',
+    default: false
+  })
+  isRegistered: boolean;
   //@Column({
   //  type: 'text',
   //  unique: true
