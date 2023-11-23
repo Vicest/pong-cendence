@@ -5,7 +5,7 @@ import { Channel } from "../../entities/channel.entity";
 export class messagesChannelDto {
     id: number;
     content: string;
-    user: User;
-    channel: Channel;
+    sender: User;
+    receiver: Channel;
     created_at: Date;
 }

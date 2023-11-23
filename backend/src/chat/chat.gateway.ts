@@ -1,13 +1,12 @@
 import {WebSocketGateway, WebSocketServer, SubscribeMessage, ConnectedSocket, MessageBody} from '@nestjs/websockets'
 import { Server, Socket } from 'socket.io'
-import { UserDto } from 'src/users/dto/users.dto';
-import { messagesChannelDto } from './dto/message/channel.dto';
-import { messagesUserDto } from './dto/message/user.dto';
+import { UsersService } from '../users/users.service';
 
 @WebSocketGateway({ cors: true })
 export class ChatGateway{
 	@WebSocketServer()
 	private server: Server;
+	constructor (private readonly userService : UsersService) {}
 
 	afterInit(server: Server) {
 		console.log('Socket initialized');
@@ -16,7 +15,7 @@ export class ChatGateway{
 	handleConnection(socket: Socket) {
 		// this.logger.debug('Socket connected: login : '+ socket.handshake.auth.login + ' | sesion : ' + socket.id + ' is ' + socket.handshake.auth.token)
 		console.log('Socket connected: login : '+ socket.handshake.auth.user + ' | sesion : ' + socket.id)
-		socket.join(socket.handshake.auth.login)
+		socket.join(socket.handshake.auth.user)
 	}
 
 	handleDisconnect(socket: Socket) {
@@ -25,24 +24,31 @@ export class ChatGateway{
 		console.log('Socket disconnected: ' + socket.id + ' was ' + socket.handshake.auth.token)
 	}
 	
-    @SubscribeMessage('message')
-	sendmsg(@ConnectedSocket() socket: Socket,
-	@MessageBody() data: messagesChannelDto | messagesUserDto): void {
-		console.log("Mensaje recibido: " + data.content);
-		if (data instanceof messagesChannelDto) {
-			// Acciones específicas para messagesChannelDto
-			console.log("Mensaje de canal recibido:", data);
-		} else if (data instanceof messagesUserDto) {
-			// Acciones específicas para messagesUserDto
-			console.log("Mensaje de usuario recibido:", data);
-		}else{
-			console.log("Mensaje de tipo desconocido recibido:", data);
-		}
-		
+    @SubscribeMessage('group_message')
+	async send_groupmsg(@ConnectedSocket() socket: Socket,
+	@MessageBody() data: any ):  Promise<void> {
+		// console.log("Mensaje grupal de " + data.sender.nickname + " dice que "+ data.content);
+		// console.log("Mensaje grupal reciben "+ data.receiver);
+		let new_msg = await this.userService.createChatMessage(data).toPromise();
+		data.receiver.members.forEach((receiver) => {
+			console.log("Quien lo recibe ? "+ receiver.nickname);
+			this.server.to(receiver.nickname).emit('group_message', new_msg);
+		});
 		return;
 	}
-	
 
+	@SubscribeMessage('priv_message')
+	async send_privmsg(@ConnectedSocket() socket: Socket,
+	@MessageBody() data: any): Promise<void> {
+		// console.log("Mensaje privado de " + data.sender.nickname + " dice que "+ data.content);
+		const new_msg = await this.userService.createUserMessage(data).toPromise();
+		// console.log("Datos del privado de " + new_msg.sender.nickname + " dice que "+ new_msg.content);
+		this.server.to(data.receiver.nickname).emit('priv_message', new_msg);
+		if (data.sender.nickname != data.receiver.nickname) {
+			this.server.to(data.sender.nickname).emit('priv_message', new_msg);
+		}
+		return;
+	}
 }
 // @SubscribeMessage('mensaje')
 	// sendmsg(@ConnectedSocket() socket: Socket,

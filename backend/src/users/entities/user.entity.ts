@@ -59,7 +59,7 @@ export class User {
   // @ManyToMany(() => Channel, (channel) => channel.members)
   // channels: Channel[];
 
-  @OneToMany(() => ChannelMessages, message => message.user)
+  @OneToMany(() => ChannelMessages, message => message.sender)
   channel_messages: ChannelMessages[];
   
   // message.sender || message.target
@@ -69,10 +69,10 @@ export class User {
   @OneToMany(() => UserMessages, message => message.sender)
   sent_messages: UserMessages[];
 
-  @OneToMany(() => UserMessages, message => message.target)
+  @OneToMany(() => UserMessages, message => message.receiver)
   received_messages: UserMessages[];
 
-  _privateMessages: UserMessages[] = [];
+  _privateMessages: UserMessages[];
 
   async loadPrivateMessages(): Promise<void> {
     const privateMessages = await Promise.all([this.sent_messages, this.received_messages]);
@@ -89,7 +89,7 @@ export class User {
   @OneToMany(() => UserRelation, UserRelation => (UserRelation.receptor))
   relationsharedAsReceiver: UserRelation[];
 
-  _relationList: UserRelation[] = [];
+  _relationList: UserRelation[];
 
   async loadrelationsList(): Promise<void> {
     const relationList = await Promise.all([this.relationshared, this.relationsharedAsReceiver]);
@@ -99,6 +99,8 @@ export class User {
   get relationsList(): UserRelation[] {
     return this._relationList;
   }
+
+  friends: User[];
 
   // @ManyToMany(() => UserRelation, UserRelation => (UserRelation.receptor))
   // @JoinTable({

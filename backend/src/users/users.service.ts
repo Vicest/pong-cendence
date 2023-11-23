@@ -6,8 +6,9 @@ import { Repository , UpdateResult, DeleteResult} from 'typeorm';
 import { Observable, from } from 'rxjs';
 import { UserRelation } from './entities/userRelations.entity';
 import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
+import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { Channel } from 'src/chat/entities/channel.entity';
-import { channel } from 'diagnostics_channel';
+
 
 @Injectable()
 export class UsersService {
@@ -17,8 +18,10 @@ export class UsersService {
         private readonly userRepository: Repository<User>,
         @InjectRepository(UserRelation)
         private readonly userRelationRepository: Repository<UserRelation>,
-        @InjectRepository(Channel)
-        private readonly channelRepository: Repository<Channel>
+        @InjectRepository(ChannelMessages)
+        private readonly channelmessagesRepository: Repository<ChannelMessages>,
+        @InjectRepository(UserMessages)
+        private readonly usermessagesRepository: Repository<UserMessages>
     ){}
     
         /*Con Dios me disculpo por esta aberracion de función ... 
@@ -28,20 +31,24 @@ export class UsersService {
           where: { nickname },
           relations: ['relationshared', 'relationshared.sender', 'relationshared.receptor', 
             'relationsharedAsReceiver', 'relationsharedAsReceiver.sender', 'relationsharedAsReceiver.receptor',//I hate it
-           'channels', 'channels.messages', 'channels.messages.user', 
-           'sent_messages', 'sent_messages.sender', 'sent_messages.target',
-           'received_messages','received_messages.sender','received_messages.target'] //Puta mierda esta bro :v
+           'channels', 'channels.messages', 'channels.messages.sender', 'channels.members', 
+           'sent_messages', 'sent_messages.sender', 'sent_messages.receiver',
+           'received_messages','received_messages.sender','received_messages.receiver'] //Puta mierda esta bro :v
         });
       
         if (contents) {
             await contents.loadPrivateMessages();
             await contents.loadrelationsList();
+            contents.friends = contents.relationsList
+                .filter((relation) => relation.status === 1)
+                .map((relation) => (relation.sender_id === contents.id ? relation.receptor : relation.sender));
         }
+        delete contents._relationList;
         delete contents.sent_messages;
         delete contents.received_messages;
         delete contents.relationshared;
         delete contents.relationsharedAsReceiver;
-        console.log(contents);
+        // console.log(contents);
         return contents;
       }
 
@@ -69,4 +76,13 @@ export class UsersService {
         return from(this.userRelationRepository.save(newRelation));
     }
 
+    createUserMessage( priv_message : UserMessages): Observable<UserMessages>
+    {
+        return from(this.usermessagesRepository.save(priv_message));
+    }
+
+    createChatMessage( chan_msg : ChannelMessages): Observable<ChannelMessages>
+    {
+        return from(this.channelmessagesRepository.save(chan_msg));
+    }
 }

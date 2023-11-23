@@ -16,13 +16,13 @@ export class ChannelMessages {
   @JoinColumn({
     name: 'user_id'
   })
-  user: User;
+  sender: User;
 
   @ManyToOne(() => Channel, channel => channel.id)
   @JoinColumn({
     name: 'channel_id'
   })
-  channel: Channel;
+  receiver: Channel;
 
   @Column({
     type: 'timestamp',

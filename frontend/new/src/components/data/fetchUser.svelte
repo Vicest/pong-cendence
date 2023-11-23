@@ -32,7 +32,7 @@
                 })
                 .then(data => {
                     
-                    console.log("usuario recibido -> ", data);
+                    // console.log("usuario recibido -> ", data);
                     user.set(data);
                     fetchSocket();
                 })

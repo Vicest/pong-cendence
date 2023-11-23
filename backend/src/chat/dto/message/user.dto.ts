@@ -4,6 +4,6 @@ export class messagesUserDto {
     id: number;
     content: string;
     sender: User;
-    target: User;
+    receiver: User;
     created_at: Date;
 }

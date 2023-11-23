@@ -5,9 +5,9 @@
 	import { fetchUser } from "../../../components/data/fetchUser.svelte"
 	
 	onMount(async () => {
-		console.log("- - - - - - - - - ")
+		// console.log("- - - - - - - - - ")
 		await fetchUser("mortiz-d");
-        console.log("- - - - - - - - - ")
+        // console.log("- - - - - - - - - ")
     });
 
 

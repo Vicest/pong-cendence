@@ -10,7 +10,7 @@ export class Channel {
   id: number;
 
   @Column()
-  name: string;
+  nickname: string;
 
   @Column()
   description: string;
@@ -36,6 +36,7 @@ export class Channel {
   })
   members: User[];
 
-  @OneToMany(() => ChannelMessages, message => message.channel)
+  @OneToMany(() => ChannelMessages, message => message.receiver)
   messages: ChannelMessages[];
+  
 }
