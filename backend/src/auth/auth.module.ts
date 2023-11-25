@@ -6,12 +6,13 @@ import { IntraAuthGuard } from './intraAuth.guard';
 import { Intra42Strategy } from './intra42.strategy';
 import { AuthController } from './auth.controller';
 import { UsersModule } from 'src/users/users.module';
+import { Serializer } from './Serializer';
 
 @Module({
 	imports: [
 		UsersModule,
 		PassportModule.register({
-			session: false
+			session: true//TODO enable sessions eventially
 		}),
 		JwtModule.register({
 			secret: 'TODO use environment for this',
@@ -19,7 +20,7 @@ import { UsersModule } from 'src/users/users.module';
 		})
 	],
 	controllers: [AuthController],
-	providers: [Intra42Strategy, IntraAuthGuard, AuthService],
+	providers: [Intra42Strategy, IntraAuthGuard, AuthService, Serializer],
 	exports: [IntraAuthGuard],
 })
 export class AuthModule {}

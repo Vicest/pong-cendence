@@ -1,23 +1,63 @@
-import { Controller, UseGuards, Get, Res, Post, Redirect, Param } from '@nestjs/common';
-import { Response } from 'express';
+import { Controller, UseGuards, Get, Res, Post, Param, Req, Session, Redirect } from '@nestjs/common';
+import { Request } from 'express';
 import { IntraAuthGuard } from './intraAuth.guard';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
+import { User } from 'src/users/entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
     constructor(private usersService:UsersService, private authService:AuthService) {}
 
+    //@UseGuards(IntraAuthGuard)
+	@Get('test')
+	async test(@Session() session:Record<string, any>, @Req() req , @Res() res) {
+
+		console.log(req.session);
+		console.log("////////////////");
+		//console.log(res.session.user);
+		//return `${req}`
+		//console.log(session);
+		//if (req.user)
+		//	console.log("Session for user ", req.user);
+		//else
+		//	console.log("Rock u like a hurricane");
+	}
+
 	//FIXME any login request should be a POST, not a GET.
     @UseGuards(IntraAuthGuard)
 	@Get('login')
-	async login() : Promise<string> {
-		return "HI";
+	async login() {}
+
+    @UseGuards(IntraAuthGuard)
+	@Redirect("http://localhost:4200")
+	@Get('callback')
+	async callback(@Session() session:Record<string, any>, @Req() req , @Res() res) {
+		//res.redirect("localhost:4200");
+		//return '/';
+		console.log("resuser");
+		console.log(req.user);
+		console.log("resuser");
+		const userToken = await this.authService.grantToken("hola");
+		console.log(userToken);
+		console.log("-----------");
+		res.cookie('token', userToken, { httpOnly: true });
+		//console.log(res.session.user);
+		//session.auth = true;
+		//res.json({token:userToken});
+		//return res.json({token:userToken})//.redirect('http://localhost:4200/');
+		//return res.json({token:userToken}).redirect('http://localhost:4200/');
 	}
 
 	//@UseGuards(IntraAuthGuard)
 	@Get('validate')
 	async validate() {}
+//
+//	@UseGuards(LoginGuard)
+//	@Post('login')
+//	async register() {
+//		
+//	}
 	/*
 	//FIXME this endpoint should not exist, the redirect should happen towards front.
     @UseGuards(IntraAuthGuard)

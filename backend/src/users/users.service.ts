@@ -18,6 +18,10 @@ export class UsersService {
         return newUser;
     }
 
+    public async find(id:number): Promise<User|null> {
+        return this.userRepository.findOneBy({ id:id });
+    }
+
     public async findOne(login:string): Promise<User|null> {
         return this.userRepository.findOneBy({ nickname:login });
     }

@@ -29,12 +29,14 @@
     "@nestjs/passport": "latest",
     "@nestjs/jwt": "latest",
     "@nestjs/typeorm": "^10.0.0",
+    "@nestjs/throttler": "latest",
     "mysql2": "^3.6.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.17",
     "passport": "latest",
-    "passport-42": "latest"
+    "passport-42": "latest",
+    "express-session": "latest"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",
@@ -46,6 +48,7 @@
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
     "@types/supertest": "^2.0.12",
+    "@types/express-session": "latest",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.42.0",

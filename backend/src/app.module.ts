@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -12,6 +13,11 @@ import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
+    //TODO Guarded endpoints fot the IntraAPI limiting, 2/s is what the intra allows for, we would need to adjust values here
+    ThrottlerModule.forRoot([{
+      ttl: 2000,
+      limit: 1,
+    }]),
     TypeOrmModule.forRoot({
       //TODO keep CB config in a separate file.
       //import { DBconfig } from './modules/api/orm.config';
