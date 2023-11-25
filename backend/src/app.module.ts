@@ -22,7 +22,7 @@ import { AuthModule } from './auth/auth.module';
       //TODO keep CB config in a separate file.
       //import { DBconfig } from './modules/api/orm.config';
       type: 'mysql',
-      host: 'db',
+      host: '127.0.0.1',
       port: 3306,
       username: 'admin',
       password: '1234',

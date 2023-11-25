@@ -3,7 +3,21 @@ import { redirect } from "@sveltejs/kit";
 
 const isUserLoggedIn = async (cookies: Cookies): Promise<boolean> => {
 	return new Promise((resolve) => {
-		resolve(cookies.get("token") !== undefined);
+		fetch("http://localhost:5001/auth/me", {
+			headers: {
+				"Content-Type": "application/json",
+				"Authorization": `Bearer ${cookies.get("token")}`,
+			},
+		})
+		.then((res) =>{
+			if (res.status === 401) {
+				resolve(false);
+			}
+			return res.json();
+		})
+		.then((data) => {
+			resolve(data);
+		});
 	});
 
 };
@@ -33,6 +47,7 @@ export const handle: Handle = async ({ event, resolve, }) => {
 			});
 		}
 	}
+	event.locals.user = isTokenValid;
 	const response = await resolve(event);
 	return response;
 }

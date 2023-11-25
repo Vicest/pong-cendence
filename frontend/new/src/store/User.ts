@@ -1,22 +1,32 @@
 import { writable } from 'svelte/store'
 
-export const userList = writable([
-	{
-		id: 1,
-		name: 'user1',
-		avatar: 'https://avatars.githubusercontent.com/u/1?v=4',
+export const userList = writable(null);
+
+const getCookie = (name: string) => {
+	let cookie = {};
+	document.cookie.split(';').forEach(function(el) {
+	  let split = el.split('=');
+	  cookie[split[0].trim()] = split.slice(1).join("=");
+	})
+	console.log(cookie);
+	return cookie[name];
+}
+
+fetch('http://localhost:5001/users/all', {
+	method: 'GET',
+	headers: {
+		'Content-Type': 'application/json',
+		'Authorization': 'Bearer ' + getCookie('token'),
 	},
-]);
+})
+	.then((res) => res.json())
+	.then((data) => {
+		userList.set(data);
+	});
 
 setTimeout(() => {
-	userList.update((user) => [
-		...user,
-		{
-			id: 2,
-			name: 'user2',
-			avatar: 'https://avatars.githubusercontent.com/u/2?v=4',
-		},
-	]);
+
+
 }, 3000);
 
 

@@ -1,5 +1,14 @@
 <!-- YOU CAN DELETE EVERYTHING IN THIS PAGE -->
 
+<script lang="ts">
+	import { AppRail, AppRailAnchor, AppRailTile, Avatar } from '@skeletonlabs/skeleton';
+	import type { PageData } from './$types'
+	import { currentUser } from '../../../store/Auth';
+	export let data: PageData;
+	// Set the current user from the data passed in from the server
+	$: currentUser.set(data.user)
+</script>
+
 <div class="container h-full mx-auto flex justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
 		<h2 class="h2">Welcome to Skeleton.</h2>
@@ -25,7 +34,7 @@
 				target="_blank"
 				rel="noreferrer"
 			>
-				Launch Documentation
+				{ $currentUser.nickname }
 			</a>
 		</div>
 		<div class="space-y-2">
