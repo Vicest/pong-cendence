@@ -10,22 +10,22 @@ export class AuthService {
     }
 
     //is valid, already exists, create, error, etc.
-    public async validateUser(login: string): Promise<boolean> {
+    public async validateUser(login: string) {
         this.log.verbose(`Validate user ${login}`);
         let user:User|null = await this.usersService.findOne(login);
         this.log.verbose(`${user} found in DB`);
         if(!user) user = await this.usersService.create(login);
-        return user != null;
+        return user;
     }
 
-    public async grantToken(login: string) {
-        let user:User|null = await this.usersService.findOne(login);
+    public async grantToken({id, nickname}: User) {
+        let user = await this.usersService.find(id);
         //TODO Ideally any user would go through a /auth/register endpoint insead of just getting added
-        if (!user) user = await this.usersService.create(login);
+        if (!user) user = await this.usersService.create(nickname);
         console.log('////////////////////////////////////////');
         console.log(user);
         console.log('////////////////////////////////////////');
-        return await this.jwtService.signAsync({login:user.nickname/*, mail:user.email FIXME*/});
+        return await this.jwtService.signAsync({id, nickname});
     }
     
     private log:Logger;

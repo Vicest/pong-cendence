@@ -4,8 +4,10 @@ import { AppModule } from './app.module';
 import * as session from 'express-session';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+	const app = await NestFactory.create(AppModule);
 	const conf:ConfigService = app.get(ConfigService);
+	
+	console.log(conf.get<string>('BASENAME'));
 
 	//We are not validating the .env file it seems (TODO)
 	const frontUri:string = (conf.get<string>('BASENAME') as string).concat(':', conf.get<string>('FRONTEND_PORT') as string);
@@ -24,6 +26,7 @@ async function bootstrap() {
 	})); 
 
   const backPort:number = conf.get<number>('BACKEND_PORT') as number;
+  console.log(`Listening on port ${backPort}`);
   await app.listen(backPort);
 }
 bootstrap();

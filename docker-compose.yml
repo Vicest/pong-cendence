@@ -1,26 +1,26 @@
 version: '3.5'
 services:
-  front:
-    container_name: front-container
-    build: ./frontend/old
-    ports:
-      - '${FRONTEND_PORT}:${FRONTEND_PORT}'
-    restart: always
-  back:
-    build:
-      context: ./
-      dockerfile: ./backend/Dockerfile
-    container_name: back-container
-    image: 'backend_img'
-    volumes:
-      - ./backend/src:/usr/src/backend/src
-    expose:
-      - '${BACKEND_PORT}'
-    ports:
-      - '${BACKEND_PORT}:${BACKEND_PORT}'
-    networks:
-      - default
-    restart: always
+  # front:
+  #   container_name: front-container
+  #   build: ./frontend/old
+  #   ports:
+  #     - '${FRONTEND_PORT}:${FRONTEND_PORT}'
+  #   restart: always
+  # back:
+  #   build:
+  #     context: ./
+  #     dockerfile: ./backend/Dockerfile
+  #   container_name: back-container
+  #   image: 'backend_img'
+  #   volumes:
+  #     - ./backend/src:/usr/src/backend/src
+  #   expose:
+  #     - '${BACKEND_PORT}'
+  #   ports:
+  #     - '${BACKEND_PORT}:${BACKEND_PORT}'
+  #   networks:
+  #     - default
+  #   restart: always
   db:
     image: mysql:5.7
     container_name: db
@@ -30,7 +30,7 @@ services:
       MYSQL_USER: admin
       MYSQL_PASSWORD: 1234
     ports:
-      - "6033:3306"
+      - "3306:3306"
     volumes:
       - dbdata:/var/lib/mysql
   adminer:

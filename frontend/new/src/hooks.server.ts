@@ -1,11 +1,9 @@
-import type { Handle } from "@sveltejs/kit";
+import type { Cookies, Handle } from "@sveltejs/kit";
 import { redirect } from "@sveltejs/kit";
 
-const isUserLoggedIn = async (cookies): Promise<boolean> => {
+const isUserLoggedIn = async (cookies: Cookies): Promise<boolean> => {
 	return new Promise((resolve) => {
-		setTimeout(() => {
-			resolve(true);
-		}, 500);
+		resolve(cookies.get("token") !== undefined);
 	});
 
 };
@@ -17,15 +15,20 @@ export const handle: Handle = async ({ event, resolve, }) => {
 	// Auth check
 	const isTokenValid = await isUserLoggedIn(cookies);
 
-	console.log("cookies", isTokenValid);
-
 	// Restrict all routes under /admin
-	if (requestedPath !== "/login" && requestedPath !== "/register" && requestedPath !== "/") {
-		if (!isTokenValid) {
+	if (!isTokenValid && requestedPath !== "/login" && requestedPath !== "/register" && requestedPath !== "/") {
 			return new Response('Redirecting', {
 				status: 302,
 				headers: {
 					location: "/login",
+				},
+			});
+	} else {
+		if (isTokenValid && ["/login", "/register", "/"].indexOf(requestedPath) !== -1) {
+			return new Response('Redirecting', {
+				status: 302,
+				headers: {
+					location: "/app",
 				},
 			});
 		}

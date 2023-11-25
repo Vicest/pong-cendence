@@ -4,10 +4,11 @@ import { IntraAuthGuard } from './intraAuth.guard';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
 import { User } from 'src/users/entities/user.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private usersService:UsersService, private authService:AuthService) {}
+    constructor(private env:ConfigService, private usersService:UsersService, private authService:AuthService) {}
 
     //@UseGuards(IntraAuthGuard)
 	@Get('test')
@@ -30,7 +31,6 @@ export class AuthController {
 	async login() {}
 
     @UseGuards(IntraAuthGuard)
-	@Redirect("http://localhost:4200")
 	@Get('callback')
 	async callback(@Session() session:Record<string, any>, @Req() req , @Res() res) {
 		//res.redirect("localhost:4200");
@@ -38,10 +38,11 @@ export class AuthController {
 		console.log("resuser");
 		console.log(req.user);
 		console.log("resuser");
-		const userToken = await this.authService.grantToken("hola");
+		const userToken = await this.authService.grantToken(req.user);
 		console.log(userToken);
 		console.log("-----------");
 		res.cookie('token', userToken, { httpOnly: true });
+		return res.redirect(`${this.env.get<string>('BASENAME')}:${this.env.get<string>('FRONTEND_PORT')}/app`);
 		//console.log(res.session.user);
 		//session.auth = true;
 		//res.json({token:userToken});
