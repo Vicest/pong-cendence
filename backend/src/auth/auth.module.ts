@@ -7,6 +7,8 @@ import { Intra42Strategy } from './intra42.strategy';
 import { AuthController } from './auth.controller';
 import { UsersModule } from 'src/users/users.module';
 import { Serializer } from './Serializer';
+import { JwtGuard } from './jwt.guard';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
 	imports: [
@@ -20,7 +22,7 @@ import { Serializer } from './Serializer';
 		})
 	],
 	controllers: [AuthController],
-	providers: [Intra42Strategy, IntraAuthGuard, AuthService, Serializer],
+	providers: [Intra42Strategy, JwtStrategy, JwtGuard, IntraAuthGuard, AuthService, Serializer],
 	exports: [IntraAuthGuard],
 })
 export class AuthModule {}

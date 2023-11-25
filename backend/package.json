@@ -36,6 +36,7 @@
     "typeorm": "^0.3.17",
     "passport": "latest",
     "passport-42": "latest",
+    "passport-jwt": "latest",
     "express-session": "latest"
   },
   "devDependencies": {
@@ -45,6 +46,7 @@
     "@types/express": "^4.17.17",
     "@types/config": "latest",
     "@types/passport-42": "latest",
+    "@types/passport-jwt": "latest",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
     "@types/supertest": "^2.0.12",
