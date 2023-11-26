@@ -17,11 +17,11 @@ export class UserMessages {
   })
   sender: User;
 
-  @ManyToOne(() => User, target => target.id)
+  @ManyToOne(() => User, receiver => receiver.id)
   @JoinColumn({
-    name: 'target_id'
+    name: 'receiver_id'
   })
-  target: User;
+  receiver: User;
 
   @Column({
     type: 'timestamp',

@@ -1,12 +1,13 @@
-//import { Module } from '@nestjs/common';
-//import { TypeOrmModule } from '@nestjs/typeorm';
-//import { ChatService } from './chat.service';
-//import { ChatController } from './chat.controller';
-//import { Channel } from './entities/channel.entity';
+import { Module } from '@nestjs/common';
+import { ChatService } from './chat.service';
+import { ChatController } from './chat.controller';
+import { UsersModule } from '../users/users.module';
+import { ChatGateway } from './chat.gateway';
 
-//@Module({
-//  imports: [TypeOrmModule.forFeature([Channel])],
-//  providers: [ChatService],
-//  controllers: [ChatController]
-//})
-//export class ChatModule {}
+@Module({
+  imports: [UsersModule], 
+  providers: [ChatService, ChatGateway],
+  controllers: [ChatController],
+  exports: [ChatGateway]
+})
+export class ChatModule {}

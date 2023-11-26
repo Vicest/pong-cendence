@@ -1,5 +1,6 @@
-import { writable } from 'svelte/store'
+import { writable } from 'svelte/store';
 
+export const user = writable();
 export const userList = writable(null);
 
 const getCookie = (name: string) => {

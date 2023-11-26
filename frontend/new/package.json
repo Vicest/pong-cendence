@@ -43,6 +43,8 @@
   "dependencies": {
     "@fortawesome/free-brands-svg-icons": "^6.4.2",
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
-    "axios": "^1.6.2"
+    "@neodrag/svelte": "^2.0.3",
+    "axios": "^1.6.2",
+    "socket.io-client": "^4.7.2"
   }
 }

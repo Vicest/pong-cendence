@@ -1,4 +1,14 @@
 <!-- YOU CAN DELETE EVERYTHING IN THIS PAGE -->
+<script>
+	import { onMount } from "svelte";
+	import { fetchSocket } from "../../../components/data/fetchSocket.svelte"
+	import { fetchUser } from "../../../components/data/fetchUser.svelte"
+	
+	onMount(async () => {
+		// console.log("- - - - - - - - - ")
+		await fetchUser("mortiz-d");
+        // console.log("- - - - - - - - - ")
+    });
 
 <script lang="ts">
 	import { AppRail, AppRailAnchor, AppRailTile, Avatar } from '@skeletonlabs/skeleton';
