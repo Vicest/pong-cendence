@@ -2,6 +2,8 @@
 	import { AppBar, Avatar } from '@skeletonlabs/skeleton';
 	import Fa from 'svelte-fa';
 	import { faTrophy, faInfo, faGamepad } from '@fortawesome/free-solid-svg-icons';
+	import { currentUser } from '../store/Auth';
+	
 	import { page } from '$app/stores';
 
 	let currentTile: number = 0;
@@ -46,8 +48,9 @@
 		</div>
 	</svelte:fragment>
 	<svelte:fragment slot="trail">
+		<span>{ $currentUser?.nickname }</span>
 		<Avatar
-			src="https://cdn.intra.42.fr/users/82cfc9a1ea1ad97a890578e26b0ce0c9/aborboll.jpg"
+			src="{ $currentUser?.avatar }"
 			width="w-10"
 			border="border border-white"
 		/>

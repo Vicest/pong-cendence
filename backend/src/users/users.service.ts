@@ -11,8 +11,10 @@ export class UsersService {
     }
 
     //TODO I suspect that create simply returns User or some sort of error.
-    public async create(login:string): Promise<User|null> {
-        const newUser:User|null = await this.userRepository.create({nickname:login, isRegistered:false});
+    public async create(data): Promise<User|null> {
+        console.log("Creating user", data.login);
+        let fields = JSON.parse(data._raw);
+        const newUser:User|null = await this.userRepository.create({nickname:data.login, isRegistered:false, avatar:fields.image?.link});
         this.log.debug(`Created user ${newUser}`)
         if (newUser) await this.userRepository.save(newUser);
         return newUser;
@@ -20,6 +22,11 @@ export class UsersService {
 
     public async find(id:number): Promise<User|null> {
         return this.userRepository.findOneBy({ id:id });
+    }
+
+    public async findAll(): Promise<User[]> {  
+        return this.userRepository.find();
+    
     }
 
     public async findOne(login:string): Promise<User|null> {

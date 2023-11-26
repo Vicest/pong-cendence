@@ -12,18 +12,9 @@ export class AuthController {
     constructor(private env:ConfigService, private usersService:UsersService, private authService:AuthService) {}
 
     @UseGuards(JwtGuard)
-	@Get('test')
+	@Get('me')
 	async test(@Session() session:Record<string, any>, @Req() req , @Res() res) {
-
-		console.log(req.session);
-		console.log("////////////////");
-		//console.log(res.session.user);
-		//return `${req}`
-		//console.log(session);
-		//if (req.user)
-		//	console.log("Session for user ", req.user);
-		//else
-		//	console.log("Rock u like a hurricane");
+		res.send(req.user);
 	}
 
     @UseGuards(IntraAuthGuard)

@@ -7,7 +7,7 @@
 		<h2 class="h2">About</h2>
 		{#each $userList as user}
 			<img src={user.avatar} alt="avatar" class="h-10" on:click={() => updateUser(user.id)} />
-			<p>{user.name}</p>
+			<p>{user.nickname}</p>
 		{/each}
 	</div>
 </div>

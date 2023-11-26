@@ -9,7 +9,7 @@ import { AuthService } from './auth.service';
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     constructor(private env:ConfigService, private authService:AuthService) {
         super({
-            jwtFromRequest: ExtractJwt.fromCookie('token'),
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
             secretOrKey: 'TODO use environment for this',
         })
@@ -17,8 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
     //TODO Nope, not all problems are solved using 'any'
     async validate(payload:any) {
-        const ourUser = {id:payload.id, login:payload.nickname};
-        console.log(`Validado jwt: ${ourUser}`);
-        return ourUser;
+        console.log("Validating", payload);
+        return await this.authService.validateUser(payload);
     }
 }

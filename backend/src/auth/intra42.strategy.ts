@@ -12,14 +12,15 @@ export class Intra42Strategy extends PassportStrategy(Strategy, '42') {
             clientSecret: env.get<string>('CLIENT_SECRET'),
             callbackURL: env.get<string>('REDIRECT_URI'),
             profileFields: {
-                'login': 'login'
+                'login': 'login',
+                'avatar': 'avatar'
             }
         })
     }
 
     //TODO Nope, not all problems are solved using 'any'
-    async validate(token:string, refreshToken:string, profile:{login:string}, cb:any) {
+    async validate(token:string, refreshToken:string, profile, cb:any) {
         console.log(`Validaste ${profile.login}! Su token: ${token}, gracias.`);
-        return await this.authService.validateUser(profile.login);
+        return await this.authService.validateUser(profile);
     }
 }
