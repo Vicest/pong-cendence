@@ -9,7 +9,7 @@
 //  @PrimaryGeneratedColumn()
 //  id: number;
 //
-//  @Column({ type: 'longtext'})
+//  @Column({ type: 'text'})
 //  content: string;
 //
 //  @ManyToOne(() => User, user => user.id)

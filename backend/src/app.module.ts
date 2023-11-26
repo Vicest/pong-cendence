@@ -19,13 +19,11 @@ import { AuthModule } from './auth/auth.module';
       limit: 1,
     }]),
     TypeOrmModule.forRoot({
-      //TODO keep CB config in a separate file.
-      //import { DBconfig } from './modules/api/orm.config';
-      type: 'mysql',
+      type: 'postgres',
       host: 'db',
-      port: 3306,
-      username: 'admin',
-      password: '1234',
+      port: 5432,
+      username: 'postgres',
+      password: 'postgress',
       database: 'transcendence',
       entities: [
         __dirname + '/**/*.entity{.ts,.js}',

@@ -6,33 +6,46 @@ services:
   #   ports:
   #     - '${FRONTEND_PORT}:${FRONTEND_PORT}'
   #   restart: always
-  # back:
-  #   build:
-  #     context: ./
-  #     dockerfile: ./backend/Dockerfile
-  #   container_name: back-container
-  #   image: 'backend_img'
-  #   volumes:
-  #     - ./backend/src:/usr/src/backend/src
-  #   expose:
-  #     - '${BACKEND_PORT}'
-  #   ports:
-  #     - '${BACKEND_PORT}:${BACKEND_PORT}'
-  #   networks:
-  #     - default
-  #   restart: always
+  back:
+    build:
+      context: ./
+      dockerfile: ./backend/Dockerfile
+    container_name: back-container
+    image: 'backend_img'
+    volumes:
+      - ./backend/src:/usr/src/backend/src
+    expose:
+      - '${BACKEND_PORT}'
+    ports:
+      - '${BACKEND_PORT}:${BACKEND_PORT}'
+    networks:
+      - default
+    restart: always
+
   db:
-    image: mysql:5.7
     container_name: db
     environment:
-      MYSQL_ROOT_PASSWORD: 1234
-      MYSQL_DATABASE: transcendence
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: 1234
-    ports:
-      - "3306:3306"
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=postgress
+    - POSTGRES_DB=transcendence
+    restart: always
+    image: postgres:latest
     volumes:
-      - dbdata:/var/lib/mysql
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+  # db:
+  #   image: mysql:5.7
+  #   container_name: db
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: 1234
+  #     MYSQL_DATABASE: transcendence
+  #     MYSQL_USER: admin
+  #     MYSQL_PASSWORD: 1234
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - dbdata:/var/lib/mysql
   adminer:
     image: adminer
     container_name: adminer
