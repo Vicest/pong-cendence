@@ -11,7 +11,15 @@ export class UsersController {
 
     constructor (private readonly userService : UsersService) {}
 
+    @UseGuards(JwtGuard)
+    @Get('/all')
+    getAll() {
+        let users = this.usersService.findAll();
+        return users;
+    }
+
     // GET frase/:str --> { ... }x
+    @UseGuards(JwtGuard)
     @Get('frase/:str')
     getTexto(@Param('str') str: string) : string
     {
@@ -19,6 +27,7 @@ export class UsersController {
     }
 
     // GET /:login --> { ... }
+    @UseGuards(JwtGuard)
     @Get(':login')
     getOneUsers(@Param('login') login: string) : Promise<User | null>
     {
@@ -26,6 +35,7 @@ export class UsersController {
     }
 
     // POST /add
+    @UseGuards(JwtGuard)
     @Post('/add')
     createUsers(@Body() user : User ) : Observable<User>
     {
@@ -33,6 +43,7 @@ export class UsersController {
     }
 
     // POST /addrelation
+    @UseGuards(JwtGuard)
     @Post('/addrelation')
     createRelation(@Body() data : any ) : Observable<UserRelation>
     {
@@ -40,15 +51,4 @@ export class UsersController {
         return this.userService.createRelationship(data.user1, data.user2);
     }
 
-}
-
-export class UsersController {
-  constructor(private usersService:UsersService) {}
-
-  @UseGuards(JwtGuard)
-  @Get('/all')
-  getAll() {
-    let users = this.usersService.findAll();
-    return users;
-  }
 }
