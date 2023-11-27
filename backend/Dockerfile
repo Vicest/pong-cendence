@@ -6,6 +6,7 @@ WORKDIR /usr/src/backend
 COPY  .env ../
 COPY backend/package.json backend/tsconfig.json backend/.prettierrc ./
 
+RUN apk update && apk add --no-cache curl
 RUN yarn install
 
 ENTRYPOINT [ "yarn", "start:dev" ]

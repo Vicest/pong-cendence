@@ -1,10 +1,9 @@
-import { Body, Controller, Get, Param, Post, Get, UseGuards } from '@nestjs/common';
+import { Body, Controller, Param, Post, Get, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Observable } from 'rxjs';
 import { User } from './entities/user.entity';
 import { UserRelation } from './entities/userRelations.entity';
 import { JwtGuard } from 'src/auth/jwt.guard';
-import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
@@ -14,7 +13,7 @@ export class UsersController {
     @UseGuards(JwtGuard)
     @Get('/all')
     getAll() {
-        let users = this.usersService.findAll();
+        let users = this.userService.findAll();
         return users;
     }
 

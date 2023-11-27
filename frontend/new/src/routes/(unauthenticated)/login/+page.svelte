@@ -1,7 +1,7 @@
 <!-- Login Page -->
 
 <script>
-	const authUrl = 'http://localhost:5001/auth/login';
+	const authUrl = 'http://localhost:3000/auth/login';
 </script>
 
 <div class="container h-full mx-auto flex justify-center items-center">

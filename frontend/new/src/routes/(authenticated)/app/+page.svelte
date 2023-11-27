@@ -1,22 +1,20 @@
-<!-- YOU CAN DELETE EVERYTHING IN THIS PAGE -->
-<script>
+<script lang="ts">
 	import { onMount } from "svelte";
-	import { fetchSocket } from "../../../components/data/fetchSocket.svelte"
 	import { fetchUser } from "../../../components/data/fetchUser.svelte"
+	import { AppRail, AppRailAnchor, AppRailTile, Avatar } from '@skeletonlabs/skeleton';
+	import type { PageData } from './$types'
+	import { currentUser } from '../../../store/Auth';
+	export let data: PageData;
+	// Set the current user from the data passed in from the server
 	
+	$: currentUser.set(data.user)
 	onMount(async () => {
 		// console.log("- - - - - - - - - ")
 		await fetchUser("mortiz-d");
         // console.log("- - - - - - - - - ")
     });
 
-<script lang="ts">
-	import { AppRail, AppRailAnchor, AppRailTile, Avatar } from '@skeletonlabs/skeleton';
-	import type { PageData } from './$types'
-	import { currentUser } from '../../../store/Auth';
-	export let data: PageData;
-	// Set the current user from the data passed in from the server
-	$: currentUser.set(data.user)
+
 </script>
 
 <div class="container h-full mx-auto flex justify-center items-center">

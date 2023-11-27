@@ -6,7 +6,7 @@ import { shownavlinks } from '../routes/vars.d';
 import { waitingD } from '../routes/vars.d';
 
 export const apiData = readable(null, function start(set) {
-    axios.get("http://localhost:3000/me", { withCredentials: true })
+    axios.get("http://back-container:3000/me", { withCredentials: true })
         .then(
             res => {
                 shownavlinks.set(true);

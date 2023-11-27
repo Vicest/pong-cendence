@@ -12,8 +12,8 @@ const getCookie = (name: string) => {
 	console.log(cookie);
 	return cookie[name];
 }
-
-fetch('http://localhost:5001/users/all', {
+// http://back-container:3000
+fetch('http://back-container:3000/users/all', {
 	method: 'GET',
 	headers: {
 		'Content-Type': 'application/json',

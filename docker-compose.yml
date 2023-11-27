@@ -1,11 +1,6 @@
 version: '3.5'
 services:
-  # front:
-  #   container_name: front-container
-  #   build: ./frontend/old
-  #   ports:
-  #     - '${FRONTEND_PORT}:${FRONTEND_PORT}'
-  #   restart: always
+  
   back:
     build:
       context: ./
@@ -19,7 +14,9 @@ services:
     ports:
       - '${BACKEND_PORT}:${BACKEND_PORT}'
     networks:
-      - default
+      - middle
+    depends_on:
+      - db
     restart: always
 
   db:
@@ -34,6 +31,8 @@ services:
       - ./postgres-data:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    networks:
+      - middle
   
   adminer:
     image: adminer
@@ -43,5 +42,19 @@ services:
       - "8181:8080"
     depends_on:
       - db
+    networks:
+      - middle
+  front:
+    container_name: front-container
+    build: ./frontend/new
+    ports:
+      - '${FRONTEND_PORT}:${FRONTEND_PORT}'
+    restart: always
+    depends_on:
+      - back
+    networks:
+      - middle
 volumes:
   dbdata:
+networks:
+  middle:

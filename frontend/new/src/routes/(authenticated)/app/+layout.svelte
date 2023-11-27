@@ -10,7 +10,7 @@
 	let currentTile: number = 0;
 
 	/** @type {import('./$types').LayoutData}*/
-	export let data: any;
+	// export let data: any;
 </script>
 
 <!-- App Shell -->

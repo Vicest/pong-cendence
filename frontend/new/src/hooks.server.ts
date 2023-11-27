@@ -3,7 +3,7 @@ import { redirect } from "@sveltejs/kit";
 
 const isUserLoggedIn = async (cookies: Cookies): Promise<boolean> => {
 	return new Promise((resolve) => {
-		fetch("http://localhost:5001/auth/me", {
+		fetch("http://back-container:3000/auth/me", {
 			headers: {
 				"Content-Type": "application/json",
 				"Authorization": `Bearer ${cookies.get("token")}`,
