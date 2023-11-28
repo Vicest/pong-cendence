@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -19,17 +19,23 @@ import { SocketsModule } from './sockets/sockets.module';
       ttl: 2000,
       limit: 1,
     }]),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'db',
-      port: 5432,
-      username: 'postgres',
-      password: 'postgress',
-      database: 'transcendence',
-      entities: [
-        __dirname + '/**/*.entity{.ts,.js}',
-      ],
-      synchronize: true,
+    //
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (env:ConfigService) => ({
+        type: 'postgres',
+        host: env.get<string>('DB_HOST'),
+        port: env.get<number>(' DB_PORT'),
+        username: env.get<string>('DB_ADMIN'),
+        password: env.get<string>('DB_PASS'),
+        database: 'transcendence',
+        entities: [
+          __dirname + '/**/*.entity{.ts,.js}',
+        ],
+        synchronize: true,
+
+      }),
+      inject: [ConfigService]
     }),
     ConfigModule.forRoot({
       envFilePath: ['../.env'],

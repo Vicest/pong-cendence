@@ -1,6 +1,6 @@
 version: '3.5'
 services:
-  
+
   back:
     build:
       context: ./
@@ -20,26 +20,26 @@ services:
     restart: always
 
   db:
-    container_name: db
+    container_name: ${DB_HOST}
     environment:
-    - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=postgress
+    - POSTGRES_USER=${DB_ADMIN}
+    - POSTGRES_PASSWORD=${DB_PASS}
     - POSTGRES_DB=transcendence
     restart: always
-    image: postgres:latest
+    image: postgres:alpine
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - ${DB_PORT}:5432
     networks:
       - middle
-  
+
   adminer:
     image: adminer
     container_name: adminer
     restart: always
     ports:
-      - "8181:8080"
+      - ${ADMINER_PORT}:8080
     depends_on:
       - db
     networks:
@@ -48,7 +48,7 @@ services:
     container_name: front-container
     build: ./frontend/new
     ports:
-      - '${FRONTEND_PORT}:${FRONTEND_PORT}'
+      - ${FRONTEND_PORT}:5432
     restart: always
     depends_on:
       - back

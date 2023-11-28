@@ -7,10 +7,12 @@ import { AuthService } from './auth.service';
 @Injectable()
 export class Intra42Strategy extends PassportStrategy(Strategy, '42') {
     constructor(private env:ConfigService, private authService:AuthService) {
+        const redirectUri = env.get<string>('BASENAME').concat(':').concat(env.get<string>('BACKEND_PORT')).concat('/auth/callback');
+        console.log("REDDURECT URI: ", redirectUri);
         super({
             clientID: env.get<string>('CLIENT_ID'),
             clientSecret: env.get<string>('CLIENT_SECRET'),
-            callbackURL: env.get<string>('REDIRECT_URI'),
+            callbackURL: redirectUri,
             profileFields: {
                 'login': 'login',
                 'avatar': 'avatar'
