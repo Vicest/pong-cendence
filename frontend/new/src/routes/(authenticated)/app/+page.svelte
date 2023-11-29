@@ -1,13 +1,14 @@
 <!-- YOU CAN DELETE EVERYTHING IN THIS PAGE -->
 <script>
 	import { onMount } from "svelte";
-	import { fetchSocket } from "../../../components/data/fetchSocket.svelte"
-	import { fetchUser } from "../../../components/data/fetchUser.svelte"
-	
+	import { mock_user_list, mock_user , mock_priv_msg } from "../../../store/MOCK";
+
 	onMount(async () => {
-		// console.log("- - - - - - - - - ")
-		await fetchUser("mortiz-d");
-        // console.log("- - - - - - - - - ")
+		console.log("- - - - - - - - - ")
+		console.log("mock_user_list", $mock_user_list)
+		console.log("mock_user", $mock_user)
+		console.log("mock_priv_msg", $mock_priv_msg)
+        console.log("- - - - - - - - - ")
     });
 
 
