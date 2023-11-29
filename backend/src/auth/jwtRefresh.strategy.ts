@@ -6,17 +6,17 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { AuthService } from './auth.service';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'refresh-jwt') {
     constructor(private env:ConfigService, private authService:AuthService) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: env.get<string>('JWT_SECRET'),
+            secretOrKey: env.get<string>('JWT_REFRESH_SECRET'),
         })
     }
 
     async validate(payload:any) {
-        console.log("Validating", payload);
+        console.log("Validating refresh", payload);
         return await this.authService.validateUser(payload);
     }
 }

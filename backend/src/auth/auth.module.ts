@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { IntraAuthGuard } from './intraAuth.guard';
 import { Intra42Strategy } from './intra42.strategy';
@@ -9,6 +10,8 @@ import { UsersModule } from 'src/users/users.module';
 import { Serializer } from './Serializer';
 import { JwtGuard } from './jwt.guard';
 import { JwtStrategy } from './jwt.strategy';
+import { JwtRefreshGuard } from './jwtRefresh.guard';
+import { JwtRefreshStrategy } from './jwtRefresh.strategy';
 
 @Module({
 	imports: [
@@ -16,13 +19,16 @@ import { JwtStrategy } from './jwt.strategy';
 		PassportModule.register({
 			session: true//TODO enable sessions eventially
 		}),
-		JwtModule.register({
-			secret: 'TODO use environment for this',
-			signOptions: { expiresIn: '500s' }//TODO smaller
+		JwtModule.registerAsync({
+      		imports: [ConfigModule],
+			useFactory: (env:ConfigService) => ({
+				secret: env.get<string>('JWT_SECRET')
+			}),
+			inject: [ConfigService],
 		})
 	],
 	controllers: [AuthController],
-	providers: [Intra42Strategy, JwtStrategy, JwtGuard, IntraAuthGuard, AuthService, Serializer],
+	providers: [Intra42Strategy, JwtStrategy, JwtGuard, JwtRefreshStrategy, JwtRefreshGuard, IntraAuthGuard, AuthService, Serializer],
 	exports: [IntraAuthGuard],
 })
 export class AuthModule {}

@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
-    constructor(private jwtService: JwtService, private usersService:UsersService) {
+    constructor(private jwtService: JwtService, private usersService:UsersService, private env:ConfigService) {
         this.log = new Logger;
     }
 
@@ -18,14 +19,22 @@ export class AuthService {
         return user;
     }
 
-    public async grantToken(data: User) {
+    public async grantTokenPair(data: User) {
         let user = await this.usersService.find(data.id);
         //TODO Ideally any user would go through a /auth/register endpoint insead of just getting added
         if (!user) user = await this.usersService.create(data);
-        console.log('////////////////////////////////////////');
-        console.log(user);
-        console.log('////////////////////////////////////////');
-        return await this.jwtService.signAsync({login:user.nickname/*, mail:user.email FIXME*/});
+        const token = await this.jwtService.signAsync({login:user.nickname/*, mail:user.email FIXME*/},
+        {
+            expiresIn: '5m'
+        });
+        const refreshToken = await this.jwtService.signAsync({login:user.nickname/*, mail:user.email FIXME*/},
+        {
+            expiresIn: '1h',
+            secret: this.env.get<string>('JWT_REFRESH_SECRET')
+        });
+
+        this.log.debug(`Grant token pair to: ${user}\nToken: ${token}\nRefresh: ${refreshToken}`);
+        return { token, refreshToken };
     }
     
     private log:Logger;

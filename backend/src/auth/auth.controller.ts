@@ -1,20 +1,27 @@
-import { Controller, UseGuards, Get, Res, Post, Param, Req, Session, Redirect } from '@nestjs/common';
-import { Request } from 'express';
-import { IntraAuthGuard } from './intraAuth.guard';
-import { UsersService } from '../users/users.service';
-import { AuthService } from './auth.service';
-import { User } from 'src/users/entities/user.entity';
+import { Controller, UseGuards, Get, Res, Req } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { IntraAuthGuard } from './intraAuth.guard';
+import { AuthService } from './auth.service';
 import { JwtGuard } from './jwt.guard';
+import { JwtRefreshGuard } from './jwtRefresh.guard';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private env:ConfigService, private usersService:UsersService, private authService:AuthService) {}
+    constructor(private env:ConfigService, private authService:AuthService) {}
 
     @UseGuards(JwtGuard)
 	@Get('me')
-	async test(@Session() session:Record<string, any>, @Req() req , @Res() res) {
+	async getMe(@Req() req , @Res() res) {
 		res.send(req.user);
+	}
+
+	@UseGuards(JwtRefreshGuard)
+	@Get('refresh')
+	async getRefresh(@Req() req , @Res() res) {
+		const { token, refreshToken } = await this.authService.grantTokenPair(req.user);
+		res.cookie('token', token, { httpOnly: true });
+		res.cookie('refreshtToken', refreshToken, { httpOnly: true });
+		res.send({ token, refreshToken });
 	}
 
     @UseGuards(IntraAuthGuard)
@@ -23,10 +30,10 @@ export class AuthController {
 
     @UseGuards(IntraAuthGuard)
 	@Get('callback')
-	async callback(@Session() session:Record<string, any>, @Req() req , @Res() res) {
-		const userToken = await this.authService.grantToken(req.user);
-		console.log("User token", userToken);
-		res.cookie('token', userToken, { httpOnly: true });
+	async callback(@Req() req , @Res() res) {
+		const { token, refreshToken } = await this.authService.grantTokenPair(req.user);
+		res.cookie('token', token, { httpOnly: true });
+		res.cookie('refreshtToken', refreshToken, { httpOnly: true });
 		return res.redirect(`${this.env.get<string>('BASENAME')}:${this.env.get<string>('FRONTEND_PORT')}/app`);
 	}
 }
