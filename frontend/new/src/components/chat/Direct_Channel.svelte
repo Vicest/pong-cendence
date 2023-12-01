@@ -18,30 +18,20 @@
 	let aux_receptor: any;
 	let user_list: any;
 	let priv_messages: any;
+
+	$:{
+		people = [...user_list];
+		// sortByLastMsg();
+		console.log("User sorted -> ", people)
+	}
 	
-    user.subscribe((value) => {
-        aux_user = value;
-        // console.log("User changed -> ", value)
-    });
-
-	receptor.subscribe((value) => {
-		aux_receptor = value;
-		// console.log("User changed -> ", value)
-	});
-
-	mock_user_list.subscribe((value) => {
-		user_list = value;
-		// console.log("User changed -> ", value)
-	});
-
-	mock_priv_msg.subscribe((value) => {
-		priv_messages = value;
-		// console.log("User changed -> ", value)
-	});
+    user.subscribe((value) => {aux_user = value;});
+	receptor.subscribe((value) => {aux_receptor = value;});
+	mock_user_list.subscribe((value) => {user_list = value;});
+	mock_priv_msg.subscribe((value) => {priv_messages = value;});
 
 	// When DOM mounted, scroll to bottom
 	onMount(async () => {
-		// scrollChatBottom();
 		people = [...user_list];
 	});
 
@@ -55,6 +45,7 @@
 			});
 		}
 	}
+
 
 	function avatarClick(person : any)
 	{

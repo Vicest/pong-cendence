@@ -5,7 +5,7 @@
 	import type { Person } from '../../lib/chat.model';
 	import { user } from "../../store/User";
 	import { receptor , chat_history } from "../../store/Chat";
-	import { mock_friends, mock_priv_msg } from "../../store/MOCK";
+	import { mock_friends, mock_priv_msg , mock_user_list } from "../../store/MOCK";
 	// Components
 	import Chat from '../chat/Direct_Channel_Chat.svelte';
 
@@ -15,21 +15,13 @@
 	let displayChat = false;
 	
 	let aux_user : any;
+    let user_list: any;
 	let aux_receptor: any;
 	let friend_list: any;
 	let priv_messages: any;
 
 	$:{
-		people = [...friend_list];
-		let isFriend;
-		if (currentPerson == undefined)
-			isFriend == false
-		else
-			isFriend = friend_list.some((friend: any) => friend.nickname === currentPerson.nickname);
-		if (!isFriend)
-			displayChat = false;
-
-		console.log("Hace el cambio desde aqui ....");
+		people = [...user_list.filter((person: Person) => !friend_list.some((friend: any) => friend.nickname === person.nickname))];
 	}
 	
     user.subscribe((value) => {
@@ -52,18 +44,24 @@
 		// console.log("User changed -> ", value)
 	});
 
+    mock_user_list.subscribe((value) => {
+		user_list = value;
+		// console.log("User changed -> ", value)
+	});
+
 	// When DOM mounted, scroll to bottom
 	onMount(async () => {
 		// scrollChatBottom();
-		people = [...friend_list];
+		people = people = [...user_list.filter((person: Person) => !friend_list.some((friend: any) => friend.nickname === person.nickname))];
 	});
 
 	function filterUsers(keyword: string): void {
 		displayChat = false;
 		if (!keyword) {
-			people = [...friend_list];
+			people = [...people];
 		} else {
-			people = friend_list.filter((person: Person) => {
+			people = user_list.filter((person: Person) => !friend_list.some((friend: any) => friend.nickname === person.nickname))
+			people = people.filter((person: Person) => {
 				return person.nickname.toLowerCase().includes(keyword.toLowerCase());
 			});
 		}
@@ -88,7 +86,6 @@
 			return dateA - dateB;
 		}));
 	}
-
 </script>
 
 <div class="card chat-card wrapper">
@@ -150,18 +147,4 @@
 		background-color: black;
 	}
 
-	
-	/* .active-chat{
-
-		 grid-template-columns: 30% 1fr;
-		 
-	}
-	.active-friends{
-		width: 90vw !important;
-		left: auto;
-	}
-
-	.user-list-container {
-		overflow-y: auto;
-	} */
 </style>

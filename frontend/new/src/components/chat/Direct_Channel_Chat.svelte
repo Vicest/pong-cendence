@@ -80,11 +80,14 @@
         <div class="avatar-container">
             <Avatar src="https://i.pravatar.cc/?img={currentPerson.avatar}" width="w-12" />
         </div>
-        <div style="font-size: 22px">  
+        <div style="font-size: 22px; flex: 1;">  
             {currentPerson.nickname}
         </div>
-        <RelationPanel currentPerson={currentPerson}></RelationPanel>
+        <div style="margin-right: 20px;">
+            <RelationPanel currentPerson={currentPerson}></RelationPanel>
+        </div>
     </div>
+    
     <div bind:this={elemChat} class="chat_area max-h-[400px] p-4 overflow-y-auto space-y-4">
         {#each messageFeed as bubble}
             {#if bubble.sender.nickname != aux_user.nickname}

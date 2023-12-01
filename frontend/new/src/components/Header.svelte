@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { AppBar, Avatar } from '@skeletonlabs/skeleton';
 	import Fa from 'svelte-fa';
-	import { faTrophy, faInfo, faGamepad } from '@fortawesome/free-solid-svg-icons';
+	import { faTrophy, faInfo, faGamepad, faMessage, faUserFriends } from '@fortawesome/free-solid-svg-icons';
 	import { page } from '$app/stores';
 
 	let currentTile: number = 0;
@@ -24,7 +24,12 @@
 		{
 			name: 'Chat',
 			href: '/app/chat',
-			icon: faInfo
+			icon: faMessage
+		},
+		{
+			name: 'Friends',
+			href: '/app/friends',
+			icon: faUserFriends
 		}
 	];
 </script>

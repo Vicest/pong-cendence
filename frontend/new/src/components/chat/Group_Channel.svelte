@@ -1,18 +1,10 @@
-
-
-
-
-
-
-
 <script lang="ts">
 	import { Avatar, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	// Global stores
 	import type { Group } from '../../lib/chat.model';
-	import { user } from "../../store/User";
 	import { receptor , chat_history } from "../../store/Chat";
-	import { mock_channels ,mock_friends, mock_priv_msg } from "../../store/MOCK";
+	import { mock_channels , mock_priv_msg } from "../../store/MOCK";
 	// Components
 	import GroupChannelChat from './Group_Channel_Chat.svelte';
 	import GroupChannelUserList from './Group_Channel_User_List.svelte';
@@ -22,16 +14,12 @@
 	let currentPerson : any;
 	let displayChat = false;
 	let displayUserList = false;
-	
-	let aux_user : any;
+
 	let aux_receptor: any;
 	let channel_list: any;
 	let priv_messages: any;
 	
-    user.subscribe((value) => {
-        aux_user = value;
-        // console.log("User changed -> ", value)
-    });
+  
 
 	receptor.subscribe((value) => {
 		aux_receptor = value;
@@ -75,7 +63,6 @@
 		receptor.set(currentPerson);
 		chat_history.set([]);
 		
-		// console.log("Mensajes privados -> ",aux_user._privateMessages)
 		chat_history.set(currentPerson.messages);
 	}
 
