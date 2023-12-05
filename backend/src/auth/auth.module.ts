@@ -12,6 +12,8 @@ import { JwtGuard } from './jwt.guard';
 import { JwtStrategy } from './jwt.strategy';
 import { JwtRefreshGuard } from './jwtRefresh.guard';
 import { JwtRefreshStrategy } from './jwtRefresh.strategy';
+import { AdminGuard } from './admin.guard';
+import { AdminStrategy } from './admin.strategy';
 
 @Module({
 	imports: [
@@ -28,7 +30,7 @@ import { JwtRefreshStrategy } from './jwtRefresh.strategy';
 		})
 	],
 	controllers: [AuthController],
-	providers: [Intra42Strategy, JwtStrategy, JwtGuard, JwtRefreshStrategy, JwtRefreshGuard, IntraAuthGuard, AuthService, Serializer],
+	providers: [AdminStrategy, AdminGuard, Intra42Strategy, IntraAuthGuard, JwtStrategy, JwtGuard, JwtRefreshStrategy, JwtRefreshGuard, AuthService, Serializer],
 	exports: [IntraAuthGuard],
 })
 export class AuthModule {}

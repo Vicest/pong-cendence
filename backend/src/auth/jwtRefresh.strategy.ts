@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-//import Strategy = require('passport-jwt');
 import { AuthService } from './auth.service';
+import { JwtUser } from './auth.interface';
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'refresh-jwt') {
@@ -15,8 +15,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'refresh-jwt'
         })
     }
 
-    async validate(payload:any) {
-        console.log("Validating refresh", payload);
+    async validate(payload:JwtUser) {
         return await this.authService.validateUser(payload);
     }
 }

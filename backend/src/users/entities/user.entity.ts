@@ -21,6 +21,11 @@ export class User {
     default: false
   })
   isRegistered: boolean;
+  @Column({
+    type: 'bool',
+    default: false
+  })
+  isAdmin: boolean;
   //@Column({
   //  type: 'text',
   //  unique: true

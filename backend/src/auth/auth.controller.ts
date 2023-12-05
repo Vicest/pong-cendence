@@ -2,12 +2,19 @@ import { Controller, UseGuards, Get, Res, Req } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IntraAuthGuard } from './intraAuth.guard';
 import { AuthService } from './auth.service';
+import { AdminGuard } from './admin.guard';
 import { JwtGuard } from './jwt.guard';
 import { JwtRefreshGuard } from './jwtRefresh.guard';
 
 @Controller('auth')
 export class AuthController {
     constructor(private env:ConfigService, private authService:AuthService) {}
+
+    @UseGuards(AdminGuard)
+	@Get('admin')
+	async admin() {
+		return 'Yes, you are an admin, want a pat in the back?';
+	}
 
     @UseGuards(JwtGuard)
 	@Get('me')
