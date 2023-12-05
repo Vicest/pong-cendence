@@ -3,7 +3,7 @@
 	import Fa from 'svelte-fa';
 	import { faTrophy, faInfo, faGamepad } from '@fortawesome/free-solid-svg-icons';
 	import { currentUser } from '../store/Auth';
-	
+
 	import { page } from '$app/stores';
 
 	let currentTile: number = 0;
@@ -34,7 +34,7 @@
 <!-- App Bar -->
 <AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
 	<svelte:fragment slot="lead">
-		<a href="/" aria-label="Home">
+		<a href="/app" aria-label="Home">
 			<img src="/images/logo.png" alt="logo" class="h-10" />
 		</a>
 	</svelte:fragment>
@@ -53,9 +53,9 @@
 		</div>
 	</svelte:fragment>
 	<svelte:fragment slot="trail">
-		<span>{ $currentUser?.nickname }</span>
+		<span>{ $currentUser.nickname }</span>
 		<Avatar
-			src="{ $currentUser?.avatar }"
+			src="{ $currentUser.avatar }"
 			width="w-10"
 			border="border border-white"
 		/>

@@ -2,7 +2,6 @@
 	import { io } from 'socket.io-client';
 	import { ApiUrl } from '../../store/Api';
 	import { aux_socket } from '../../store/Socket';
-	import { user } from '../../store/User';
 	import { type_Channel, receptor, chat_history } from '../../store/Chat';
 
 	let url = '';
@@ -16,10 +15,6 @@
 		// console.log("URL changed -> ", value)
 	});
 
-	user.subscribe((value) => {
-		aux_user = value;
-		// console.log("User changed -> ", value)
-	});
 
 	type_Channel.subscribe((value) => {
 		aux_type_Channel = value;

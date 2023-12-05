@@ -1,17 +1,11 @@
 <script lang="ts" context="module">
-	import { user } from '../../store/User';
 	import { Api } from '../../store/Api';
 	import { fetchSocket } from './fetchSocket.svelte';
 	let url: any;
 	let aux_user: any;
 
-	user.subscribe((value) => {
-		aux_user = value;
-		// console.log("user changed -> ", value)
-	});
-
 	export async function fetchUser(login: string) {
-		return new Promise((resolve) => {
+		/*return new Promise((resolve) => {
 			Api.get(`/auth/me`)
 				.then((data) => {
 					console.log('usuario recibido -> ', data);
@@ -23,6 +17,6 @@
 					console.error('Error de fetch en get User:', error);
 				});
 			resolve([]);
-		});
+		});*/
 	}
 </script>

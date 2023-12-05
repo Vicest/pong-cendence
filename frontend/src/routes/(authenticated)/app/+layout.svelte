@@ -4,16 +4,18 @@
 	import Sidebar from '../../../components/Sidebar.svelte';
 	import Header from '../../../components/Header.svelte';
 	import Footer from '../../../components/Footer.svelte';
-
-	import { currentUser } from '../../../store/Auth';
-
-	let currentTile: number = 0;
-
-	/** @type {import('./$types').LayoutData}*/
-	// export let data: any;
+	import { loading } from '../../../store/Auth';
 </script>
 
 <!-- App Shell -->
+
+{#if $loading}
+<div class="flex justify-center items-center h-screen animate-pulse">
+	<a href="/" aria-label="Home">
+		<img src="/images/logo.png" alt="logo" class="h-10" />
+	</a>
+</div>
+{:else}
 <AppShell>
 	<svelte:fragment slot="header">
 		<Header />
@@ -27,3 +29,4 @@
 		<Footer />
 	</svelte:fragment>
 </AppShell>
+{/if}
