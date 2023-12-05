@@ -1,60 +1,61 @@
-version: '3.5'
+version: "3.5"
 services:
-
-  back:
-    build:
-      context: ./
-      dockerfile: ./backend/Dockerfile
-    container_name: back-container
-    image: 'backend_img'
-    volumes:
-      - ./backend/src:/usr/src/backend/src
-    expose:
-      - '${BACKEND_PORT}'
-    ports:
-      - '${BACKEND_PORT}:${BACKEND_PORT}'
-    networks:
-      - middle
-    depends_on:
-      - db
-    restart: always
-
-  db:
-    container_name: ${DB_HOST}
-    environment:
-    - POSTGRES_USER=${DB_ADMIN}
-    - POSTGRES_PASSWORD=${DB_PASS}
-    - POSTGRES_DB=transcendence
-    restart: always
+  postgres:
+    container_name: postgres-container
+    env_file: .env
     image: postgres:alpine
-    volumes:
-      - ./postgres-data:/var/lib/postgresql/data
-    ports:
-      - ${DB_PORT}:5432
     networks:
-      - middle
+      - pong-network
+    restart: always
+
+  backend:
+    build: ./backend
+    container_name: backend-container
+    hostname: backend
+    image: "backend-image"
+    env_file: .env
+    depends_on:
+      - postgres
+    ports:
+      - ${BACKEND_PORT}:${BACKEND_PORT}
+      - ${BACKEND_WEBSOCKETS_PORT}:${BACKEND_WEBSOCKETS_PORT}
+    volumes:
+      - ./backend:/app
+    networks:
+      - pong-network
+    restart: always
+
+  front:
+    build: ./frontend/new
+    container_name: frontend-container
+    hostname: frontend
+    image: "frontend-image"
+    env_file: .env
+    depends_on:
+      - postgres
+    ports:
+      - ${FRONTEND_PORT}:${FRONTEND_PORT}
+    volumes:
+      - ./frontend/new:/usr/src/frontend
+    environment:
+      - PUBLIC_BACKEND_PORT=${BACKEND_PORT}
+      - PUBLIC_BACKEND_BASE=${BACKEND_BASE}
+    networks:
+      - pong-network
+    restart: always
 
   adminer:
     image: adminer
     container_name: adminer
-    restart: always
     ports:
       - ${ADMINER_PORT}:8080
     depends_on:
-      - db
+      - postgres
     networks:
-      - middle
-  front:
-    container_name: front-container
-    build: ./frontend/new
-    ports:
-      - ${FRONTEND_PORT}:5432
+      - pong-network
     restart: always
-    depends_on:
-      - back
-    networks:
-      - middle
-volumes:
-  dbdata:
+
 networks:
-  middle:
+  pong-network:
+    name: pong-network
+    driver: bridge

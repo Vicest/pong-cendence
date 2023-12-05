@@ -6,8 +6,8 @@ import { AuthService } from './auth.service';
 
 @Injectable()
 export class Intra42Strategy extends PassportStrategy(Strategy, '42') {
-    constructor(private env:ConfigService, private authService:AuthService) {
-        const redirectUri = env.get<string>('BASENAME').concat(':').concat(env.get<string>('BACKEND_PORT')).concat('/auth/callback');
+    constructor(private env: ConfigService, private authService: AuthService) {
+        const redirectUri = env.get<string>('BACKEND_BASE').concat(':').concat(env.get<string>('BACKEND_PORT')).concat('/auth/callback');
         console.log("REDDURECT URI: ", redirectUri);
         super({
             clientID: env.get<string>('CLIENT_ID'),
@@ -21,7 +21,7 @@ export class Intra42Strategy extends PassportStrategy(Strategy, '42') {
     }
 
     //TODO Nope, not all problems are solved using 'any'
-    async validate(token:string, refreshToken:string, profile, cb:any) {
+    async validate(token: string, refreshToken: string, profile, cb: any) {
         console.log(`Validaste ${profile.login}! Su token: ${token}, gracias.`);
         return await this.authService.validateUser(profile);
     }

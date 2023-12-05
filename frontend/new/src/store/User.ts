@@ -1,34 +1,33 @@
 import { writable } from 'svelte/store';
+import { Api } from './Api';
 
 export const user = writable();
 export const userList = writable(null);
+let url: any;
+
 
 const getCookie = (name: string) => {
 	let cookie = {};
-	document.cookie.split(';').forEach(function(el) {
-	  let split = el.split('=');
-	  cookie[split[0].trim()] = split.slice(1).join("=");
+	document.cookie.split(';').forEach(function (el) {
+		let split = el.split('=');
+		cookie[split[0].trim()] = split.slice(1).join("=");
 	})
 	console.log(cookie);
 	return cookie[name];
 }
 // http://back-container:3000
-fetch('http://back-container:3000/users/all', {
-	method: 'GET',
-	headers: {
-		'Content-Type': 'application/json',
-		'Authorization': 'Bearer ' + getCookie('token'),
-	},
-})
-	.then((res) => res.json())
-	.then((data) => {
-		userList.set(data);
+Api.get('/users/all')
+	.then((res) => {
+		userList.set(res.data);
+	})
+	.catch((err) => {
+		console.log(err);
 	});
 
-setTimeout(() => {
+// setTimeout(() => {
 
 
-}, 3000);
+// }, 3000);
 
 
 export const updateUser = (id: number) => {

@@ -22,13 +22,13 @@ import { SocketsModule } from './sockets/sockets.module';
     //
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (env:ConfigService) => ({
+      useFactory: (env: ConfigService) => ({
         type: 'postgres',
-        host: env.get<string>('DB_HOST'),
+        host: 'postgres',
         port: env.get<number>(' DB_PORT'),
-        username: env.get<string>('DB_ADMIN'),
-        password: env.get<string>('DB_PASS'),
-        database: 'transcendence',
+        username: env.get<string>('POSTGRES_USER'),
+        password: env.get<string>('POSTGRES_PASSWORD'),
+        database: env.get<string>('POSTGRES_DB'),
         entities: [
           __dirname + '/**/*.entity{.ts,.js}',
         ],
@@ -38,7 +38,6 @@ import { SocketsModule } from './sockets/sockets.module';
       inject: [ConfigService]
     }),
     ConfigModule.forRoot({
-      envFilePath: ['../.env'],
       isGlobal: true
     }),
     UsersModule,
@@ -50,4 +49,4 @@ import { SocketsModule } from './sockets/sockets.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

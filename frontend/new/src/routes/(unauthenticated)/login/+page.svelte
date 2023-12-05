@@ -1,11 +1,10 @@
 <!-- Login Page -->
-
 <script>
-	const authUrl = 'http://localhost:3000/auth/login';
+	import { ApiUrl } from '../../../store/Api';
 </script>
 
 <div class="container h-full mx-auto flex justify-center items-center">
 	<div class="space-y-10 text-center flex flex-col items-center">
-		<a href="{authUrl}" class="btn variant-filled">Login</a>
+		<a href={`${$ApiUrl}/auth/login`} class="btn variant-filled">Login</a>
 	</div>
 </div>

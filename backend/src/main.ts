@@ -5,16 +5,18 @@ import * as session from 'express-session';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
-	const conf:ConfigService = app.get(ConfigService);
-	
-	console.log(conf.get<string>('BASENAME'));
-
-	//We are not validating the .env file it seems (TODO)
-	const frontUri:string = (conf.get<string>('BASENAME') as string).concat(':', conf.get<string>('FRONTEND_PORT') as string);
-  //Configure CORS options
+	const conf: ConfigService = app.get(ConfigService);
+	["BACKEND_PORT", "FRONTEND_PORT", "BACKEND_BASE"].forEach((key) => {
+		if (!conf.get(key)) {
+			throw new Error(`Missing configuration key: ${key}`);
+		}
+	});
+	const frontUri = `${conf.get<string>('BACKEND_BASE')}:${conf.get<string>('FRONTEND_PORT')}`;
+	//Configure CORS options
 	app.enableCors({
 		origin: [frontUri],
-		methods : "GET,HEAD,PUT,PATCH,POST,DELETE",
+		methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+		credentials: true,
 	});
 	app.use(session({
 		secret: 'I like trains',//TODO abiously make it random os something
@@ -23,10 +25,10 @@ async function bootstrap() {
 		cookie: {
 			maxAge: null,
 		},
-	})); 
+	}));
 
-  const backPort:number = conf.get<number>('BACKEND_PORT') as number;
-  console.log(`Listening on port ${backPort}`);
-  await app.listen(backPort);
+	const backPort = conf.get<number>('BACKEND_PORT');
+	console.log(`Listening on port ${backPort}`);
+	await app.listen(backPort);
 }
 bootstrap();
