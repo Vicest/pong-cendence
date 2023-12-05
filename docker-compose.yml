@@ -26,7 +26,7 @@ services:
     restart: always
 
   front:
-    build: ./frontend/new
+    build: ./frontend
     container_name: frontend-container
     hostname: frontend
     image: "frontend-image"
@@ -36,7 +36,7 @@ services:
     ports:
       - ${FRONTEND_PORT}:${FRONTEND_PORT}
     volumes:
-      - ./frontend/new:/usr/src/frontend
+      - ./frontend:/usr/src/frontend
     environment:
       - PUBLIC_BACKEND_PORT=${BACKEND_PORT}
       - PUBLIC_BACKEND_BASE=${BACKEND_BASE}
