@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
+import { authenticator } from 'otplib';
 
 @Injectable()
 export class AuthService {
@@ -37,5 +38,25 @@ export class AuthService {
         return { token, refreshToken };
     }
     
+    public async generateTwoFactorAuthenticationSecret(user: User) {
+        const secret = authenticator.generateSecret();
+    
+        const otpauthUrl = authenticator.keyuri(user.nickname, 'AUTH_APP_NAME', secret);
+        user.two_factor_auth_secret = secret
+        await this.usersService.updateUser(user.id, user)
+    
+        return {
+          secret,
+          otpauthUrl
+        }
+      }
+
+    public async check2FAToken(user: User, token: string) {
+        return authenticator.verify({
+            token,
+            secret: user.two_factor_auth_secret,
+          });
+      }
+
     private log:Logger;
 }
