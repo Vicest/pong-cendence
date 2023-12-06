@@ -6,6 +6,8 @@
     import RelationPanel from '../friend/RelationPanel.svelte';
 	import { currentUser } from '../../store/Auth';
 	import type { MessageFeed } from '$lib/types';
+	import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+	import Fa from 'svelte-fa';
 
     export let currentPerson : any;
     let elemChat: HTMLElement;
@@ -110,7 +112,7 @@
                 on:keydown={onPromptKeydown}
             />
             <button class={currentMessage ? 'variant-filled-primary' : 'input-group-shim'} on:click={addMessage}>
-                <i class="fa-solid fa-paper-plane" />
+                <Fa icon={faPaperPlane} />
             </button>
 
         </div>

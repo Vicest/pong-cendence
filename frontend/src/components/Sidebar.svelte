@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { AppRail, AppRailAnchor, AppRailTile, Avatar } from '@skeletonlabs/skeleton';
+	import { AppRail, AppRailAnchor, AppRailTile, Avatar, LightSwitch } from '@skeletonlabs/skeleton';
 	import { matchList } from '../store/Match';
-	import { faSignOut } from '@fortawesome/free-solid-svg-icons';
+	import { faMoon, faSignOut } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 	import Cookies from 'js-cookie';
 	import { redirect } from '@sveltejs/kit';
@@ -27,6 +27,11 @@
 		{/each}
 	</svelte:fragment>
 	<svelte:fragment slot="trail">
+		<AppRailAnchor class="cursor-pointer">
+			<div class="flex flex-col items-center space-y-4">
+				<LightSwitch />
+			</div>
+		</AppRailAnchor>
 		<AppRailAnchor class="cursor-pointer" title="Account"  on:click={logOut}>
 			<div class="flex flex-col items-center space-y-4">
 				<Fa icon={faSignOut} size="1.5x" />

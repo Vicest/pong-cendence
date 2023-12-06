@@ -71,7 +71,6 @@
 </script>
 
 <div class="card chat-card wrapper">
-
 	<div class="item1 ">
 		<div class="border-b border-surface-500/30 p-4">
 			<input class="input" type="search" placeholder="Search..." on:input={(e) => filterUsers(e.target.value)} />
