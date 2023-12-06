@@ -1,107 +1,67 @@
- <script>
-  import ponglogo from '$lib/assets/images/ponglogo.png';
-  import { Avatar } from '@skeletonlabs/skeleton';
-  import { shownavlinks }  from '../routes/vars.d'
-  import { activePage } from '../routes/vars.d';
-  import { activeChat } from '../routes/vars.d';
-  import { apiData } from '../services/my42data';
+<script lang="ts">
+	import { AppBar, Avatar } from '@skeletonlabs/skeleton';
+	import Fa from 'svelte-fa';
+	import { faTrophy, faInfo, faGamepad, faMessage } from '@fortawesome/free-solid-svg-icons';
+	import { currentUser } from '../store/Auth';
 
-  let showNavs = false;
-  shownavlinks.subscribe(value => {
-    showNavs = value;
-  });
-  let apidata;
-    apiData.subscribe(data => {
-        apidata = data;
-  });
-  let showchat=false;
-	activeChat.subscribe(value => {
-		showchat = value;
-	});
+	import { page } from '$app/stores';
+
+	let currentTile: number = 0;
+	let links = [
+		{
+			name: 'Leadboard',
+			href: '/app/leadboard',
+			icon: faTrophy
+		},
+		{
+			name: 'Arena',
+			href: '/app/arena',
+			icon: faGamepad
+		},
+		{
+			name: 'About',
+			href: '/app/about',
+			icon: faInfo
+		},
+		{
+			name: 'Chat',
+			href: '/app/chat',
+			icon: faMessage
+		}
+	];
 </script>
 
-<div class="topnav">
-  <button class="nohover-btn" on:click={() => {activePage.set("home")}}><img src={ponglogo} alt="pongcendence"></button>
-  {#if showNavs}
-  <div class="links">
-    <button  class="nav-links" class:active-button={showchat} on:click={() => {activeChat.set(!showchat)}}>
-      <img src="" alt="">
-      Friends
-      <!-- <a href="/friends">Friends</a> -->
-    </button>
-    <a  class="nav-links" href="/leaderboard">
-        <img src="/" alt="">
-        <!-- <button on:click={() => {activePage.set("leaderboard")}}>Leaderboard</button> -->
-        Leaderboard
-    </a>
-    <a class="nav-links" href="/about">
-        <img src="" alt="">
-        <!-- <button on:click={() => {activePage.set("about")}}>About</button> -->
-        About
-    </a>
-  </div>
-  <!-- <button class="nohover-btn" on:click={() => {activePage.set("profile")}}> -->
-  <a href="/profile">
-    <Avatar initials={apidata.displayname.split(' ').map(palabra => palabra.charAt(0)).slice(0, 2).join('')} background="bg-primary-500" />
-  </a>
-  <!-- </button> -->
-  {/if}
-</div>
-
-<style>
-  .active-button{
-    background-color: #ddd;
-
-  }
-  .topnav {
-    background-color: rgb(0, 0, 0);
-    min-height: 80px;
-    overflow: hidden;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px 0 20px;
-    z-index: 3;
-  }
-
-  .topnav button {
-    float: left;
-    color: #f2f2f2;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
-    font-size: 17px;
-  }
-
-  .topnav button:hover {
-    background-color: #ddd;
-    color: black;
-  }
-
-  .links {
-    width: 30%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .nav-links{
-    width: 100%;
-    height: 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-
-  }
-  .nav-links:hover{
-    background-color: white;
-    color: black;
-  }
-  button.nohover-btn:hover{
-    /* pointer-events: none; */
-    background-color: unset !important;
-    color: unset !important;
-}
- 
-</style>
+<!-- App Bar -->
+<AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
+	<svelte:fragment slot="lead">
+		<a href="/app" aria-label="Home">
+			<img src="/images/logo.png" alt="logo" class="md:h-10 h-5" />
+		</a>
+	</svelte:fragment>
+	<svelte:fragment slot="default">
+		<div class="flex justify-center space-x-4">
+			{#each links as link, i}
+				<a class="btn variant-ghost-surface z-10" href="{link.href}">
+					<span class="md:border-r md:border-white md:pr-3">
+						<Fa icon={link.icon} />
+					</span>
+					<span class="pl-1 hidden md:inline-block">
+						{link.name}
+					</span>
+				</a>
+			{/each}
+		</div>
+	</svelte:fragment>
+	<svelte:fragment slot="trail">
+		<span class="hidden md:inline-block text-white">
+			{ $currentUser.nickname }
+		</span>
+		<a href="/app/profile">
+			<Avatar
+				src="{ $currentUser.avatar }"
+				width="w-10"
+				border="border border-white"
+			/>
+		</a>
+	</svelte:fragment>
+</AppBar>
