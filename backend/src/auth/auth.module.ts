@@ -7,7 +7,6 @@ import { IntraAuthGuard } from './guards/intraAuth.guard';
 import { Intra42Strategy } from './strategies/intra42.strategy';
 import { AuthController } from './auth.controller';
 import { UsersModule } from 'src/users/users.module';
-import { Serializer } from './Serializer';
 import { JwtGuard } from './guards/jwt.guard';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshGuard } from './guards/jwtRefresh.guard';

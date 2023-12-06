@@ -1,3 +1,10 @@
+<style>
+	:global(html):not(.dark) .site-logo {
+		filter: invert(1);
+	}
+</style>
+
+
 <script lang="ts">
 	import { AppBar, Avatar } from '@skeletonlabs/skeleton';
 	import Fa from 'svelte-fa';
@@ -35,14 +42,14 @@
 <AppBar gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end">
 	<svelte:fragment slot="lead">
 		<a href="/app" aria-label="Home">
-			<img src="/images/logo.png" alt="logo" class="md:h-10 h-5" />
+			<img src="/images/logo.png" alt="logo" class="site-logo md:h-10 h-5" />
 		</a>
 	</svelte:fragment>
 	<svelte:fragment slot="default">
 		<div class="flex justify-center space-x-4">
 			{#each links as link, i}
 				<a class="btn variant-ghost-surface z-10" href="{link.href}">
-					<span class="md:border-r md:border-white md:pr-3">
+					<span class="md:border-r md:border-primary md:pr-3">
 						<Fa icon={link.icon} />
 					</span>
 					<span class="pl-1 hidden md:inline-block">
@@ -53,15 +60,16 @@
 		</div>
 	</svelte:fragment>
 	<svelte:fragment slot="trail">
-		<span class="hidden md:inline-block text-white">
+		<span class="hidden md:inline-block text-primary">
 			{ $currentUser.nickname }
 		</span>
 		<a href="/app/profile">
 			<Avatar
 				src="{ $currentUser.avatar }"
 				width="w-10"
-				border="border border-white"
+				border="border border-primary"
 			/>
 		</a>
 	</svelte:fragment>
 </AppBar>
+
