@@ -29,15 +29,23 @@ export const init = () => {
 };
 
 Socket.on('user:updated', (updatedUser) => {
-	if (get(currentUser).id === updatedUser.id) {
-		userList.update((users) => {
-			return users.map((user) => {
+	userList.update((users) => {
+		return users
+			.map((user) => {
 				if (user.id === updatedUser.id) {
 					return updatedUser;
 				}
 				return user;
-			});
-		});
+			})
+			.sort((a, b) => a.id - b.id);
+	});
+	if (get(currentUser).id === updatedUser.id) {
 		currentUser.set(updatedUser);
 	}
+});
+
+Socket.on('user:created', (createdUser) => {
+	userList.update((users) => {
+		return [...users, createdUser];
+	});
 });

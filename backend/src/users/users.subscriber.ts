@@ -27,6 +27,7 @@ export class UsersSubscriber implements EntitySubscriberInterface<User> {
 	}
 
 	afterInsert(event: InsertEvent<User>) {
+		this.usersGateway.server.emit('user:created', event.entity);
 		console.log(`BEFORE USER INSERT: `, event.entity);
 	}
 }
