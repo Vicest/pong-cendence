@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 import { authenticator } from 'otplib';
+import { toDataURL } from 'qrcode';
 
 @Injectable()
 export class AuthService {
@@ -41,15 +42,12 @@ export class AuthService {
     public async generateTwoFactorAuthenticationSecret(user: User) {
         const secret = authenticator.generateSecret();
     
-        const otpauthUrl = authenticator.keyuri(user.nickname, 'AUTH_APP_NAME', secret);
+        const otpauthUrl = authenticator.keyuri(user.nickname, 'Pongscendence', secret);
         user.two_factor_auth_secret = secret
+        user.two_factor_auth_enabled = true
         await this.usersService.updateUser(user.id, user)
-    
-        return {
-          secret,
-          otpauthUrl
-        }
-      }
+        return toDataURL(otpauthUrl);
+    }
 
     public async check2FAToken(user: User, token: string) {
         return authenticator.verify({
