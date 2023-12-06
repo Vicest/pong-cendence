@@ -1,5 +1,5 @@
 {
-	"svg.preview.background": "editor",
-	"editor.formatOnSave": true,
-	"editor.defaultFormatter": "esbenp.prettier-vscode"
+  "svg.preview.background": "editor",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

@@ -19,18 +19,28 @@ import { AdminStrategy } from './strategies/admin.strategy';
 	imports: [
 		UsersModule,
 		PassportModule.register({
-			session: true//TODO enable sessions eventially
+			session: false,
 		}),
 		JwtModule.registerAsync({
-      		imports: [ConfigModule],
-			useFactory: (env:ConfigService) => ({
-				secret: env.get<string>('JWT_SECRET')
+			imports: [ConfigModule],
+			useFactory: (env: ConfigService) => ({
+				secret: env.get<string>('JWT_SECRET'),
 			}),
 			inject: [ConfigService],
-		})
+		}),
 	],
 	controllers: [AuthController],
-	providers: [AdminStrategy, AdminGuard, Intra42Strategy, IntraAuthGuard, JwtStrategy, JwtGuard, JwtRefreshStrategy, JwtRefreshGuard, AuthService, Serializer],
+	providers: [
+		AdminStrategy,
+		AdminGuard,
+		Intra42Strategy,
+		IntraAuthGuard,
+		JwtStrategy,
+		JwtGuard,
+		JwtRefreshStrategy,
+		JwtRefreshGuard,
+		AuthService,
+	],
 	exports: [IntraAuthGuard],
 })
 export class AuthModule {}
