@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { AppRail, AppRailAnchor, AppRailTile, Avatar } from '@skeletonlabs/skeleton';
+	import { AppBar, AppRail, AppRailAnchor, AppRailTile, Avatar } from '@skeletonlabs/skeleton';
 	import { matchList } from '../store/Match';
 
 	let arenaTile: number = 0;
 </script>
 
 <!-- App Rail -->
-<AppRail class="lg:block hidden">
+<AppBar class="lg:hidden"  gridColumns="grid-cols-3" slotDefault="place-self-center" slotTrail="place-content-end" gap="gap-4">
 	<svelte:fragment slot="lead">
 		{#each $matchList as match, i}
 			<AppRailAnchor href={`/app/arena/${match.id}`} current={arenaTile === i}>
@@ -16,4 +16,4 @@
 			</AppRailAnchor>
 		{/each}
 	</svelte:fragment>
-</AppRail>
+</AppBar>
