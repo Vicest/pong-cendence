@@ -6,6 +6,14 @@ services:
     image: postgres:alpine
     networks:
       - pong-network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.30"
+          memory: 50M
+        reservations:
+          cpus: "0.30"
+          memory: 50M
     restart: always
 
   backend:
@@ -55,6 +63,14 @@ services:
       - postgres
     networks:
       - pong-network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.10"
+          memory: 50M
+        reservations:
+          cpus: "0.10"
+          memory: 50M
     restart: always
 
 networks:

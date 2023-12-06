@@ -4,7 +4,14 @@
 	import Sidebar from '../../../components/Sidebar.svelte';
 	import Header from '../../../components/Header.svelte';
 	import Footer from '../../../components/Footer.svelte';
-	import { loading } from '../../../store/Auth';
+	import { loading, init as AuthInit } from '../../../store/Auth';
+	import { init as UsersInit } from "../../../store/User";
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		AuthInit();
+		UsersInit();
+	});
 </script>
 
 <!-- App Shell -->

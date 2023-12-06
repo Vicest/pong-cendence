@@ -8,7 +8,20 @@ import { JwtRefreshGuard } from './guards/jwtRefresh.guard';
 
 @Controller('auth')
 export class AuthController {
-	constructor(private env: ConfigService, private authService: AuthService) { }
+	readonly accessTokenCookie = {
+		httpOnly: false,
+		maxAge: 24 * 60 * 60 * 1000,
+	};
+
+	readonly refreshTokenCookie = {
+		httpOnly: false,
+		maxAge: 3 * 24 * 60 * 60 * 1000,
+	};
+
+	constructor(
+		private env: ConfigService,
+		private authService: AuthService,
+	) {}
 
 	@UseGuards(AdminGuard)
 	@Get('admin')
@@ -25,22 +38,30 @@ export class AuthController {
 	@UseGuards(JwtRefreshGuard)
 	@Get('refresh')
 	async getRefresh(@Req() req, @Res() res) {
-		const { token, refreshToken } = await this.authService.grantTokenPair(req.user);
-		res.cookie('token', token, { httpOnly: false, maxAge: 24 * 60 * 60 * 1000 });
-		res.cookie('refreshToken', refreshToken, { httpOnly: false, maxAge: 3 * 24 * 60 * 60 * 1000 });
+		const { token, refreshToken } = await this.authService.grantTokenPair(
+			req.user,
+		);
+		res.cookie('token', token, this.accessTokenCookie);
+		res.cookie('refreshToken', refreshToken, this.refreshTokenCookie);
 		res.send({ token, refreshToken });
 	}
 
 	@UseGuards(IntraAuthGuard)
 	@Get('login')
-	async login() { }
+	async login() {}
 
 	@UseGuards(IntraAuthGuard)
 	@Get('callback')
 	async callback(@Req() req, @Res() res) {
-		const { token, refreshToken } = await this.authService.grantTokenPair(req.user);
-		res.cookie('token', token, { httpOnly: false, maxAge: 24 * 60 * 60 * 1000 });
-		res.cookie('refreshToken', refreshToken, { httpOnly: false, maxAge: 3 * 24 * 60 * 60 * 1000 });
-		return res.redirect(`${this.env.get<string>('BACKEND_BASE')}:${this.env.get<string>('FRONTEND_PORT')}/app`);
+		const { token, refreshToken } = await this.authService.grantTokenPair(
+			req.user,
+		);
+		res.cookie('token', token, this.accessTokenCookie);
+		res.cookie('refreshToken', refreshToken, this.refreshTokenCookie);
+		return res.redirect(
+			`${this.env.get<string>('BACKEND_BASE')}:${this.env.get<string>(
+				'FRONTEND_PORT',
+			)}/app`,
+		);
 	}
 }

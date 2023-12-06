@@ -6,10 +6,14 @@ import {
 	UpdateEvent,
 } from 'typeorm';
 import { User } from './entities/user.entity';
+import { UsersGateway } from './users.gateway';
 
 @EventSubscriber()
 export class UsersSubscriber implements EntitySubscriberInterface<User> {
-	constructor(dataSource: DataSource) {
+	constructor(
+		dataSource: DataSource,
+		private readonly usersGateway: UsersGateway,
+	) {
 		dataSource.subscribers.push(this);
 	}
 
@@ -17,13 +21,12 @@ export class UsersSubscriber implements EntitySubscriberInterface<User> {
 		return User;
 	}
 
-	beforeUpdate(event: UpdateEvent<User>) {
-		console.log(
-			`Entity: ${event.entity}\n Columns ${event.updatedColumns}\n Relations ${event.updatedRelations}`,
-		);
+	afterUpdate(event: UpdateEvent<User>) {
+		this.usersGateway.server.emit('user:updated', event.entity);
+		console.log(`UserSubscriber: ${event.entity.id} was updated`);
 	}
 
-	beforeInsert(event: InsertEvent<User>) {
+	afterInsert(event: InsertEvent<User>) {
 		console.log(`BEFORE USER INSERT: `, event.entity);
 	}
 }

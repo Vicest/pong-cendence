@@ -1,6 +1,6 @@
 <!-- Login Page -->
 <script>
-	import { ApiUrl } from '../../../store/Api';
+	import { ApiUrl } from '../../../store/Common';
 </script>
 
 <div class="container h-full mx-auto flex justify-center items-center">

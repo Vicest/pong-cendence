@@ -8,6 +8,7 @@ import { Channel } from 'src/chat/entities/channel.entity';
 import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
 import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { UsersSubscriber } from './users.subscriber';
+import { UsersGateway } from './users.gateway';
 
 @Module({
 	imports: [
@@ -20,7 +21,7 @@ import { UsersSubscriber } from './users.subscriber';
 		]),
 	],
 	controllers: [UsersController],
-	providers: [UsersService, UsersSubscriber],
-	exports: [UsersService],
+	providers: [UsersService, UsersSubscriber, UsersGateway],
+	exports: [UsersService, UsersGateway],
 })
 export class UsersModule {}

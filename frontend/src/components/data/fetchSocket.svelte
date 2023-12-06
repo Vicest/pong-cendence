@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
 	import { io } from 'socket.io-client';
-	import { ApiUrl } from '../../store/Api';
+	import { ApiUrl } from '../../store/Common';
 	import { aux_socket } from '../../store/Socket';
 	import { type_Channel, receptor, chat_history } from '../../store/Chat';
 

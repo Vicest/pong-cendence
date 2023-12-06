@@ -58,8 +58,8 @@ export class UsersService {
 
 	private log: Logger;
 
-	public updateById(id: number, userUpdate: User) {
-		this.userRepository.update({ id }, userUpdate);
+	public updateById(id: number, userUpdate: User): Promise<UpdateResult> {
+		return this.userRepository.update({ id }, userUpdate);
 	}
 
 	/*Con Dios me disculpo por esta aberracion de función ...

@@ -2,7 +2,6 @@ import {WebSocketGateway, WebSocketServer, SubscribeMessage, ConnectedSocket, Me
 import { Server, Socket } from 'socket.io'
 import { UsersService } from '../users/users.service';
 
-@WebSocketGateway({ cors: true })
 export class ChatGateway{
 	@WebSocketServer()
 	private server: Server;

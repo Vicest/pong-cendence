@@ -54,10 +54,12 @@
 	</svelte:fragment>
 	<svelte:fragment slot="trail">
 		<span>{ $currentUser.nickname }</span>
-		<Avatar
-			src="{ $currentUser.avatar }"
-			width="w-10"
-			border="border border-white"
-		/>
+		<a href="/app/profile">
+			<Avatar
+				src="{ $currentUser.avatar }"
+				width="w-10"
+				border="border border-white"
+			/>
+		</a>
 	</svelte:fragment>
 </AppBar>

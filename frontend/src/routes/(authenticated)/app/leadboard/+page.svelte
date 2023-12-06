@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { userList } from "../../../../store/User";
 	import { currentUser } from "../../../../store/Auth";
 	import type { PageData } from "./$types";
 	export let data: PageData;
@@ -16,7 +17,7 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each data.users as row}
+				{#each $userList as row}
 					<tr class="{$currentUser.id === row.id ? 'text-red-500' : ''}">
 						<td><img src={row.avatar} alt="avatar" class="h-10" /></td>
 						<td>{row.nickname}</td>

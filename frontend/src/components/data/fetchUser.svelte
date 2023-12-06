@@ -1,6 +1,4 @@
 <script lang="ts" context="module">
-	import { Api } from '../../store/Api';
-	import { fetchSocket } from './fetchSocket.svelte';
 	let url: any;
 	let aux_user: any;
 

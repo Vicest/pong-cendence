@@ -32,6 +32,7 @@ export class User {
 	@Column({
 		type: 'bool',
 		default: false,
+		update: false,
 	})
 	isRegistered: boolean;
 	@Column({
