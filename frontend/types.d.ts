@@ -1,5 +1,5 @@
 type Match = {
-	id: number
-	room: string
-	score: [number, number]
-}
+	id: number;
+	room: string;
+	score: [number, number];
+};

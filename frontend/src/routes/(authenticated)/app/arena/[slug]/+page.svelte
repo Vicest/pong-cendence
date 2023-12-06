@@ -1,16 +1,6 @@
 <script lang="ts">
-	import { AppRail, AppRailAnchor, AppRailTile, Avatar } from '@skeletonlabs/skeleton';
 	import { page } from '$app/stores';
 	import { matchList, updateScore } from '../../../../../store/Match';
-
-	import Fa from 'svelte-fa';
-	import { faGamepad, faUserFriends } from '@fortawesome/free-solid-svg-icons';
-
-	let arenaTile: number = 0;
-	let friendsTile: number = 0;
-
-	/** @type {import('./$types').PageData}*/
-	export let data: any;
 </script>
 
 <div class="container h-full mx-auto flex justify-center items-center">

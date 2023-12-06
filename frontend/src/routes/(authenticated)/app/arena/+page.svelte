@@ -1,8 +1,3 @@
-<script lang="ts">
-	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
-	import Sidebar from '../../../../components/Sidebar.svelte';
-</script>
-
 <div class="container h-full mx-auto flex justify-center items-center">
 	<div class="card p-10 space-y-10 text-center flex flex-col items-center">
 		<h2 class="h2">Arena HomePage</h2>
