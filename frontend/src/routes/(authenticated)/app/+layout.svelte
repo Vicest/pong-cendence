@@ -2,7 +2,6 @@
 	import '../../../app.postcss';
 	import { AppShell } from '@skeletonlabs/skeleton';
 	import Sidebar from '../../../components/Sidebar.svelte';
-	import PageHeader from '../../../components/PageHeader.svelte';
 	import Header from '../../../components/Header.svelte';
 	import Footer from '../../../components/Footer.svelte';
 	import { loading, init as AuthInit } from '../../../store/Auth';
@@ -30,9 +29,6 @@
 	</svelte:fragment>
 	<svelte:fragment slot="sidebarLeft">
 		<Sidebar />
-	</svelte:fragment>
-	<svelte:fragment slot="pageHeader">
-		<PageHeader />
 	</svelte:fragment>
 	<!-- Page Route Content -->
 	<slot />
