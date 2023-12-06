@@ -1,10 +1,10 @@
 import { Controller, UseGuards, Get, Res, Req, Post } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IntraAuthGuard } from './intraAuth.guard';
+import { IntraAuthGuard } from './guards/intraAuth.guard';
 import { AuthService } from './auth.service';
-import { AdminGuard } from './admin.guard';
-import { JwtGuard } from './jwt.guard';
-import { JwtRefreshGuard } from './jwtRefresh.guard';
+import { AdminGuard } from './guards/admin.guard';
+import { JwtGuard } from './guards/jwt.guard';
+import { JwtRefreshGuard } from './guards/jwtRefresh.guard';
 
 @Controller('auth')
 export class AuthController {

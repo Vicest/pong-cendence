@@ -1,127 +1,146 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToMany, JoinTable } from 'typeorm';
+import {
+	Entity,
+	Column,
+	PrimaryGeneratedColumn,
+	OneToMany,
+	ManyToMany,
+	JoinTable,
+} from 'typeorm';
 import { Channel } from '../../chat/entities/channel.entity';
 import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
 import { UserRelation } from './userRelations.entity';
 
 @Entity({
-  name: 'Users'
+	name: 'Users',
 })
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
-  @Column({
-    type: 'varchar',
-    unique: true,
-    length: 20
-  })
-  login: string;
-  @Column({
-    type: 'varchar',
-    unique: true,
-    length: 20
-  })
-  nickname: string;
-  @Column({
-    type: 'bool',
-    default: false
-  })
-  isRegistered: boolean;
-  @Column({
-    type: 'bool',
-    default: false
-  })
-  isAdmin: boolean;
-  //@Column({
-  //  type: 'text',
-  //  unique: true
-  //})
-  //email: string;
-  @Column({
-    type: 'text',
-    nullable: true,
-    default: null
-  })
-  avatar: string;
-  @Column({
-    type: 'text',
-    nullable: true,
-    default: null
-  })
-  two_factor_auth_secret: string;
-  @Column({
-    default: false
-  })
-  two_factor_auth_enabled: boolean;
+	@PrimaryGeneratedColumn()
+	id: number;
+	@Column({
+		type: 'varchar',
+		unique: true,
+		length: 20,
+	})
+	login: string;
+	@Column({
+		type: 'varchar',
+		unique: true,
+		length: 20,
+	})
+	nickname: string;
+	@Column({
+		type: 'bool',
+		default: false,
+	})
+	isRegistered: boolean;
+	@Column({
+		type: 'bool',
+		default: false,
+	})
+	isAdmin: boolean;
+	//@Column({
+	//  type: 'text',
+	//  unique: true
+	//})
+	//email: string;
+	@Column({
+		type: 'text',
+		nullable: true,
+		default: null,
+	})
+	avatar: string;
+	@Column({
+		type: 'text',
+		nullable: true,
+		default: null,
+		select: false,
+	})
+	two_factor_auth_secret: string;
+	@Column({
+		default: false,
+	})
+	two_factor_auth_enabled: boolean;
 
+	@Column({
+		type: 'timestamp',
+		default: () => 'CURRENT_TIMESTAMP',
+	})
+	created_at: Date;
 
-  @ManyToMany(() => Channel, channel => channel.members)
-  @JoinTable({
-    name: 'ChannelMembers',
-    joinColumn: {
-      name: 'user_id'
-    },
-    inverseJoinColumn: {
-      name: 'channel_id'
-    }
-  })
-  channels: Channel[];
- 
-  // @ManyToMany(() => Channel, (channel) => channel.members)
-  // channels: Channel[];
+	@ManyToMany(() => Channel, (channel) => channel.members)
+	@JoinTable({
+		name: 'ChannelMembers',
+		joinColumn: {
+			name: 'user_id',
+		},
+		inverseJoinColumn: {
+			name: 'channel_id',
+		},
+	})
+	channels: Channel[];
 
-  @OneToMany(() => ChannelMessages, message => message.sender)
-  channel_messages: ChannelMessages[];
-  
-  // message.sender || message.target
-  // @OneToMany(() => UserMessages, (message => message.sender || message.target ))
-  // messages_privatosos: UserMessages[];
+	// @ManyToMany(() => Channel, (channel) => channel.members)
+	// channels: Channel[];
 
-  @OneToMany(() => UserMessages, message => message.sender)
-  sent_messages: UserMessages[];
+	@OneToMany(() => ChannelMessages, (message) => message.sender)
+	channel_messages: ChannelMessages[];
 
-  @OneToMany(() => UserMessages, message => message.receiver)
-  received_messages: UserMessages[];
+	// message.sender || message.target
+	// @OneToMany(() => UserMessages, (message => message.sender || message.target ))
+	// messages_privatosos: UserMessages[];
 
-  _privateMessages: UserMessages[];
+	@OneToMany(() => UserMessages, (message) => message.sender)
+	sent_messages: UserMessages[];
 
-  async loadPrivateMessages(): Promise<void> {
-    const privateMessages = await Promise.all([this.sent_messages, this.received_messages]);
-    this._privateMessages = privateMessages[0].concat(privateMessages[1]);
-  }
+	@OneToMany(() => UserMessages, (message) => message.receiver)
+	received_messages: UserMessages[];
 
-  get privateMessages(): UserMessages[] {
-    return this._privateMessages;
-  }
+	_privateMessages: UserMessages[];
 
-  @OneToMany(() => UserRelation, UserRelation => (UserRelation.sender))
-  relationshared: UserRelation[];
+	async loadPrivateMessages(): Promise<void> {
+		const privateMessages = await Promise.all([
+			this.sent_messages,
+			this.received_messages,
+		]);
+		this._privateMessages = privateMessages[0].concat(privateMessages[1]);
+	}
 
-  @OneToMany(() => UserRelation, UserRelation => (UserRelation.receptor))
-  relationsharedAsReceiver: UserRelation[];
+	get privateMessages(): UserMessages[] {
+		return this._privateMessages;
+	}
 
-  _relationList: UserRelation[];
+	@OneToMany(() => UserRelation, (UserRelation) => UserRelation.sender)
+	relationshared: UserRelation[];
 
-  async loadrelationsList(): Promise<void> {
-    const relationList = await Promise.all([this.relationshared, this.relationsharedAsReceiver]);
-    this._relationList = relationList[0].concat(relationList[1]);
-  }
+	@OneToMany(() => UserRelation, (UserRelation) => UserRelation.receptor)
+	relationsharedAsReceiver: UserRelation[];
 
-  get relationsList(): UserRelation[] {
-    return this._relationList;
-  }
+	_relationList: UserRelation[];
 
-  friends: User[];
+	async loadrelationsList(): Promise<void> {
+		const relationList = await Promise.all([
+			this.relationshared,
+			this.relationsharedAsReceiver,
+		]);
+		this._relationList = relationList[0].concat(relationList[1]);
+	}
 
-  // @ManyToMany(() => UserRelation, UserRelation => (UserRelation.receptor))
-  // @JoinTable({
-  //   name: 'UserRelation',
-  //   joinColumn: {
-  //     name: 'receptor'
-  //   },
-  //   inverseJoinColumn: {
-  //     name: 'sender'
-  //   }
-  // })
-  // relationshared: UserRelation[];
+	get relationsList(): UserRelation[] {
+		return this._relationList;
+	}
+
+	friends: User[];
+
+	// @ManyToMany(() => UserRelation, UserRelation => (UserRelation.receptor))
+	// @JoinTable({
+	//   name: 'UserRelation',
+	//   joinColumn: {
+	//     name: 'receptor'
+	//   },
+	//   inverseJoinColumn: {
+	//     name: 'sender'
+	//   }
+	// })
+	// relationshared: UserRelation[];
 }

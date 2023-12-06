@@ -3,7 +3,7 @@ import { UsersService } from './users.service';
 import { Observable } from 'rxjs';
 import { User } from './entities/user.entity';
 import { UserRelation } from './entities/userRelations.entity';
-import { JwtGuard } from 'src/auth/jwt.guard';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
 
 @Controller('users')
 @UseGuards(JwtGuard)

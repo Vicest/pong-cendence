@@ -3,17 +3,17 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
-import { IntraAuthGuard } from './intraAuth.guard';
-import { Intra42Strategy } from './intra42.strategy';
+import { IntraAuthGuard } from './guards/intraAuth.guard';
+import { Intra42Strategy } from './strategies/intra42.strategy';
 import { AuthController } from './auth.controller';
 import { UsersModule } from 'src/users/users.module';
 import { Serializer } from './Serializer';
-import { JwtGuard } from './jwt.guard';
-import { JwtStrategy } from './jwt.strategy';
-import { JwtRefreshGuard } from './jwtRefresh.guard';
-import { JwtRefreshStrategy } from './jwtRefresh.strategy';
-import { AdminGuard } from './admin.guard';
-import { AdminStrategy } from './admin.strategy';
+import { JwtGuard } from './guards/jwt.guard';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { JwtRefreshGuard } from './guards/jwtRefresh.guard';
+import { JwtRefreshStrategy } from './strategies/jwtRefresh.strategy';
+import { AdminGuard } from './guards/admin.guard';
+import { AdminStrategy } from './strategies/admin.strategy';
 
 @Module({
 	imports: [
