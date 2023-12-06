@@ -1,21 +1,9 @@
 FROM node:18.4.0 as build
 
-RUN mkdir app
-WORKDIR /app
-COPY package.json .
-COPY package-lock.json .
-COPY . .
-RUN npm install
+EXPOSE ${FRONTEND_PORT}
 
+ENV PUBLIC_BACKEND_PORT=${BACKEND_PORT}
+ENV PUBLIC_BACKEND_BASE=${BACKEND_BASE}
 
-RUN npm run build
-
-FROM node:18.4.0-alpine3.16
-
-WORKDIR .
-COPY --from=build ./app .
-
-
-ENV HOST=0.0.0.0
-EXPOSE 4200
-CMD ["npm","run", "preview","--", "--host", "0.0.0.0", "--port", "4200"]
+WORKDIR /usr/src/frontend
+ENTRYPOINT yarn install && yarn run dev --host ${HOST}

@@ -1,13 +1,6 @@
-FROM node:19
+FROM node:alpine
 
+EXPOSE ${BACKEND_PORT} ${BACKEND_WEBSOCKETS_PORT}
 
-RUN mkdir -p /usr/src/node-app/
-
-COPY package.json ./
-COPY package-lock.json ./
-RUN npm i --ignore-scripts
-COPY . .
-
-EXPOSE 3000
-
-CMD [ "npm", "run", "dev" ]
+WORKDIR /app
+ENTRYPOINT yarn install && yarn run start:dev
