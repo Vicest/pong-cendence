@@ -6,43 +6,40 @@ import { UserRelation } from './entities/userRelations.entity';
 import { JwtGuard } from 'src/auth/jwt.guard';
 
 @Controller('users')
+@UseGuards(JwtGuard)
 export class UsersController {
 
     constructor (private readonly userService : UsersService) {}
 
-    @UseGuards(JwtGuard)
-    @Get('/all')
+    @Get('/')
     getAll() {
         let users = this.userService.findAll();
         return users;
     }
 
-    // GET frase/:str --> { ... }x
-    @UseGuards(JwtGuard)
-    @Get('frase/:str')
-    getTexto(@Param('str') str: string) : string
+    // GET /:login --> { ... }
+    //TODO revew login vs id
+    @Get(':id')
+    getOneUsers(@Param('id') id: number) : Promise<User | null>
     {
-        return "Hola "+str+"!";
+        return this.userService.find(id);
     }
 
-    // GET /:login --> { ... }
-    @UseGuards(JwtGuard)
-    @Get(':login')
-    getOneUsers(@Param('login') login: string) : Promise<User | null>
-    {
-        return this.userService.findOneUserById(login);
+    @Post(':id')
+    updateUser(@Param('id') id: number, @Body() body) {
+        console.log(`User update body: ${JSON.stringify(body)}`)
+        this.userService.updateById(id, body.data);
+
     }
 
     // POST /add
-    @UseGuards(JwtGuard)
-    @Post('/add')
+    @Post('/')
     createUsers(@Body() user : User ) : Observable<User>
     {
         return this.userService.createUser(user);
     }
 
     // POST /addrelation
-    @UseGuards(JwtGuard)
     @Post('/addrelation')
     createRelation(@Body() data : any ) : Observable<UserRelation>
     {

@@ -27,7 +27,7 @@ export class UsersService {
     public async create(data): Promise<User|null> {
         console.log("Creating user", data.login);
         let fields = JSON.parse(data._raw);
-        const newUser:User|null = await this.userRepository.create({nickname:data.login, isRegistered:false, avatar:fields.image?.link});
+        const newUser:User|null = await this.userRepository.create({nickname:data.login, isRegistered:false, avatar:fields.image?.link, login: data.login})
         this.log.debug(`Created user ${newUser}`)
         if (newUser) await this.userRepository.save(newUser);
         return newUser;
@@ -43,16 +43,18 @@ export class UsersService {
     }
 
     public async findOne(login:string): Promise<User|null> {
-        return this.userRepository.findOneBy({ nickname:login });
+        return this.userRepository.findOneBy({ login:login });
     }
     
     private log:Logger;
 
-    
+    public updateById(id:number, userUpdate:User) {
+        this.userRepository.update({ id }, userUpdate);
+    }
     
         /*Con Dios me disculpo por esta aberracion de función ... 
         pero situaciones drasticas requieren medidas drasticas*/
-    async findOneUserById(nickname: string): Promise<User | undefined> {
+    async findOneUserByName(nickname: string): Promise<User | undefined> {
         let contents = await this.userRepository.findOne({
           where: { nickname },
           relations: ['relationshared', 'relationshared.sender', 'relationshared.receptor', 

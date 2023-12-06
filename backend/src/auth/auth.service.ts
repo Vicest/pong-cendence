@@ -23,11 +23,11 @@ export class AuthService {
         let user = await this.usersService.find(data.id);
         //TODO Ideally any user would go through a /auth/register endpoint insead of just getting added
         if (!user) user = await this.usersService.create(data);
-        const token = await this.jwtService.signAsync({login:user.nickname/*, mail:user.email FIXME*/},
+        const token = await this.jwtService.signAsync({login:user.login/*, mail:user.email FIXME*/},
         {
             expiresIn: '5m'
         });
-        const refreshToken = await this.jwtService.signAsync({login:user.nickname/*, mail:user.email FIXME*/},
+        const refreshToken = await this.jwtService.signAsync({login:user.login/*, mail:user.email FIXME*/},
         {
             expiresIn: '1h',
             secret: this.env.get<string>('JWT_REFRESH_SECRET')

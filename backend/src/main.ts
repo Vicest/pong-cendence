@@ -14,7 +14,7 @@ async function bootstrap() {
 	const frontUri = `${conf.get<string>('BACKEND_BASE')}:${conf.get<string>('FRONTEND_PORT')}`;
 	//Configure CORS options
 	app.enableCors({
-		origin: [frontUri],
+		origin: '*',
 		methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
 		credentials: true,
 	});

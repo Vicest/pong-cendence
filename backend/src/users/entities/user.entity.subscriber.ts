@@ -16,6 +16,7 @@ import {
       return User;
     }
   
-    beforeUpdate(event: UpdateEvent<User>) {      
+    afterUpdate(event: UpdateEvent<User>) {
+      console.log(`Entity: ${event.entity}\n Columns ${event.updatedColumns}\n Relations ${event.updatedRelations}`);
     }
   }

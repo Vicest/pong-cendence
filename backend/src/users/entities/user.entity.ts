@@ -15,6 +15,12 @@ export class User {
     unique: true,
     length: 20
   })
+  login: string;
+  @Column({
+    type: 'varchar',
+    unique: true,
+    length: 20
+  })
   nickname: string;
   @Column({
     type: 'bool',
