@@ -26,9 +26,7 @@ export class GamesGateway
 	@WebSocketServer()
 	server: Namespace;
 
-	afterInit(server) {
-		console.log('Init');
-	}
+	afterInit(server) {}
 
 	handleConnection(@ConnectedSocket() client: Socket, ...args) {
 		try {

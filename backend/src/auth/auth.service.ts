@@ -18,13 +18,13 @@ export class AuthService {
 
 	//is valid, already exists, create, error, etc.
 	public async validateUser(data): Promise<User | null> {
-		let user: User | null = await this.usersService.find(data.id);
+		let user: User | null = await this.usersService.findOne(data.login);
 		if (!user) user = await this.usersService.create(data);
 		return user;
 	}
 
 	public async grantTokenPair(data: User) {
-		let user = await this.usersService.find(data.id);
+		let user = await this.usersService.findOne(data.login);
 		//TODO Ideally any user would go through a /auth/register endpoint insead of just getting added
 		if (!user) user = await this.usersService.create(data);
 		const token = await this.jwtService.signAsync(
