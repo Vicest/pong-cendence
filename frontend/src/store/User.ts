@@ -2,16 +2,13 @@ import { get, writable } from 'svelte/store';
 import { Api } from '$services/api';
 import { Socket } from '$services/socket';
 import { currentUser } from './Auth';
+import type { Person } from '$lib/types';
 
 export const loading = writable<boolean>(true);
 loading.set(true);
 
 export const userList = writable<
-	{
-		id: number;
-		nickname: string;
-		avatar: string;
-	}[]
+	Person[]
 >();
 
 export const init = () => {
@@ -25,7 +22,7 @@ export const init = () => {
 		.catch((err) => {
 			console.log(err);
 		})
-		.finally(() => {});
+		.finally(() => { });
 };
 
 Socket.on('user:updated', (updatedUser) => {

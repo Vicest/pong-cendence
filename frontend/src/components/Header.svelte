@@ -1,29 +1,20 @@
-<style>
-	:global(html):not(.dark) .site-logo {
-		filter: invert(1);
-	}
-</style>
-
-
 <script lang="ts">
-	import { AppBar, Avatar } from '@skeletonlabs/skeleton';
-	import Fa from 'svelte-fa';
-	import { faTrophy, faInfo, faGamepad, faMessage } from '@fortawesome/free-solid-svg-icons';
-	import { currentUser } from '../store/Auth';
-
 	import { page } from '$app/stores';
+	import { AppBar, Avatar, getDrawerStore, type DrawerSettings } from '@skeletonlabs/skeleton';
+	import Fa from 'svelte-fa';
+	import { faTrophy, faInfo, faMessage } from '@fortawesome/free-solid-svg-icons';
+	import { faBattleNet } from '@fortawesome/free-brands-svg-icons';
+	import { currentUser } from '../store/Auth';
+	import { gameListDrawerSettings } from '../store/Game/GameList';
 
-	let currentTile: number = 0;
+	const drawerStore = getDrawerStore();
+	drawerStore.close();
+
 	let links = [
 		{
 			name: 'Leadboard',
 			href: '/app/leadboard',
 			icon: faTrophy
-		},
-		{
-			name: 'Arena',
-			href: '/app/arena',
-			icon: faGamepad
 		},
 		{
 			name: 'About',
@@ -48,7 +39,7 @@
 	<svelte:fragment slot="default">
 		<div class="flex justify-center space-x-4">
 			{#each links as link, i}
-				<a class="btn variant-ghost-surface z-10" href="{link.href}">
+				<a class="btn variant-ghost-surface z-10" href={link.href}>
 					<span class="md:border-r md:border-primary md:pr-3">
 						<Fa icon={link.icon} />
 					</span>
@@ -61,15 +52,27 @@
 	</svelte:fragment>
 	<svelte:fragment slot="trail">
 		<span class="hidden md:inline-block text-primary">
-			{ $currentUser.nickname }
+			{$currentUser.nickname}
 		</span>
 		<a href="/app/profile">
-			<Avatar
-				src="{ $currentUser.avatar }"
-				width="w-10"
-				border="border border-primary"
-			/>
+			<Avatar src={$currentUser.avatar} width="w-10" border="border border-primary" />
 		</a>
 	</svelte:fragment>
 </AppBar>
+{#if $drawerStore.open === false && $page.url.pathname !== '/app/arena'}
+	<div class="hidden lg:block lg:fixed bottom-0 right-0 z-10 p-4">
+		<button
+			on:click={() => drawerStore.open($gameListDrawerSettings)}
+			class="btn bg-gradient-to-br variant-gradient-secondary-primary rounded-full shadow-lg flex items-center justify-center btn-xl"
+		>
+			<span>Battle zone</span>
+			<span><Fa icon={faBattleNet} class="mt-1" /></span>
+		</button>
+	</div>
+{/if}
 
+<style>
+	:global(html):not(.dark) .site-logo {
+		filter: invert(1);
+	}
+</style>

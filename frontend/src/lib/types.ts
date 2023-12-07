@@ -24,3 +24,14 @@ export interface Group {
 	members: Person[];
 	feed: MessageFeed[];
 }
+
+export interface Game {
+	name: string;
+	cover: string;
+	title: string;
+	description: string;
+	create_at: Date;
+	author: string;
+	enabled: boolean;
+
+}
