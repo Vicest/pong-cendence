@@ -5,7 +5,7 @@
 	import { faTrophy, faInfo, faMessage } from '@fortawesome/free-solid-svg-icons';
 	import { faBattleNet } from '@fortawesome/free-brands-svg-icons';
 	import { currentUser } from '../store/Auth';
-	import { gameListDrawerSettings } from '../store/Game/GameList';
+	import { gameListDrawerSettings } from '../store/Game';
 	import ChatAvatar from './chat/ChatAvatar.svelte';
 	const drawerStore = getDrawerStore();
 	drawerStore.close();

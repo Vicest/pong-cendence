@@ -8,12 +8,14 @@
 	import Modal from '../../../components/Modal.svelte';
 	import { loading, init as AuthInit } from '../../../store/Auth';
 	import { init as UsersInit } from '../../../store/User';
+	import { init as GameInstancesInit } from '../../../store/Game';
 	import { onMount } from 'svelte';
 
 	initializeStores();
 	onMount(() => {
-		AuthInit();
-		UsersInit();
+		Promise.allSettled([AuthInit(), UsersInit(), GameInstancesInit()]).then(() => {
+			console.log('Stores initialized');
+		});
 	});
 </script>
 

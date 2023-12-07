@@ -17,7 +17,7 @@ export interface MessageFeed {
 }
 
 export interface Group {
-	id: number;
+	id: string;
 	nickname: string;
 	descripcion: string;
 	password: string;
@@ -26,7 +26,10 @@ export interface Group {
 	feed: MessageFeed[];
 }
 
+type GameType = 'pong' | 'tetris';
+
 export interface Game {
+	id: GameType;
 	name: string;
 	cover: string;
 	title: string;
@@ -34,4 +37,11 @@ export interface Game {
 	create_at: Date;
 	author: string;
 	enabled: boolean;
+}
+
+export interface GameInstance {
+	id: number;
+	game: GameType;
+	players: number[];
+	created_at: Date;
 }

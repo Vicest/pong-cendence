@@ -4,7 +4,7 @@
 	import type { Person } from '$lib/types';
 	import { currentUser } from '../../store/Auth';
 	import type { SvelteComponent } from 'svelte';
-	import { gameListDrawerSettings, selectedGame } from '../../store/Game/GameList';
+	import { selectedGame } from '../../store/Common';
 	import { goto } from '$app/navigation';
 	import ChatAvatar from '../chat/ChatAvatar.svelte';
 
@@ -58,7 +58,7 @@
 	<!-- prettier-ignore -->
 	<footer class="modal-footer flex justify-center items-center space-x-4">
 		<button class="btn variant-filled-primary"on:click={() => {
-			goto('/app/arena');
+			goto(`/app/arena/1`)
 			parent.onClose()
 		}} disabled={!selectedUser}>Send invitation</button>
 		<button class="btn variant-ghost-surface" on:click={() => {

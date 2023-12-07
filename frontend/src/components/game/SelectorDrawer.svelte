@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { getDrawerStore, getModalStore } from '@skeletonlabs/skeleton';
 	import type { ModalSettings } from '@skeletonlabs/skeleton';
-	import { gameList, gameListDrawerSettings, selectedGame } from '../../store/Game/GameList';
+	import { gameList, gameListDrawerSettings } from '../../store/Game';
+	import { selectedGame } from '../../store/Common';
 	const drawerStore = getDrawerStore();
 	const modalStore = getModalStore();
 	let targetSelectorModal: ModalSettings = {

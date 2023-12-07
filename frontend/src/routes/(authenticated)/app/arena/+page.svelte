@@ -1,6 +1,6 @@
 <script>
 	import { beforeNavigate, goto } from '$app/navigation';
-	import { selectedGame } from '../../../../store/Game/GameList';
+	import { selectedGame } from '../../../../store/Common';
 
 	let dirty = false;
 	beforeNavigate(({ cancel }) => {

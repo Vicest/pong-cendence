@@ -1,6 +1,7 @@
-import { readable, writable } from 'svelte/store';
-import type { Game } from '$lib/types';
+import { get, readable, writable, derived } from 'svelte/store';
+import type { Game, GameInstance } from '$lib/types';
 import type { DrawerSettings } from '@skeletonlabs/skeleton';
+import { userList } from './User';
 
 export const gameListDrawerSettings = readable<DrawerSettings>({
 	id: 'battle-zone',
@@ -14,6 +15,7 @@ export const gameListDrawerSettings = readable<DrawerSettings>({
 
 export const gameList = readable<Game[]>([
 	{
+		id: 'pong',
 		name: 'Pong',
 		cover: '/images/pong/cover.png',
 		title: 'Play Pong with your friends',
@@ -24,6 +26,7 @@ export const gameList = readable<Game[]>([
 		enabled: true
 	},
 	{
+		id: 'tetris',
 		name: 'Tetris',
 		cover: '/images/tetris/cover.png',
 		title: 'Play Tetris with your friends',
@@ -35,4 +38,15 @@ export const gameList = readable<Game[]>([
 	}
 ]);
 
-export const selectedGame = writable<Game | null>(null);
+export const gameInstances = writable<GameInstance[]>();
+
+export const init = () => {
+	gameInstances.set([
+		{
+			id: 1,
+			game: 'pong',
+			players: [1, 2],
+			created_at: new Date('2021-10-01')
+		}
+	]);
+};
