@@ -9,20 +9,17 @@ import {
 import { Namespace, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { Logger } from '@nestjs/common';
-import { UsersService } from './users.service';
 
 @WebSocketGateway({
 	cors: true,
-	namespace: 'users'
+	namespace: 'games'
 })
-export class UsersGateway
+export class GamesGateway
 	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
 	private log: Logger;
-	constructor(
-		private jwtService: JwtService,
-		private usersService: UsersService
-	) {
+
+	constructor(private jwtService: JwtService) {
 		this.log = new Logger();
 	}
 
@@ -37,9 +34,6 @@ export class UsersGateway
 		try {
 			const decoded = this.jwtService.verify(client.handshake.auth.token);
 			client.data.user = decoded;
-			setTimeout(() => {
-				this.usersService.updateStatusById(client.data.user.id, 'online');
-			}, 500);
 			this.log.debug(`${decoded.login} connected`, this.constructor.name);
 		} catch (error) {
 			client.disconnect();
@@ -47,7 +41,6 @@ export class UsersGateway
 	}
 
 	handleDisconnect(client) {
-		this.usersService.updateStatusById(client.data.user.id, 'offline');
 		this.log.debug(
 			`${client.data.user.login} disconnected`,
 			this.constructor.name

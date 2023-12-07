@@ -5,9 +5,9 @@ import { UsersModule } from '../users/users.module';
 import { ChatGateway } from './chat.gateway';
 
 @Module({
-  imports: [UsersModule], 
-  providers: [ChatService, ChatGateway],
-  controllers: [ChatController],
-  exports: [ChatGateway]
+	imports: [UsersModule],
+	providers: [ChatService, ChatGateway],
+	controllers: [ChatController],
+	exports: [ChatGateway]
 })
 export class ChatModule {}

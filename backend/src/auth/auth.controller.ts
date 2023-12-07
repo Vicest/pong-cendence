@@ -1,26 +1,23 @@
-import { Controller, UseGuards, Get, Res, Req, Post } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Controller, UseGuards, Get, Res, Req, Inject } from '@nestjs/common';
+import { ConfigService, ConfigType } from '@nestjs/config';
 import { IntraAuthGuard } from './guards/intraAuth.guard';
 import { AuthService } from './auth.service';
 import { AdminGuard } from './guards/admin.guard';
 import { JwtGuard } from './guards/jwt.guard';
 import { JwtRefreshGuard } from './guards/jwtRefresh.guard';
+import { Response } from 'express';
+import jwtConfiguration from 'config/jwt';
+import frontendConfiguration from 'config/frontend';
 
 @Controller('auth')
 export class AuthController {
-	readonly accessTokenCookie = {
-		httpOnly: false,
-		maxAge: 24 * 60 * 60 * 1000,
-	};
-
-	readonly refreshTokenCookie = {
-		httpOnly: false,
-		maxAge: 3 * 24 * 60 * 60 * 1000,
-	};
-
 	constructor(
 		private env: ConfigService,
 		private authService: AuthService,
+		@Inject(jwtConfiguration.KEY)
+		private jwtConfig: ConfigType<typeof jwtConfiguration>,
+		@Inject(frontendConfiguration.KEY)
+		private frontendConfig: ConfigType<typeof frontendConfiguration>
 	) {}
 
 	@UseGuards(AdminGuard)
@@ -31,18 +28,23 @@ export class AuthController {
 
 	@UseGuards(JwtGuard)
 	@Get('me')
-	async getMe(@Req() req, @Res() res) {
+	async getMe(@Req() req, @Res() res: Response) {
 		res.send(req.user);
 	}
 
 	@UseGuards(JwtRefreshGuard)
 	@Get('refresh')
-	async getRefresh(@Req() req, @Res() res) {
+	async getRefresh(@Req() req, @Res() res: Response) {
 		const { token, refreshToken } = await this.authService.grantTokenPair(
-			req.user,
+			req.user
 		);
-		res.cookie('token', token, this.accessTokenCookie);
-		res.cookie('refreshToken', refreshToken, this.refreshTokenCookie);
+		res
+			.cookie('token', token, {
+				maxAge: this.jwtConfig.expiresIn * 1000
+			})
+			.cookie('refreshToken', refreshToken, {
+				maxAge: this.jwtConfig.refreshExpiresIn * 1000
+			});
 		res.send({ token, refreshToken });
 	}
 
@@ -52,16 +54,17 @@ export class AuthController {
 
 	@UseGuards(IntraAuthGuard)
 	@Get('callback')
-	async callback(@Req() req, @Res() res) {
+	async callback(@Req() req, @Res() res: Response) {
 		const { token, refreshToken } = await this.authService.grantTokenPair(
-			req.user,
+			req.user
 		);
-		res.cookie('token', token, this.accessTokenCookie);
-		res.cookie('refreshToken', refreshToken, this.refreshTokenCookie);
-		return res.redirect(
-			`${this.env.get<string>('BACKEND_BASE')}:${this.env.get<string>(
-				'FRONTEND_PORT',
-			)}/app`,
-		);
+		res
+			.cookie('token', token, {
+				maxAge: this.jwtConfig.expiresIn * 1000
+			})
+			.cookie('refreshToken', refreshToken, {
+				maxAge: this.jwtConfig.refreshExpiresIn * 1000
+			});
+		return res.redirect(this.frontendConfig.baseUrl.concat('/app'));
 	}
 }

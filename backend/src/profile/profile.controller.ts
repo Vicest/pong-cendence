@@ -20,15 +20,15 @@
 //			console.log("Session for user ", req.user);
 //	}
 
-	////FIXME any login request should be a POST, not a GET.
-    //@UseGuards(IntraAuthGuard)
-	//@Get('login')
-	//async login() : Promise<string> {
-	//	return "HI";
-	//}
+////FIXME any login request should be a POST, not a GET.
+//@UseGuards(IntraAuthGuard)
+//@Get('login')
+//async login() : Promise<string> {
+//	return "HI";
+//}
 //
-	////@UseGuards(IntraAuthGuard)
-	//@Get('validate')
-	//async validate() {}
+////@UseGuards(IntraAuthGuard)
+//@Get('validate')
+//async validate() {}
 
 //}

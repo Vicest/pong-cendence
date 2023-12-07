@@ -1,9 +1,7 @@
 <script lang="ts">
-	import { Avatar, getDrawerStore, getModalStore } from '@skeletonlabs/skeleton';
+	import { getDrawerStore, getModalStore } from '@skeletonlabs/skeleton';
 	import type { ModalSettings } from '@skeletonlabs/skeleton';
-	import { currentUser } from '../../store/Auth';
 	import { gameList, gameListDrawerSettings, selectedGame } from '../../store/Game/GameList';
-	import { goto } from '$app/navigation';
 	const drawerStore = getDrawerStore();
 	const modalStore = getModalStore();
 	let targetSelectorModal: ModalSettings = {
@@ -23,7 +21,6 @@
 			class="card {!game.enabled ? 'opacity-50 cursor-not-allowed' : ''} bg-surface-500/30"
 			on:click={() => {
 				if (!game.enabled) return false;
-				console.log('game', game);
 				drawerStore.close();
 				selectedGame.set(game);
 				modalStore.trigger(targetSelectorModal);

@@ -19,7 +19,7 @@ export class UsersService {
 		@InjectRepository(ChannelMessages)
 		private readonly channelmessagesRepository: Repository<ChannelMessages>,
 		@InjectRepository(UserMessages)
-		private readonly usermessagesRepository: Repository<UserMessages>,
+		private readonly usermessagesRepository: Repository<UserMessages>
 	) {
 		this.log = new Logger();
 	}
@@ -33,7 +33,7 @@ export class UsersService {
 				nickname: data.login,
 				isRegistered: false,
 				avatar: fields.image?.link,
-				login: data.login,
+				login: data.login
 			});
 			this.log.debug(`Created user ${newUser}`);
 			if (newUser) await this.userRepository.save(newUser);
@@ -62,6 +62,13 @@ export class UsersService {
 		return this.userRepository.update({ id }, userUpdate);
 	}
 
+	public updateStatusById(
+		id: number,
+		userUpdate: User['status']
+	): Promise<UpdateResult> {
+		return this.userRepository.update({ id }, { status: userUpdate });
+	}
+
 	/*Con Dios me disculpo por esta aberracion de función ...
         pero situaciones drasticas requieren medidas drasticas*/
 	async findOneUserByName(nickname: string): Promise<User | undefined> {
@@ -83,8 +90,8 @@ export class UsersService {
 				'sent_messages.receiver',
 				'received_messages',
 				'received_messages.sender',
-				'received_messages.receiver',
-			], //Puta mierda esta bro :v
+				'received_messages.receiver'
+			] //Puta mierda esta bro :v
 		});
 
 		if (contents) {
@@ -95,7 +102,7 @@ export class UsersService {
 				.map((relation) =>
 					relation.sender_id === contents.id
 						? relation.receptor
-						: relation.sender,
+						: relation.sender
 				);
 		}
 		delete contents._relationList;
@@ -114,7 +121,7 @@ export class UsersService {
 	async getUserWithRelations(nickname: string): Promise<User | undefined> {
 		let contents = await this.userRepository.findOne({
 			where: { nickname },
-			relations: ['relationshared', 'private_messages', 'channel_messages'],
+			relations: ['relationshared', 'private_messages', 'channel_messages']
 		});
 		console.log(contents);
 		return contents;

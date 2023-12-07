@@ -4,7 +4,7 @@ import {
 	PrimaryGeneratedColumn,
 	OneToMany,
 	ManyToMany,
-	JoinTable,
+	JoinTable
 } from 'typeorm';
 import { Channel } from '../../chat/entities/channel.entity';
 import { UserMessages } from 'src/chat/entities/message/user.entity';
@@ -12,7 +12,7 @@ import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
 import { UserRelation } from './userRelations.entity';
 
 @Entity({
-	name: 'Users',
+	name: 'Users'
 })
 export class User {
 	@PrimaryGeneratedColumn()
@@ -20,24 +20,24 @@ export class User {
 	@Column({
 		type: 'varchar',
 		unique: true,
-		length: 20,
+		length: 20
 	})
 	login: string;
 	@Column({
 		type: 'varchar',
 		unique: true,
-		length: 20,
+		length: 20
 	})
 	nickname: string;
 	@Column({
 		type: 'bool',
 		default: false,
-		update: false,
+		update: false
 	})
 	isRegistered: boolean;
 	@Column({
 		type: 'bool',
-		default: false,
+		default: false
 	})
 	isAdmin: boolean;
 	//@Column({
@@ -48,24 +48,30 @@ export class User {
 	@Column({
 		type: 'text',
 		nullable: true,
-		default: null,
+		default: null
 	})
 	avatar: string;
 	@Column({
 		type: 'text',
 		nullable: true,
 		default: null,
-		select: false,
+		select: false
 	})
 	two_factor_auth_secret: string;
 	@Column({
-		default: false,
+		default: false
 	})
 	two_factor_auth_enabled: boolean;
 
 	@Column({
+		enum: ['online', 'offline', 'away', 'busy', 'invisible'],
+		default: 'offline'
+	})
+	status: string;
+
+	@Column({
 		type: 'timestamp',
-		default: () => 'CURRENT_TIMESTAMP',
+		default: () => 'CURRENT_TIMESTAMP'
 	})
 	created_at: Date;
 
@@ -73,11 +79,11 @@ export class User {
 	@JoinTable({
 		name: 'ChannelMembers',
 		joinColumn: {
-			name: 'user_id',
+			name: 'user_id'
 		},
 		inverseJoinColumn: {
-			name: 'channel_id',
-		},
+			name: 'channel_id'
+		}
 	})
 	channels: Channel[];
 
@@ -102,7 +108,7 @@ export class User {
 	async loadPrivateMessages(): Promise<void> {
 		const privateMessages = await Promise.all([
 			this.sent_messages,
-			this.received_messages,
+			this.received_messages
 		]);
 		this._privateMessages = privateMessages[0].concat(privateMessages[1]);
 	}
@@ -122,7 +128,7 @@ export class User {
 	async loadrelationsList(): Promise<void> {
 		const relationList = await Promise.all([
 			this.relationshared,
-			this.relationsharedAsReceiver,
+			this.relationsharedAsReceiver
 		]);
 		this._relationList = relationList[0].concat(relationList[1]);
 	}

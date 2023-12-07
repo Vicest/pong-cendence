@@ -5,7 +5,7 @@ import {
 	Post,
 	Get,
 	UseGuards,
-	Put,
+	Put
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Observable } from 'rxjs';

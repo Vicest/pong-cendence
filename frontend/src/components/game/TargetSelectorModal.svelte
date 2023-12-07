@@ -6,11 +6,12 @@
 	import type { SvelteComponent } from 'svelte';
 	import { gameListDrawerSettings, selectedGame } from '../../store/Game/GameList';
 	import { goto } from '$app/navigation';
+	import ChatAvatar from '../chat/ChatAvatar.svelte';
 
 	const drawerStore = getDrawerStore();
 
 	export let parent: SvelteComponent;
-	let people = $userList;
+	$: people = $userList;
 	let selectedUser: Person;
 	const filterUsers = (keyword: string): void => {
 		people = $userList
@@ -28,12 +29,14 @@
 	<header class="modal-header text-center p-4 border-b border-surface-500/30">
 		<h2 class="h2">Select target for game "{$selectedGame?.name}"</h2>
 	</header>
-	<input
-		class="input"
-		type="search"
-		placeholder="Search..."
-		on:input={(e) => filterUsers(e.target.value)}
-	/>
+	{#if people.length > 0}
+		<input
+			class="input"
+			type="search"
+			placeholder="Search..."
+			on:input={(e) => filterUsers(e.target.value)}
+		/>
+	{/if}
 
 	<ListBox
 		class="border border-surface-500 p-4 rounded-container-token overflow-y-auto max-h-[30vh]"
@@ -50,13 +53,18 @@
 				value={user}
 			>
 				<div class="flex items-center space-x-4">
-					<Avatar src={user.avatar} width="w-12" />
+					<ChatAvatar {user} width="w-10" />
 					<span>
 						{user.nickname}
 					</span>
 				</div>
 			</ListBoxItem>
 		{/each}
+		{#if people.length === 0}
+			<div class="flex justify-center items-center">
+				<span class="text-gray-400">No users found</span>
+			</div>
+		{/if}
 	</ListBox>
 	<!-- prettier-ignore -->
 	<footer class="modal-footer flex justify-center items-center space-x-4">

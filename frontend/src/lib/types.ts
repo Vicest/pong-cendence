@@ -3,6 +3,7 @@ export interface Person {
 	nickname: string;
 	avatar: string;
 	two_factor_auth_enabled: boolean;
+	status: 'online' | 'offline' | 'away' | 'busy' | 'invisible';
 	// feed: MessageFeed[];
 }
 export interface MessageFeed {
@@ -33,5 +34,4 @@ export interface Game {
 	create_at: Date;
 	author: string;
 	enabled: boolean;
-
 }

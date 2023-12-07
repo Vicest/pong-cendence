@@ -6,7 +6,7 @@
 	import { faBattleNet } from '@fortawesome/free-brands-svg-icons';
 	import { currentUser } from '../store/Auth';
 	import { gameListDrawerSettings } from '../store/Game/GameList';
-
+	import ChatAvatar from './chat/ChatAvatar.svelte';
 	const drawerStore = getDrawerStore();
 	drawerStore.close();
 
@@ -55,7 +55,7 @@
 			{$currentUser.nickname}
 		</span>
 		<a href="/app/profile">
-			<Avatar src={$currentUser.avatar} width="w-10" border="border border-primary" />
+			<ChatAvatar bind:user={$currentUser} width="w-10" />
 		</a>
 	</svelte:fragment>
 </AppBar>

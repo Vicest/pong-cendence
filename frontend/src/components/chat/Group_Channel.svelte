@@ -129,10 +129,6 @@
 		/* background-color: red; */
 	}
 
-	.item-container {
-		display: flex;
-		align-items: center;
-	}
 
 	.list-item {
 		display: flex;
