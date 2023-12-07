@@ -59,14 +59,26 @@ export class UsersService {
 	private log: Logger;
 
 	public updateById(id: number, userUpdate: User): Promise<UpdateResult> {
-		return this.userRepository.update({ id }, userUpdate);
+		return this.userRepository.update(
+			{ id },
+			{
+				...userUpdate,
+				id
+			}
+		);
 	}
 
 	public updateStatusById(
 		id: number,
 		userUpdate: User['status']
 	): Promise<UpdateResult> {
-		return this.userRepository.update({ id }, { status: userUpdate });
+		return this.userRepository.update(
+			{ id },
+			{
+				status: userUpdate,
+				id
+			}
+		);
 	}
 
 	/*Con Dios me disculpo por esta aberracion de función ...

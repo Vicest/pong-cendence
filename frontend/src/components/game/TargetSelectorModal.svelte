@@ -11,18 +11,12 @@
 	const drawerStore = getDrawerStore();
 
 	export let parent: SvelteComponent;
-	$: people = $userList;
+	let keyword: string = '';
+	$: people = $userList.filter(
+		(person: any) =>
+			person.nickname.toLowerCase().includes(keyword.toLowerCase()) && person.id !== $currentUser.id
+	);
 	let selectedUser: Person;
-	const filterUsers = (keyword: string): void => {
-		people = $userList
-			.filter((person: any) => {
-				return person.nickname.toLowerCase().includes(keyword.toLowerCase());
-			})
-			.filter((person: any) => {
-				return person.id !== $currentUser.id;
-			});
-	};
-	filterUsers('');
 </script>
 
 <div class="modal-example-form card p-4 w-modal shadow-xl space-y-4">
@@ -30,12 +24,7 @@
 		<h2 class="h2">Select target for game "{$selectedGame?.name}"</h2>
 	</header>
 	{#if people.length > 0}
-		<input
-			class="input"
-			type="search"
-			placeholder="Search..."
-			on:input={(e) => filterUsers(e.target.value)}
-		/>
+		<input class="input" type="search" placeholder="Search..." bind:value={keyword} />
 	{/if}
 
 	<ListBox

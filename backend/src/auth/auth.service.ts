@@ -18,7 +18,7 @@ export class AuthService {
 
 	//is valid, already exists, create, error, etc.
 	public async validateUser(data): Promise<User | null> {
-		let user: User | null = await this.usersService.findOne(data.login);
+		let user: User | null = await this.usersService.find(data.id);
 		if (!user) user = await this.usersService.create(data);
 		return user;
 	}

@@ -10,8 +10,6 @@ import { UsersGateway } from './users.gateway';
 
 @EventSubscriber()
 export class UsersSubscriber implements EntitySubscriberInterface<User> {
-	private user: User;
-
 	constructor(
 		dataSource: DataSource,
 		private readonly usersGateway: UsersGateway
@@ -23,15 +21,19 @@ export class UsersSubscriber implements EntitySubscriberInterface<User> {
 		return User;
 	}
 
-	afterLoad(user: User) {
-		this.user = user;
-	}
-
 	afterUpdate(event: UpdateEvent<User>) {
-		this.usersGateway.server.emit('user:updated', this.user?.id, event.entity);
+		this.usersGateway.server.emit(
+			'user:updated',
+			event.entity.id,
+			event.entity
+		);
 	}
 
 	afterInsert(event: InsertEvent<User>) {
-		this.usersGateway.server.emit('user:created', event.entity);
+		this.usersGateway.server.emit(
+			'user:created',
+			event.entity.id,
+			event.entity
+		);
 	}
 }
