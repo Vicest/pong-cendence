@@ -4,6 +4,7 @@
 	import { faEdit } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 	import { Api } from '$services/api';
+	import Cookies from 'js-cookie';
 
 	// Create a copy of the current user to edit
 	let currentUserCopy = { ...$currentUser };

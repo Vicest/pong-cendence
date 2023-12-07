@@ -13,6 +13,7 @@ import { Observable } from 'rxjs';
 import { User } from './entities/user.entity';
 import { UserRelation } from './entities/userRelations.entity';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import * as fs from 'fs';
 
 @Controller('users')
 @UseGuards(JwtGuard)
@@ -46,6 +47,11 @@ export class UsersController {
 	// Put /
 	@Put('/')
 	updateCurrentUser(@Req() req, @Body() user: User) {
+		// const base64Data = req.encodedImg.replace(/^data:image\/png;base64,/, '');
+		// fs.writeFile('out.png', base64Data, 'base64', (err) => {
+		// 	console.log(err);
+		// });
+
 		return this.userService.updateById(req.user.id, user);
 	}
 
