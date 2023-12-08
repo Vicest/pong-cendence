@@ -7,7 +7,8 @@ import {
 	OneToOne,
 	PrimaryColumn,
 	JoinTable,
-	ManyToOne
+	ManyToOne,
+	JoinColumn
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Game } from './game.entity';
@@ -21,6 +22,9 @@ export class MatchEvent {
 	id: number;
 
 	@OneToOne(() => Match, (match) => match.id)
+	@JoinColumn({
+		name: 'match_id'
+	})
 	match: Match;
 
 	@Column({
@@ -29,6 +33,9 @@ export class MatchEvent {
 	content: string;
 
 	@ManyToOne(() => User, (user) => user.id)
+	@JoinColumn({
+		name: 'initiator_id'
+	})
 	initiator: User;
 
 	@Column({

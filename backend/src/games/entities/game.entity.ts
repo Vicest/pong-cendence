@@ -17,9 +17,6 @@ export class Game {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@PrimaryColumn({
-		unique: true
-	})
 	@Column()
 	name: string;
 

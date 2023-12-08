@@ -6,7 +6,8 @@ import {
 	ManyToMany,
 	OneToOne,
 	PrimaryColumn,
-	JoinTable
+	JoinTable,
+	JoinColumn
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Game } from './game.entity';
@@ -19,7 +20,10 @@ export class Match {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@OneToOne(() => Game, (game) => game.name)
+	@OneToOne(() => Game, (game) => game.id)
+	@JoinColumn({
+		name: 'game_id'
+	})
 	game: Game;
 
 	@ManyToMany(() => User, (user) => user.id)
@@ -35,6 +39,15 @@ export class Match {
 	players: User[];
 
 	@OneToMany(() => MatchEvent, (event) => event.match)
+	@JoinTable({
+		name: 'MatchEvents',
+		joinColumn: {
+			name: 'match_id'
+		},
+		inverseJoinColumn: {
+			name: 'event_id'
+		}
+	})
 	events: MatchEvent[];
 
 	@Column({

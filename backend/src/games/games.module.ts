@@ -7,10 +7,11 @@ import { GamesGateway } from './games.gateway';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Game } from './entities/game.entity';
 import { Match } from './entities/match.entity';
+import { MatchEvent } from './entities/events.entity';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([Game, Match]),
+		TypeOrmModule.forFeature([Game, Match, MatchEvent]),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
 			useFactory: (env: ConfigService) => ({
