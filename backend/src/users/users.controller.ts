@@ -6,7 +6,8 @@ import {
 	Get,
 	UseGuards,
 	Put,
-	Req
+	Req,
+	Res
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Observable } from 'rxjs';
@@ -37,11 +38,12 @@ export class UsersController {
 		return this.userService.find(id);
 	}
 	@Get(':login/img')
-	getUserImg(@Param('login') login: string){
+	getUserImg(@Param('login') login: string, @Res() res) {
 		const imagePath = `usersdata/${login}.png`;
 		if (fs.existsSync(imagePath)) {
 			const fileContent = fs.readFileSync(imagePath);
-			return fileContent;
+			res.setHeader('Content-Type', 'image/png');
+			res.send(fileContent);
 		}
 		return null;
 	}
@@ -59,26 +61,36 @@ export class UsersController {
 
 	// Put /
 	@Put('/')
-	updateCurrentUser(@Req() req, @Body() user: User) {
-		fs.writeFile('foo.png', user.avatar, 'base64', (err) => {
-			console.log(err);
-		});
+	updateCurrentUser(@Req() req, @Res() res, @Body() user: User) {
+		//TODO: validar imagen
+
 		//Crear imagen y guardarla en el servidor
-		console.log('User Avatar', user.avatar);
-		const base64Data = user.avatar.replace(/^data:image\/png;base64,/, '');
-		if (!fs.existsSync('usersdata')) {
-			fs.mkdirSync('usersdata');
+		let imageType;
+		if (user.avatar.includes('image/jpeg')) imageType = 'jpeg';
+		else if (user.avatar.includes('image/png')) imageType = 'png';
+		else {
+			console.log('Uknown Image extension');
+			return 'Error Uknown Image extension';
 		}
-		fs.writeFile(
-			`usersdata/${req.user.login}.png`,
-			base64Data,
-			'base64',
-			(err) => {
-				console.log(err);
-			}
+		const base64Data = user.avatar.replace(
+			`data:image/${imageType};base64,`,
+			''
 		);
+		try {
+			if (!fs.existsSync('usersdata')) fs.mkdirSync('usersdata');
+			fs.writeFile(
+				`usersdata/${req.user.login}.png`,
+				base64Data,
+				'base64',
+				(err) => {
+					console.log(err);
+				}
+			);
+		} catch (e) {
+			console.log(e);
+		}
 		// Especificar la url de la imagen del usuario
-		const databasePort = this.configService.get<number>('database.port');
+		const databasePort = this.configService.get<number>('BACKEND_PORT');
 		const databaseUri = this.configService.get<string>('BACKEND_BASE');
 		user.avatar = `${databaseUri}:${databasePort}/users/${req.user.login}/img`;
 
