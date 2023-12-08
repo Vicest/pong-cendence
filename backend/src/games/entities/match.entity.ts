@@ -7,7 +7,8 @@ import {
 	OneToOne,
 	PrimaryColumn,
 	JoinTable,
-	JoinColumn
+	JoinColumn,
+	Unique
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Game } from './game.entity';

@@ -31,12 +31,13 @@ type GameType = 'pong' | 'tetris';
 export interface Game {
 	id: GameType;
 	name: string;
-	cover: string;
+	image: string;
 	title: string;
 	description: string;
 	create_at: Date;
-	author: string;
+	creator: string;
 	enabled: boolean;
+	launched_at: Date;
 }
 
 export interface GameInstance {

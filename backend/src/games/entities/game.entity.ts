@@ -21,7 +21,26 @@ export class Game {
 	name: string;
 
 	@Column()
+	title: string;
+
+	@Column()
+	image: string;
+
+	@Column()
+	creator: string;
+
+	@Column({
+		type: 'timestamp'
+	})
+	launched_at: Date;
+
+	@Column()
 	description: string;
+
+	@Column({
+		default: true
+	})
+	enabled: boolean;
 
 	@Column({
 		type: 'timestamp',

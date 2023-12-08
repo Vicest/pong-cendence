@@ -10,6 +10,7 @@
 
 	let gameInstance: GameInstance;
 	gameInstances.subscribe((instances) => {
+		console.log(instances);
 		gameInstance = instances.find((instance) => instance.id.toString() === id);
 	});
 
@@ -33,7 +34,6 @@
 <div class="container h-full mx-auto flex justify-center items-center">
 	<div class="card p-4">
 		<h2 class="h2">Arena {gameInstance.game}</h2>
-		<h2 class="h2">Arena {players.length}</h2>
 		{#each players as player}
 			<div class="flex items-center space-x-4">
 				<span>{player.nickname}</span>

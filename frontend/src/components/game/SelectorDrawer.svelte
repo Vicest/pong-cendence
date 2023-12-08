@@ -30,12 +30,12 @@
 		>
 			<header class="relative">
 				<img
-					src={game.cover}
+					src={game.image}
 					class="bg-black/50 w-full aspect-[21/9] object-cover object-center"
 					alt="cover"
 				/>
 				<h6 class="absolute top-0 left-0 p-4 font-bold" data-toc-ignore>
-					{game.name}
+					{game.title}
 				</h6>
 			</header>
 			<div class="p-4 space-y-4">
@@ -49,8 +49,8 @@
 			<hr class="opacity-50" />
 			<footer class="p-4 flex justify-start items-center space-x-4">
 				<div class="flex-auto flex justify-between items-center">
-					<h6 class="font-bold" data-toc-ignore>By: {game.author}</h6>
-					<small>On {game.create_at.toLocaleDateString()}</small>
+					<h6 class="font-bold" data-toc-ignore>By: {game.creator}</h6>
+					<small>On {game.launched_at.toLocaleDateString()}</small>
 				</div>
 			</footer>
 		</button>
