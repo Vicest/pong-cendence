@@ -9,11 +9,12 @@
 	import { loading, init as AuthInit } from '../../../store/Auth';
 	import { init as UsersInit } from '../../../store/User';
 	import { init as GameInstancesInit } from '../../../store/Game';
+	import { init as ChatInit } from '../../../store/Chat';
 	import { onMount } from 'svelte';
 
 	initializeStores();
 	onMount(() => {
-		Promise.allSettled([AuthInit(), UsersInit(), GameInstancesInit()]).then(() => {
+		Promise.allSettled([AuthInit(), UsersInit(), GameInstancesInit(), ChatInit()]).then(() => {
 			console.log('Stores initialized');
 		});
 	});

@@ -21,3 +21,10 @@ export const GamesSocket = io(`${PUBLIC_BACKEND_BASE}:${PUBLIC_BACKEND_PORT}/gam
 		token: Cookies.get('token')
 	}
 });
+
+export const ChatSocket = io(`${PUBLIC_BACKEND_BASE}:${PUBLIC_BACKEND_PORT}/chats`, {
+	auth: {
+		token: Cookies.get('token')
+	}
+});
+
