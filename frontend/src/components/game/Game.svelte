@@ -2,44 +2,41 @@
 	export let id: number | string;
 
 	import { beforeNavigate, goto } from '$app/navigation';
-	import { page } from '$app/stores';
 	import { gameInstances } from '../../store/Game';
 	import type { GameInstance, Person } from '$lib/types';
 	import { userList } from '../../store/User';
-	import { currentUser } from '../../store/Auth';
+	import { PongGame } from '$lib/GameEngine/Games/Pong';
+	import { onMount } from 'svelte';
 
 	let gameInstance: GameInstance;
 	gameInstances.subscribe((instances) => {
 		console.log(instances);
-		gameInstance = instances.find((instance) => instance.id.toString() === id);
+		gameInstance = instances.find((instance) => instance.id.toString() === id) as GameInstance;
 	});
 
 	let players: Person[] = [];
 	userList.subscribe((users) => {
 		players = gameInstance.players.map((player) => {
-			return users.find((user) => user.id === player);
+			return users.find((user) => user.id === player) as Person;
 		});
 	});
 
-	beforeNavigate(({ cancel }) => {
+	/*beforeNavigate(({ cancel }) => {
 		if (
 			gameInstance.players.indexOf($currentUser.id) !== -1 &&
 			!confirm('Are you sure you want to leave this page? All the progress will be lost.')
 		) {
 			cancel();
 		}
+	});*/
+
+	onMount(() => {
+		let game = new PongGame(gameInstance.id);
 	});
 </script>
 
-<div class="container h-full mx-auto flex justify-center items-center">
-	<div class="card p-4">
-		<h2 class="h2">Arena {gameInstance.game}</h2>
-		{#each players as player}
-			<div class="flex items-center space-x-4">
-				<span>{player.nickname}</span>
-			</div>
-		{/each}
-	</div>
+<div class="card p-4 h-full">
+	<div id="game-{gameInstance.id}" class="game-wrapper flex justify-center items-center h-full" />
 </div>
 
 <style lang="postcss">

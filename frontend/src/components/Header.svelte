@@ -59,7 +59,7 @@
 		</a>
 	</svelte:fragment>
 </AppBar>
-{#if $drawerStore.open === false && $page.url.pathname !== '/app/arena'}
+{#if $drawerStore.open === false && !$page.url.pathname.startsWith('/app/arena')}
 	<div class="hidden lg:block lg:fixed bottom-0 right-0 z-10 p-4">
 		<button
 			on:click={() => drawerStore.open($gameListDrawerSettings)}

@@ -377,6 +377,11 @@
   dependencies:
     undici-types "~5.26.4"
 
+"@types/p5@^1.7.4":
+  version "1.7.4"
+  resolved "https://registry.yarnpkg.com/@types/p5/-/p5-1.7.4.tgz#bcf20df35b2e897e9accb550b64b59c1c6887312"
+  integrity sha512-cMF3SvlBSzJV9m3enUYBx9UvJmQP9fxmPS17EDtYJVCQwwNMc/BRrDtHUHaxZH+BhuESNuUnfUKNVpJIjRT+Xw==
+
 "@types/pug@^2.0.6":
   version "2.0.10"
   resolved "https://registry.yarnpkg.com/@types/pug/-/pug-2.0.10.tgz#52f8dbd6113517aef901db20b4f3fca543b88c1f"
@@ -1562,6 +1567,18 @@ p-locate@^5.0.0:
   integrity sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw==
   dependencies:
     p-limit "^3.0.2"
+
+p5-svelte@^3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/p5-svelte/-/p5-svelte-3.1.2.tgz#2ba72c2ad549612bb1ad58bbb75a021a34295d02"
+  integrity sha512-lcfWh+cJ1/wRdIXHnjpYmDgj2h3TCy1QJVQnf/cBcFWS8CSkvyAN5F8u8H2U8qBUtZ4XaD3nd+1NoYUMHaMExQ==
+  dependencies:
+    p5 "^1.4.1"
+
+p5@^1.4.1:
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/p5/-/p5-1.9.0.tgz#04c406ae683449106d514108648035b21aa850fb"
+  integrity sha512-+5/hz0ZokCDf7BMMAeemE7FIo7gFZK7ImL62acHLXZwerGjqj+171bnaAWj4aCFCx6fwysAr2U7/AKuPyPhehA==
 
 parent-module@^1.0.0:
   version "1.0.1"
