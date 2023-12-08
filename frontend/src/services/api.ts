@@ -3,6 +3,7 @@ import { writable } from 'svelte/store';
 import { goto } from '$app/navigation';
 import Cookies from 'js-cookie';
 import { PUBLIC_BACKEND_PORT, PUBLIC_BACKEND_BASE } from '$env/static/public';
+import { Socket } from './socket';
 
 export const Api = axios.create({
 	baseURL: `${PUBLIC_BACKEND_BASE}:${PUBLIC_BACKEND_PORT}`,
@@ -78,6 +79,10 @@ Api.interceptors.response.use(
 							Cookies.set('refreshToken', data.refreshToken, {
 								expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
 							});
+							Socket.auth.token = data.token;
+							setTimeout(() => {
+								Socket.connect();
+							}, 1000);
 							resolve(axios(originalRequest));
 						})
 						.catch((err) => {

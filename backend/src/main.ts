@@ -11,13 +11,13 @@ async function bootstrap() {
 		}
 	});
 	const frontUri = `${conf.get<string>('BACKEND_BASE')}:${conf.get<string>(
-		'FRONTEND_PORT',
+		'FRONTEND_PORT'
 	)}`;
 	//Configure CORS options
 	app.enableCors({
 		origin: [frontUri],
 		methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-		credentials: true,
+		credentials: true
 	});
 	const backPort = conf.get<number>('BACKEND_PORT');
 	console.log(`Listening on port ${backPort}`);

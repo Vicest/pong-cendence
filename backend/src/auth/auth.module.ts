@@ -18,15 +18,16 @@ import { AdminStrategy } from './strategies/admin.strategy';
 	imports: [
 		UsersModule,
 		PassportModule.register({
-			session: false,
+			session: false
 		}),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
 			useFactory: (env: ConfigService) => ({
-				secret: env.get<string>('JWT_SECRET'),
+				secret: env.get<string>('JWT_SECRET')
 			}),
-			inject: [ConfigService],
+			inject: [ConfigService]
 		}),
+		ConfigModule
 	],
 	controllers: [AuthController],
 	providers: [
@@ -38,8 +39,8 @@ import { AdminStrategy } from './strategies/admin.strategy';
 		JwtGuard,
 		JwtRefreshStrategy,
 		JwtRefreshGuard,
-		AuthService,
+		AuthService
 	],
-	exports: [IntraAuthGuard],
+	exports: [IntraAuthGuard]
 })
 export class AuthModule {}

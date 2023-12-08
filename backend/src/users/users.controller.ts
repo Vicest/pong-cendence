@@ -6,6 +6,7 @@ import {
 	Get,
 	UseGuards,
 	Put,
+	Req
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Observable } from 'rxjs';
@@ -55,7 +56,6 @@ export class UsersController {
 	// POST /users/:id 
 	@Post(':id')
 	updateUser(@Param('id') id: number, @Body() body) {
-		console.log(`User update body: ${JSON.stringify(body)}`);
 		this.userService.updateById(id, body.data);
 	}
 	
@@ -67,8 +67,8 @@ export class UsersController {
 	
 	// Put /users
 	@Put('/')
-	updateCurrentUser(@Body() user: User) {
-		return this.userService.updateById(user.id, user);
+	updateCurrentUser(@Req() req, @Body() user: User) {
+		return this.userService.updateById(req.user.id, user);
 	}
 	
 	

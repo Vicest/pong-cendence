@@ -132,13 +132,13 @@
 		border-right: 1px solid rgba(151, 151, 151, 0.2);
 		/* background-color: red; */
 	}
+
+	/*
 	.item2 {
 		grid-area: b;
 		background-color: black;
 	}
-
-
-	/* .active-chat{
+	.active-chat{
 
 		 grid-template-columns: 30% 1fr;
 

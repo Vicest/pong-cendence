@@ -1,4 +1,29 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { UsersService } from 'src/users/users.service';
+import { GamesService } from './games.service';
 
 @Controller('games')
-export class GamesController {}
+@UseGuards(JwtGuard)
+export class GamesController {
+	constructor(private readonly gameService: GamesService) {}
+
+	@Get('/')
+	getAll() {
+		let games = this.gameService.findAll();
+		return games;
+	}
+
+	//TODO: Fix this
+	@Get('/matches')
+	getMatches() {
+		let matches = this.gameService.findAllMatches();
+		return matches;
+	}
+
+	@Get('/:id')
+	getOne(@Param('id') id: number) {
+		let game = this.gameService.findOne(id);
+		return game;
+	}
+}

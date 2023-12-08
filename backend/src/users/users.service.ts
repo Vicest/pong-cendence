@@ -19,7 +19,7 @@ export class UsersService {
 		@InjectRepository(ChannelMessages)
 		private readonly channelmessagesRepository: Repository<ChannelMessages>,
 		@InjectRepository(UserMessages)
-		private readonly usermessagesRepository: Repository<UserMessages>,
+		private readonly usermessagesRepository: Repository<UserMessages>
 	) {
 		this.log = new Logger();
 	}
@@ -32,7 +32,7 @@ export class UsersService {
 				nickname: data.login,
 				isRegistered: false,
 				avatar: fields.image?.link,
-				login: data.login,
+				login: data.login
 			});
 			this.log.debug(`Created user ${newUser}`);
 			if (newUser) await this.userRepository.save(newUser);
@@ -58,7 +58,26 @@ export class UsersService {
 	private log: Logger;
 
 	public updateById(id: number, userUpdate: User): Promise<UpdateResult> {
-		return this.userRepository.update({ id }, userUpdate);
+		return this.userRepository.update(
+			{ id },
+			{
+				...userUpdate,
+				id
+			}
+		);
+	}
+
+	public updateStatusById(
+		id: number,
+		userUpdate: User['status']
+	): Promise<UpdateResult> {
+		return this.userRepository.update(
+			{ id },
+			{
+				status: userUpdate,
+				id
+			}
+		);
 	}
 
 	/*Con Dios me disculpo por esta aberracion de función ...
@@ -81,7 +100,7 @@ export class UsersService {
 	async getUserWithRelations(nickname: string): Promise<User | undefined> {
 		let contents = await this.userRepository.findOne({
 			where: { nickname },
-			relations: ['relationshared', 'private_messages', 'channel_messages'],
+			relations: ['relationshared', 'private_messages', 'channel_messages']
 		});
 		console.log(contents);
 		return contents;

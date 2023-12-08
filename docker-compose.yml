@@ -4,6 +4,10 @@ services:
     container_name: postgres-container
     env_file: .env
     image: postgres:alpine
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    expose:
+      - ${POSTGRES_PORT}
     networks:
       - pong-network
     deploy:

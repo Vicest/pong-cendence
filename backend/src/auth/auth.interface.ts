@@ -1,4 +1,5 @@
 export interface JwtUser {
-    login:string;
-    isAdmin:boolean;
+	id: number;
+	login: string;
+	isAdmin: boolean;
 }
