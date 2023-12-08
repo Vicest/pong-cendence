@@ -2,6 +2,7 @@ import { get, writable } from 'svelte/store';
 import { Api } from '$services/api';
 import { Socket } from '$services/socket';
 import { currentUser } from './Auth';
+import { priv_chat_history } from './Chat';
 
 export const loading = writable<boolean>(true);
 loading.set(true);
@@ -39,6 +40,30 @@ Socket.on('user:updated', (updatedUser) => {
 			})
 			.sort((a, b) => a.id - b.id);
 	});
+	priv_chat_history.update((messages) => {
+        return messages.map((message) => {
+            if (message.sender.id === updatedUser.id) {
+                return {
+                    ...message,
+                    sender: {
+                        ...message.sender,
+                        nickname: updatedUser.nickname,
+                        avatar: updatedUser.avatar
+                    }
+                };
+            } else if (message.receiver.id === updatedUser.id) {
+                return {
+                    ...message,
+                    receiver: {
+                        ...message.receiver,
+                        nickname: updatedUser.nickname,
+                        avatar: updatedUser.avatar
+                    }
+                };
+            }
+            return message;
+        });
+    });
 	if (get(currentUser).id === updatedUser.id) {
 		currentUser.set(updatedUser);
 	}

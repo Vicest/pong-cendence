@@ -2,13 +2,15 @@
 	import { Avatar, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	// Global stores
+	import { Api } from '$services/api';
 	import type { Person } from "$lib/types"
-	import { receptor , chat_history } from "../../store/Chat";
+	import { receptor , priv_chat_history } from "../../store/Chat";
 
 	import { mock_friends, mock_priv_msg } from "../../store/Chat"
 	// Components
 	import Chat from './Direct_Channel_Chat.svelte';
 	import { userList } from '../../store/User';
+	import { currentUser } from '../../store/Auth';
 
 	let people : Person[] = [];
 
@@ -24,16 +26,17 @@
 	$:{
 		people = [...user_list];
 		// sortByLastMsg();
-		console.log("User sorted -> ", people)
+		// console.log("User sorted -> ", people)
 	}
 	receptor.subscribe((value) => {aux_receptor = value;});
 	userList.subscribe((value) => {user_list = value;});
-	mock_priv_msg.subscribe((value) => {priv_messages = value;});
 
 	// When DOM mounted, scroll to bottom
 	onMount(async () => {
 		people = [...user_list];
 	});
+
+	
 
 	function filterUsers(keyword: string): void {
 		displayChat = false;
@@ -52,20 +55,32 @@
 
 		displayChat = true;
 		currentPerson = person
-        console.log("Persona seleccionada es -> ",currentPerson)
+        // console.log("Persona seleccionada es -> ",currentPerson)
 
 		// console.log("Persona seleccionada es -> ",currentPerson)
-		receptor.set(currentPerson);
-		chat_history.set([]);
+
+		receptor.set(person);
+		priv_chat_history.set([]);
+
+		Api.get('/users/messages/' + $currentUser.login + '/' + $receptor.login)
+        .then(({ data }) => {
+			console.log("El dato es", data);
+			priv_chat_history.set(data);
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+        .finally(() => {});
+
 
 		// console.log("Mensajes privados -> ",aux_user._privateMessages)
-		chat_history.set(priv_messages.filter((msg : any) => {
-			return (msg.sender.nickname == currentPerson.nickname || msg.receiver.nickname == currentPerson.nickname);
-		}).sort((msgA :any, msgB: any) => {
-			const dateA = new Date(msgA.created_at).getTime();
-			const dateB = new Date(msgB.created_at).getTime();
-			return dateA - dateB;
-		}));
+		// priv_chat_history.set(priv_messages.filter((msg : any) => {
+		// 	return (msg.sender.nickname == $receptor.nickname || msg.receiver.nickname == $receptor.nickname);
+		// }).sort((msgA :any, msgB: any) => {
+		// 	const dateA = new Date(msgA.created_at).getTime();
+		// 	const dateB = new Date(msgB.created_at).getTime();
+		// 	return dateA - dateB;
+		// }));
 	}
 
 </script>
@@ -79,7 +94,7 @@
 		<div class="user-list-container p-4 space-y-4 overflow-y-auto">
 			<ListBox active="variant-filled-primary">
 				{#each people as person}
-					<ListBoxItem bind:group={currentPerson} on:click={() => {avatarClick(person)}} name="people" value={person}>
+					<ListBoxItem bind:group={$receptor} on:click={() => {avatarClick(person)}} name="people" value={person}>
 						<svelte:fragment slot="lead">
 							<Avatar src="{person.avatar}"></Avatar>
 						</svelte:fragment>
@@ -90,7 +105,7 @@
 		</div>
 	</div>
 		{#if displayChat}
-        	<Chat currentPerson={currentPerson}></Chat>
+        	<Chat></Chat>
 		{/if}
 </div>
 
