@@ -3,6 +3,7 @@ import { Api } from '$services/api';
 import { GamesSocket, Socket, UsersSocket } from '$services/socket';
 import { currentUser } from './Auth';
 import type { Person } from '$lib/types';
+import { priv_chat_history } from './Chat';
 
 export const loading = writable<boolean>(true);
 loading.set(true);
@@ -39,7 +40,31 @@ UsersSocket.on('user:updated', (id, updatedMetadata) => {
 		currentUser.update((user) => {
 			return { ...user, ...updatedMetadata };
 		});
-	}
+  }
+	priv_chat_history.update((messages) => {
+        return messages.map((message) => {
+            if (message.sender.id === updatedUser.id) {
+                return {
+                    ...message,
+                    sender: {
+                        ...message.sender,
+                        nickname: updatedUser.nickname,
+                        avatar: updatedUser.avatar
+                    }
+                };
+            } else if (message.receiver.id === updatedUser.id) {
+                return {
+                    ...message,
+                    receiver: {
+                        ...message.receiver,
+                        nickname: updatedUser.nickname,
+                        avatar: updatedUser.avatar
+                    }
+                };
+            }
+            return message;
+        });
+    });
 });
 
 UsersSocket.on('user:created', (createdUser) => {
