@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -13,6 +14,11 @@ async function bootstrap() {
 	const frontUri = `${conf.get<string>('BACKEND_BASE')}:${conf.get<string>(
 		'FRONTEND_PORT'
 	)}`;
+
+	app.use(bodyParser.json({ limit: '3mb' }));
+	app.use(bodyParser.urlencoded({ limit: '3mb', extended: true }));
+	app.use(bodyParser.raw({ limit: '3mb' }));
+
 	//Configure CORS options
 	app.enableCors({
 		origin: [frontUri],

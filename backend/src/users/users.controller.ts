@@ -14,15 +14,19 @@ import { User } from './entities/user.entity';
 import { UserRelation } from './entities/userRelations.entity';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import * as fs from 'fs';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('users')
 @UseGuards(JwtGuard)
 export class UsersController {
-	constructor(private readonly userService: UsersService) {}
+	constructor(
+		private readonly userService: UsersService,
+		private readonly configService: ConfigService
+	) {}
 
 	@Get('/')
 	getAll() {
-		let users = this.userService.findAll();
+		const users = this.userService.findAll();
 		return users;
 	}
 
@@ -31,6 +35,15 @@ export class UsersController {
 	@Get(':id')
 	getOneUsers(@Param('id') id: number): Promise<User | null> {
 		return this.userService.find(id);
+	}
+	@Get(':login/img')
+	getUserImg(@Param('login') login: string){
+		const imagePath = `usersdata/${login}.png`;
+		if (fs.existsSync(imagePath)) {
+			const fileContent = fs.readFileSync(imagePath);
+			return fileContent;
+		}
+		return null;
 	}
 
 	@Post(':id')
@@ -47,10 +60,27 @@ export class UsersController {
 	// Put /
 	@Put('/')
 	updateCurrentUser(@Req() req, @Body() user: User) {
-		// const base64Data = req.encodedImg.replace(/^data:image\/png;base64,/, '');
-		// fs.writeFile('out.png', base64Data, 'base64', (err) => {
-		// 	console.log(err);
-		// });
+		fs.writeFile('foo.png', user.avatar, 'base64', (err) => {
+			console.log(err);
+		});
+		//Crear imagen y guardarla en el servidor
+		console.log('User Avatar', user.avatar);
+		const base64Data = user.avatar.replace(/^data:image\/png;base64,/, '');
+		if (!fs.existsSync('usersdata')) {
+			fs.mkdirSync('usersdata');
+		}
+		fs.writeFile(
+			`usersdata/${req.user.login}.png`,
+			base64Data,
+			'base64',
+			(err) => {
+				console.log(err);
+			}
+		);
+		// Especificar la url de la imagen del usuario
+		const databasePort = this.configService.get<number>('database.port');
+		const databaseUri = this.configService.get<string>('BACKEND_BASE');
+		user.avatar = `${databaseUri}:${databasePort}/users/${req.user.login}/img`;
 
 		return this.userService.updateById(req.user.id, user);
 	}
