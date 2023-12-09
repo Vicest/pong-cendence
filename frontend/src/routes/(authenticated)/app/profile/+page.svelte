@@ -10,23 +10,17 @@
 	let currentUserCopy = { ...$currentUser };
 
 	let editMode: boolean = false;
-
-	let imageFile;
-
+	let imageValue = null;
 	const handleFileChange = (event: any) => {
-		imageFile = event.target.files[0];
-		if(imageFile.size > 2097152)
-		{
-       		alert("File too big! Max 2Mb");
-			event.target.value ="";
-		}
-		else if (imageFile) {
+		let imageFile = event.target.files[0];
+		if (imageFile.size > 2097152) {
+			alert('File too big! Max 2Mb');
+			event.target.value = '';
+		} else if (imageFile) {
 			const reader = new FileReader();
 
 			reader.onload = (e: any) => {
-				const base64EncodedImage = e.target.result;
-				console.log(base64EncodedImage);
-				currentUserCopy.avatar = base64EncodedImage;
+				imageValue = e.target.result;
 				editMode = true;
 			};
 			reader.readAsDataURL(imageFile);
@@ -34,53 +28,50 @@
 	};
 	// Save the changes
 	async function saveChanges() {
-		Api.put('/users', {
+		let updateinfo = {
 			nickname: currentUserCopy.nickname,
-			avatar: currentUserCopy.avatar
-		}).then((res) => {
+		}
+		if (imageValue)
+  			updateinfo.avatar = imageValue;
+
+		Api.put('/users', updateinfo).then((res) => {
 			if (res.status === 200) {
 				editMode = false;
+			}else {
+				console.log(res.status)
 			}
 		});
 	}
 </script>
-<style lang="postcss">
-	.line {
-		border: 1px solid #fff;
-		width: 100%;
-		margin: 0 10px;
-	}
-	.input-avatar {
-		display: none;
-	}
-	.profile-avatar-label:hover {
-		background-color: rgb(128, 128, 128,0.9);
-		border-radius: 60px;
-		cursor: pointer;
-	}
-
-</style>
-
 
 <div class="container h-full mx-auto flex flex-col items-center">
 	<div class="flex flex-col justify-center items-center my-10 card w-full p-10">
-		<div class="flex justify-center items-center w-full ">
+		<div class="flex justify-center items-center w-full">
 			<div class="line" />
-			<div class="xd">
-			<label for="profile-avatar" class="profile-avatar-label">
+			<div class="relative">
 				<Avatar src={$currentUser.avatar} width="w-40" class="border-4 border-white rounded-full" />
-			</label>
-		</div>
+				<!-- <Fa icon={faEdit} class="text-5xl absolute w-full h-full z-10 text-black" /> -->
+				<label for="profile-avatar" class="profile-avatar-label" />
+			</div>
 			<div class="line" />
 		</div>
+		{#if !editMode}
 		<div class="flex gap-5 justify-center items-center mt-4 relative">
 			<span class="text-2xl font-bold">{$currentUser.nickname}</span>
 			<div class="ml-2 cursor-pointer" on:click={() => (editMode = !editMode)}>
 				<Fa icon={faEdit} class="text-2xl" />
 			</div>
 		</div>
-		<input class="input-avatar" id="profile-avatar" type="file" accept="image/*" on:change={handleFileChange} >
+		{/if}
+		<input
+			class="input-avatar"
+			id="profile-avatar"
+			type="file"
+			accept="image/*"
+			on:change={handleFileChange}
+		/>
 		{#if editMode}
+
 			<div class="flex flex-col justify-center items-cvariant-filledenter mt-4">
 				<label class="label">
 					<span>Nickname</span>
@@ -100,3 +91,33 @@
 	</div>
 </div>
 
+<style scoped>
+	.line {
+		border: 1px solid #fff;
+		width: 100%;
+		margin: 0 10px;
+	}
+	.input-avatar {
+		display: none;
+	}
+	.profile-avatar-label {
+		position: absolute;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 10000;
+		border-radius: 50%;
+	}
+
+	.profile-avatar-label:hover {
+		background: rgba(255, 255, 255, 0.7);
+		cursor: pointer;
+	}
+
+	.profile-avatar-edit {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		z-index: 10000;
+	}
+</style>

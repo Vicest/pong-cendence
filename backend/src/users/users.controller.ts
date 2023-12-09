@@ -63,38 +63,43 @@ export class UsersController {
 	@Put('/')
 	updateCurrentUser(@Req() req, @Res() res, @Body() user: User) {
 		//TODO: validar imagen
-
+		console.log(req.body)
 		//Crear imagen y guardarla en el servidor
-		let imageType;
-		if (user.avatar.includes('image/jpeg')) imageType = 'jpeg';
-		else if (user.avatar.includes('image/png')) imageType = 'png';
-		else {
-			console.log('Uknown Image extension');
-			return 'Error Uknown Image extension';
-		}
-		const base64Data = user.avatar.replace(
-			`data:image/${imageType};base64,`,
-			''
-		);
-		try {
-			if (!fs.existsSync('usersdata')) fs.mkdirSync('usersdata');
-			fs.writeFile(
-				`usersdata/${req.user.login}.png`,
-				base64Data,
-				'base64',
-				(err) => {
-					console.log(err);
-				}
+		if(user.avatar)
+		{
+			let imageType;
+			if (user.avatar.includes('image/jpeg')) imageType = 'jpeg';
+			else if (user.avatar.includes('image/png')) imageType = 'png';
+			else {
+				console.log('Uknown Image extension');
+				return 'Error Uknown Image extension';
+			}
+			const base64Data = user.avatar.replace(
+				`data:image/${imageType};base64,`,
+				''
 			);
-		} catch (e) {
-			console.log(e);
+			try {
+				if (!fs.existsSync('usersdata')) fs.mkdirSync('usersdata');
+				fs.writeFile(
+					`usersdata/${req.user.login}.png`,
+					base64Data,
+					'base64',
+					(err) => {
+						console.log(err);
+					}
+				);
+			} catch (e) {
+				console.log(e);
+			}
+			// Especificar la url de la imagen del usuario
+			const databasePort = this.configService.get<number>('BACKEND_PORT');
+			const databaseUri = this.configService.get<string>('BACKEND_BASE');
+			user.avatar = `${databaseUri}:${databasePort}/users/${req.user.login}/img`;
 		}
-		// Especificar la url de la imagen del usuario
-		const databasePort = this.configService.get<number>('BACKEND_PORT');
-		const databaseUri = this.configService.get<string>('BACKEND_BASE');
-		user.avatar = `${databaseUri}:${databasePort}/users/${req.user.login}/img`;
+		
 
 		return this.userService.updateById(req.user.id, user);
+
 	}
 
 	// POST /addrelation
