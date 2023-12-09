@@ -10,7 +10,7 @@
 	let currentUserCopy = { ...$currentUser };
 
 	let editMode: boolean = false;
-	let imageValue = null;
+	let imageValue: any = null;
 	const handleFileChange = (event: any) => {
 		let imageFile = event.target.files[0];
 		if (imageFile.size > 2097152) {
@@ -38,7 +38,7 @@
 			if (res.status === 200) {
 				editMode = false;
 			}else {
-				console.log(res.status)
+				console.log(res)
 			}
 		});
 	}
