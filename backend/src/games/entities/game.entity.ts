@@ -49,5 +49,14 @@ export class Game {
 	created_at: Date;
 
 	@OneToMany(() => Match, (match) => match.game)
+	@JoinTable({
+		name: 'Matches',
+		joinColumn: {
+			name: 'game_id'
+		},
+		inverseJoinColumn: {
+			name: 'match_id'
+		}
+	})
 	matches: Match[];
 }

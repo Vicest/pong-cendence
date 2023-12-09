@@ -13,9 +13,11 @@ import { ChatModule } from './chat/chat.module';
 import databaseConfig from 'config/database';
 import jwtConfig from 'config/jwt';
 import frontendConfig from 'config/frontend';
+import { Interval, ScheduleModule } from '@nestjs/schedule';
 
 @Module({
 	imports: [
+		ScheduleModule.forRoot(),
 		//TODO Guarded endpoints fot the IntraAPI limiting, 2/s is what the intra allows for, we would need to adjust values here
 		ThrottlerModule.forRoot([
 			{

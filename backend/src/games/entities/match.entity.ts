@@ -8,7 +8,8 @@ import {
 	PrimaryColumn,
 	JoinTable,
 	JoinColumn,
-	Unique
+	Unique,
+	ManyToOne
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Game } from './game.entity';
@@ -21,7 +22,7 @@ export class Match {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@OneToOne(() => Game, (game) => game.id)
+	@ManyToOne(() => Game, (game) => game.id)
 	@JoinColumn({
 		name: 'game_id'
 	})

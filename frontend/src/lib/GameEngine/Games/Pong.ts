@@ -1,7 +1,10 @@
+import type { Person } from '$lib/types';
+import { GamesSocket } from '$services/socket';
 import GameEngine from '../';
 
 export class PongGame extends GameEngine {
 	private keysPressed: any;
+	private _keysPressed: any;
 	private ball: any;
 	private leftPaddle: any;
 	private rightPaddle: any;
@@ -11,9 +14,11 @@ export class PongGame extends GameEngine {
 	private upArrow: number;
 	private downArrow: number;
 
-	constructor(id) {
-		super('Pong', id, '16 / 9');
+	constructor(id: number, players: Person[], userId: number) {
+		super('Pong', id, '16/9', players, userId);
 		this.keysPressed = {};
+		this._keysPressed = {};
+
 		this.ball = {
 			x: 400,
 			y: 300,
@@ -39,7 +44,6 @@ export class PongGame extends GameEngine {
 	}
 
 	start() {
-		console.log('Starting Pong');
 		const self = this;
 		this.p.draw = () => {
 			this.p.background(0);
@@ -55,17 +59,40 @@ export class PongGame extends GameEngine {
 		this.p.keyReleased = () => {
 			this.keysPressed[this.p.keyCode] = false;
 		};
+
+		GamesSocket.on('IoEvent', (data: any) => {
+			if (data.game === self.id) {
+				self._keysPressed = data.users.reduce((acc: any, user: any) => {
+					console.log(user);
+					if (user.user_id === 1) {
+						acc[self.upKey] = user.properties[self.upKey];
+						acc[self.downKey] = user.properties[self.downKey];
+					} else if (user.user_id === 2) {
+						acc[self.upArrow] = user.properties[self.upArrow];
+						acc[self.downArrow] = user.properties[self.downArrow];
+					}
+					return acc;
+				}, {});
+			}
+		});
 	}
 
 	handleInput() {
-		if (this.keysPressed[this.upKey]) {
+		GamesSocket.emit('IoEvent', {
+			game: this.id,
+			keysPressed: this.keysPressed
+		});
+	}
+
+	handleSocketInput() {
+		if (this._keysPressed[this.upKey]) {
 			this.movePaddle(this.leftPaddle, -this.playerSpeed);
-		} else if (this.keysPressed[this.downKey]) {
+		} else if (this._keysPressed[this.downKey]) {
 			this.movePaddle(this.leftPaddle, this.playerSpeed);
 		}
-		if (this.keysPressed[this.upArrow]) {
+		if (this._keysPressed[this.upArrow]) {
 			this.movePaddle(this.rightPaddle, -this.playerSpeed);
-		} else if (this.keysPressed[this.downArrow]) {
+		} else if (this._keysPressed[this.downArrow]) {
 			this.movePaddle(this.rightPaddle, this.playerSpeed);
 		}
 	}
@@ -73,7 +100,10 @@ export class PongGame extends GameEngine {
 	update() {
 		this.moveBall();
 		this.checkCollision();
-		this.handleInput();
+		if (this.players.map((p) => p.id).indexOf(this.userId) !== -1) {
+			this.handleInput();
+		}
+		this.handleSocketInput();
 	}
 
 	drawBall() {
@@ -95,7 +125,6 @@ export class PongGame extends GameEngine {
 	movePaddle(paddle, dir) {
 		paddle.y += dir;
 		paddle.y = this.p.constrain(paddle.y, 0, this.p.height - paddle.height);
-		console.log('hola');
 	}
 
 	moveBall() {

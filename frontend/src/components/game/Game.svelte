@@ -7,6 +7,8 @@
 	import { userList } from '../../store/User';
 	import { PongGame } from '$lib/GameEngine/Games/Pong';
 	import { onMount } from 'svelte';
+	import { GamesSocket } from '$services/socket';
+	import { currentUser } from '../../store/Auth';
 
 	let gameInstance: GameInstance;
 	gameInstances.subscribe((instances) => {
@@ -31,7 +33,7 @@
 	});*/
 
 	onMount(() => {
-		let game = new PongGame(gameInstance.id);
+		let game = new PongGame(gameInstance.id, players, $currentUser.id);
 	});
 </script>
 

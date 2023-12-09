@@ -82,13 +82,16 @@ export class UsersService {
 
 	/*Con Dios me disculpo por esta aberracion de función ...
         pero situaciones drasticas requieren medidas drasticas*/
-	async findUserMessages(login: string, login2: string): Promise<UserMessages[] | undefined> {
+	async findUserMessages(
+		login: string,
+		login2: string
+	): Promise<UserMessages[] | undefined> {
 		let contents = await this.usermessagesRepository.find({
 			where: [
 				{ sender: { login }, receiver: { login: login2 } },
-				{ sender: { login: login2 }, receiver: { login } },
-			  ],
-			  relations: ['sender', 'receiver']
+				{ sender: { login: login2 }, receiver: { login } }
+			],
+			relations: ['sender', 'receiver']
 		});
 		return contents;
 	}
@@ -117,50 +120,47 @@ export class UsersService {
 	}
 }
 
+// /*Con Dios me disculpo por esta aberracion de función ...
+//     pero situaciones drasticas requieren medidas drasticas*/
+// 	async findUserMessages(nickname: string): Promise<User | undefined> {
+// 		let contents = await this.userRepository.findOne({
+// 			where: { nickname },
+// 			relations: [
+// 				'relationshared',
+// 				'relationshared.sender',
+// 				'relationshared.receptor',
+// 				'relationsharedAsReceiver',
+// 				'relationsharedAsReceiver.sender',
+// 				'relationsharedAsReceiver.receptor', //I hate it
+// 				'channels',
+// 				'channels.messages',
+// 				'channels.messages.sender',
+// 				'channels.members',
+// 				'sent_messages',
+// 				'sent_messages.sender',
+// 				'sent_messages.receiver',
+// 				'received_messages',
+// 				'received_messages.sender',
+// 				'received_messages.receiver',
+// 			], //Puta mierda esta bro :v
+// 		});
 
-
-
-	// /*Con Dios me disculpo por esta aberracion de función ...
-    //     pero situaciones drasticas requieren medidas drasticas*/
-	// 	async findUserMessages(nickname: string): Promise<User | undefined> {
-	// 		let contents = await this.userRepository.findOne({
-	// 			where: { nickname },
-	// 			relations: [
-	// 				'relationshared',
-	// 				'relationshared.sender',
-	// 				'relationshared.receptor',
-	// 				'relationsharedAsReceiver',
-	// 				'relationsharedAsReceiver.sender',
-	// 				'relationsharedAsReceiver.receptor', //I hate it
-	// 				'channels',
-	// 				'channels.messages',
-	// 				'channels.messages.sender',
-	// 				'channels.members',
-	// 				'sent_messages',
-	// 				'sent_messages.sender',
-	// 				'sent_messages.receiver',
-	// 				'received_messages',
-	// 				'received_messages.sender',
-	// 				'received_messages.receiver',
-	// 			], //Puta mierda esta bro :v
-	// 		});
-	
-	// 		if (contents) {
-	// 			await contents.loadPrivateMessages();
-	// 			await contents.loadrelationsList();
-	// 			contents.friends = contents.relationsList
-	// 				.filter((relation) => relation.status === 1)
-	// 				.map((relation) =>
-	// 					relation.sender_id === contents.id
-	// 						? relation.receptor
-	// 						: relation.sender,
-	// 				);
-	// 		}
-	// 		delete contents._relationList;
-	// 		delete contents.sent_messages;
-	// 		delete contents.received_messages;
-	// 		delete contents.relationshared;
-	// 		delete contents.relationsharedAsReceiver;
-	// 		// console.log(contents);
-	// 		return contents;
-	// 	}
+// 		if (contents) {
+// 			await contents.loadPrivateMessages();
+// 			await contents.loadrelationsList();
+// 			contents.friends = contents.relationsList
+// 				.filter((relation) => relation.status === 1)
+// 				.map((relation) =>
+// 					relation.sender_id === contents.id
+// 						? relation.receptor
+// 						: relation.sender,
+// 				);
+// 		}
+// 		delete contents._relationList;
+// 		delete contents.sent_messages;
+// 		delete contents.received_messages;
+// 		delete contents.relationshared;
+// 		delete contents.relationsharedAsReceiver;
+// 		// console.log(contents);
+// 		return contents;
+// 	}
