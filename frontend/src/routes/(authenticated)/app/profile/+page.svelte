@@ -33,7 +33,7 @@
 		}
 		if (imageValue)
   			updateinfo.avatar = imageValue;
-
+		//TODO Fix recibir respuesta de servidor
 		Api.put('/users', updateinfo).then((res) => {
 			if (res.status === 200) {
 				editMode = false;
@@ -49,6 +49,7 @@
 		<div class="flex justify-center items-center w-full">
 			<div class="line" />
 			<div class="relative">
+				<!-- TODO Mergear feat-add-storage , para poder acceder a la url del avatar con autorizacion -->
 				<Avatar src={$currentUser.avatar} width="w-40" class="border-4 border-white rounded-full" />
 				<!-- <Fa icon={faEdit} class="text-5xl absolute w-full h-full z-10 text-black" /> -->
 				<label for="profile-avatar" class="profile-avatar-label" />
