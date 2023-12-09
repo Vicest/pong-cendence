@@ -22,18 +22,18 @@ export class UsersController {
 
 	/* ----------------------------- CHAT ------------------------------ */
 
-	// GET /users/messages/:id
-	@Get('messages/:login/:login2')
-	getMessages(@Param('login') login: string, @Param('login2') login2: string): Promise<UserMessages[] | null> {
-		return this.userService.findUserMessages(login, login2);
-	}
+	// // GET /users/messages/:id
+	// @Get('messages/:login/:login2')
+	// getMessages(@Param('login') login: string, @Param('login2') login2: string): Promise<UserMessages[] | null> {
+	// 	return this.userService.findUserMessages(login, login2);
+	// }
 
-	// POST /users/priv_messages
-	@Post('priv_messages')
-	createPrivateMessages(@Body() msg: UserMessages): Observable<UserMessages | null> {
-		console.log ("Creamos una fecha")
-		return this.userService.createUserMessage(msg);
-	}
+	// // POST /users/priv_messages
+	// @Post('priv_messages')
+	// createPrivateMessages(@Body() msg: UserMessages): Observable<UserMessages | null> {
+	// 	console.log ("Creamos una fecha")
+	// 	return this.userService.createUserMessage(msg);
+	// }
 
 	/* ----------------------------- USERs ------------------------------ */
 	// Get /users

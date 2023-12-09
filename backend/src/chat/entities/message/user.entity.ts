@@ -16,7 +16,7 @@ export class UserMessages {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column({ type: 'text' })
+	@Column({ type: 'varchar', length: 500, nullable: false })
 	content: string;
 
 	@ManyToOne(() => User, (sender) => sender.id)

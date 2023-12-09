@@ -1,51 +1,82 @@
 import exp from 'constants';
-import { get , writable } from 'svelte/store';
-import type { Person, PrivateMessageFeed } from '$lib/types';
+import { get, writable } from 'svelte/store';
+import type { Channel, Person, PrivateMessageFeed } from '$lib/types';
 import { Api } from '$services/api';
 import { ChatSocket } from '$services/socket';
-import { loading as Authloading , currentUser } from './Auth';
-
+import { loading as Authloading, currentUser } from './Auth';
 
 export const receptor = writable<Person>();
 export const type_Channel = writable();
 export const chat_history = writable();
 
-export const priv_chat_history = writable<PrivateMessageFeed[]>([])
-// export const priv_msg = writable<PrivateMessageFeed[]>([]);
+export const priv_chat_history = writable<PrivateMessageFeed[]>([]);
+export const priv_msg = writable<PrivateMessageFeed[]>([]);
+export const joined_channels = writable<Channel[]>([]);
+export const unjoined_channels = writable<Channel[]>([]);
+export const loading = writable<boolean>(true);
+
+loading.set(true);
 
 export const init = () => {
-	// const unsubscribe = Authloading.subscribe((value) => {
-    //     if (!value) {
-    //         unsubscribe(); // Detener la suscripción una vez que Authloading sea falso
-    //         Api.get('/users/messages/' + get(currentUser).nickname)
-    //             .then(({ data }) => {
-	// 				priv_msg.set(data._privateMessages);
-    //                 setTimeout(() => {
-	// 					loading.set(false);
-    //                 }, 1000);
-	// 				console.log("Pillamos mensajes? -> ", get(priv_msg));
-    //             })
-    //             .catch((err) => {
-    //                 console.log(err);
-    //             })
-    //             .finally(() => {});
-    //     }
-    // });
+	const unsubscribe = Authloading.subscribe((value) => {
+		if (!value) {
+			unsubscribe(); // Detener la suscripción una vez que Authloading sea falso
+			Api.get('/chat/messages_history')
+				.then(({ data }) => {
+					// console.log("Que cojones me llega", data)
+					priv_msg.set(data);
+					setTimeout(() => {
+						loading.set(false);
+					}, 1000);
+					// console.log("Pillamos mensajes? -> ", get(priv_msg));
+				})
+				.catch((err) => {
+					console.log(err);
+				})
+				.finally(() => {});
+
+			Api.get('/chat/joinedchannels')
+				.then(({ data }) => {
+					joined_channels.set(data);
+					console.log('Obtenemos todos los canales en los que estoy ', get(joined_channels));
+					setTimeout(() => {
+						loading.set(false);
+					}, 1000);
+				})
+				.catch((err) => {
+					console.log(err);
+				})
+				.finally(() => {});
+			Api.get('/chat/unjoinedchannels')
+				.then(({ data }) => {
+					unjoined_channels.set(data);
+					console.log('Obtenemos todos los canales en los que no estoy', get(unjoined_channels));
+					setTimeout(() => {
+						loading.set(false);
+					}, 1000);
+				})
+				.catch((err) => {
+					console.log(err);
+				})
+				.finally(() => {});
+		}
+	});
 };
 
 ChatSocket.on('priv_msg:created', (createdMsg) => {
-	console.log("Mensaje de chat me llego :)", createdMsg, get(receptor))
-	if (get(receptor))
-	{
+	console.log('Mensaje de chat me llego :)', createdMsg, get(receptor));
+	priv_msg.update((messages) => {
+		return [...messages, createdMsg];
+	});
+	if (get(receptor)) {
 		if (get(receptor).id === createdMsg.sender.id || get(receptor).id === createdMsg.receiver.id)
 			priv_chat_history.update((msg) => {
-				console.log("Actualizamos el mensaje")	
+				console.log('Añadimos el mensaje al historial abierto');
 				return [...msg, createdMsg];
 			});
 	}
-	console.log("Actualizamos el historial privado")
+	console.log('Actualizamos el historial privado');
 });
-
 
 export const mock_user_list = writable<Array<Person>>([]);
 export const mock_friends = writable<Array<Person>>([]);
@@ -58,7 +89,9 @@ mock_blocked.set([
 		id: 6,
 		nickname: 'mtacuna',
 		avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/mtacuna.jpg',
-		two_factor_auth_enabled: false
+		two_factor_auth_enabled: false,
+		login: 'Maria',
+		status: 'online'
 	}
 ]);
 
@@ -332,5 +365,3 @@ mock_channels.set([
 		]
 	}
 ]);
-
-

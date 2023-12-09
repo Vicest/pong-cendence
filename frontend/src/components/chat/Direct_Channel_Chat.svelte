@@ -38,7 +38,7 @@
 		};
 
 		// /users/priv_messages
-		Api.post('/users/priv_messages', msg)
+		Api.post('/chat/priv_messages', msg)
 			.then((response) => {
 				console.log('Mensaje enviado con éxito', response.data);
 
@@ -88,11 +88,11 @@
 						</div>
 						<p>{$bubble.content}</p>
 					</div>
-					<ChatAvatar user={$bubble.sender} width="w-10" />
+					<ChatAvatar showStatus={false} user={$bubble.sender} width="w-10" />
 				</div>
 			{:else}
 				<div class="grid grid-cols-[auto_1fr] gap-2">
-					<ChatAvatar user={$bubble.sender} width="w-10" />
+					<ChatAvatar showStatus={false} user={$bubble.sender} width="w-10" />
 					<div class="card p-4 variant-soft rounded-tl-none space-y-2">
 						<div class="flex justify-between items-center">
 							<p class="font-bold">{$bubble.sender.nickname}</p>

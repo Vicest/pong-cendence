@@ -11,6 +11,11 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { ChannelMessages } from './message/channel.entity';
 
+enum ChatType {
+	PRIVATE = 'Private',
+	PROTECTED = 'Protected',
+	PUBLIC = 'Public'
+}
 @Entity({
 	name: 'Channels'
 })
@@ -26,6 +31,13 @@ export class Channel {
 
 	@Column()
 	password: string;
+
+	@Column({
+		type: 'enum',
+		enum: ChatType,
+		default: ChatType.PUBLIC
+	})
+	type: ChatType;
 
 	@Column({
 		type: 'timestamp',

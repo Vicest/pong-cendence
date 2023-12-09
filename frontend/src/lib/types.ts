@@ -19,14 +19,24 @@ export interface PrivateMessageFeed {
 	message: string;
 }
 
-export interface Group {
+export interface ChatMessageFeed {
+	created_at: any;
+	content: any;
+	id: number;
+	sender: Person;
+	receiver: Channel;
+	date: string;
+	message: string;
+}
+
+export interface Channel {
 	id: string;
 	nickname: string;
-	descripcion: string;
+	description: string;
 	password: string;
-	created_at: Date;
+	created_at: string;
 	members: Person[];
-	// feed: MessageFeed[];
+	messages: ChatMessageFeed[];
 }
 
 type GameType = 'pong' | 'tetris';

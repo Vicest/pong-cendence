@@ -4,7 +4,7 @@
 	// Global stores
 	import { Api } from '$services/api';
 	import type { Person } from '$lib/types';
-	import { receptor, priv_chat_history } from '../../store/Chat';
+	import { receptor, priv_chat_history, priv_msg } from '../../store/Chat';
 
 	import { mock_friends, mock_priv_msg } from '../../store/Chat';
 	// Components
@@ -37,6 +37,7 @@
 	// When DOM mounted, scroll to bottom
 	onMount(async () => {
 		people = [...user_list];
+		console.log('Privado general :v', $priv_msg);
 	});
 
 	function filterUsers(keyword: string): void {
@@ -60,24 +61,30 @@
 		receptor.set(person);
 		priv_chat_history.set([]);
 
-		Api.get('/users/messages/' + $currentUser.login + '/' + $receptor.login)
-			.then(({ data }) => {
-				console.log('El dato es', data);
-				priv_chat_history.set(data);
-			})
-			.catch((err) => {
-				console.log(err);
-			})
-			.finally(() => {});
+		// Api.get('/chat/messages/' + $receptor.login)
+		// 	.then(({ data }) => {
+		// 		console.log('El dato es', data);
+		// 		priv_chat_history.set(data);
+		// 	})
+		// 	.catch((err) => {
+		// 		console.log(err);
+		// 	})
+		// 	.finally(() => {});
 
 		// console.log("Mensajes privados -> ",aux_user._privateMessages)
-		// priv_chat_history.set(priv_messages.filter((msg : any) => {
-		// 	return (msg.sender.nickname == $receptor.nickname || msg.receiver.nickname == $receptor.nickname);
-		// }).sort((msgA :any, msgB: any) => {
-		// 	const dateA = new Date(msgA.created_at).getTime();
-		// 	const dateB = new Date(msgB.created_at).getTime();
-		// 	return dateA - dateB;
-		// }));
+		priv_chat_history.set(
+			$priv_msg
+				.filter((msg: any) => {
+					return (
+						msg.sender.nickname == $receptor.nickname || msg.receiver.nickname == $receptor.nickname
+					);
+				})
+				.sort((msgA: any, msgB: any) => {
+					const dateA = new Date(msgA.created_at).getTime();
+					const dateB = new Date(msgB.created_at).getTime();
+					return dateA - dateB;
+				})
+		);
 	}
 </script>
 
@@ -95,19 +102,21 @@
 		<div class="user-list-container p-4 space-y-4 overflow-y-auto">
 			<ListBox active="variant-filled-primary">
 				{#each people as person}
-					<ListBoxItem
-						bind:group={$receptor}
-						on:click={() => {
-							avatarClick(person);
-						}}
-						name="people"
-						value={person}
-					>
-						<svelte:fragment slot="lead">
-							<ChatAvatar user={person} width="w-12" />
-						</svelte:fragment>
-						{person.nickname}
-					</ListBoxItem>
+					{#if person.login != $currentUser.login}
+						<ListBoxItem
+							bind:group={$receptor}
+							on:click={() => {
+								avatarClick(person);
+							}}
+							name="people"
+							value={person}
+						>
+							<svelte:fragment slot="lead">
+								<ChatAvatar user={person} width="w-12" />
+							</svelte:fragment>
+							{person.nickname}
+						</ListBoxItem>
+					{/if}
 				{/each}
 			</ListBox>
 		</div>

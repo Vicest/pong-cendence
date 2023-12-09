@@ -7,9 +7,15 @@ import { UsersService } from 'src/users/users.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChatSubscriber } from './chat.subscriber';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Channel } from './entities/channel.entity';
+import { ChannelMessages } from './entities/message/channel.entity';
+import { UserMessages } from './entities/message/user.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Module({
 	imports: [
+		TypeOrmModule.forFeature([User, Channel, ChannelMessages, UserMessages]),
 		UsersModule,
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
@@ -19,7 +25,8 @@ import { ChatSubscriber } from './chat.subscriber';
 			inject: [ConfigService]
 		})
 	],
-	providers: [ChatService,ChatSubscriber, ChatGateway],
+
+	providers: [ChatService, ChatSubscriber, ChatGateway],
 	controllers: [ChatController],
 	exports: [ChatGateway]
 })

@@ -3,7 +3,7 @@ import { Api } from '$services/api';
 import { GamesSocket, Socket, UsersSocket } from '$services/socket';
 import { currentUser } from './Auth';
 import type { Person } from '$lib/types';
-import { priv_chat_history } from './Chat';
+import { priv_msg, priv_chat_history, receptor } from './Chat';
 
 export const loading = writable<boolean>(true);
 loading.set(true);
@@ -40,34 +40,41 @@ UsersSocket.on('user:updated', (id, updatedMetadata) => {
 		currentUser.update((user) => {
 			return { ...user, ...updatedMetadata };
 		});
-  }
-	priv_chat_history.update((messages) => {
-        return messages.map((message) => {
-            if (message.sender.id === updatedUser.id) {
-                return {
-                    ...message,
-                    sender: {
-                        ...message.sender,
-                        nickname: updatedUser.nickname,
-                        avatar: updatedUser.avatar
-                    }
-                };
-            } else if (message.receiver.id === updatedUser.id) {
-                return {
-                    ...message,
-                    receiver: {
-                        ...message.receiver,
-                        nickname: updatedUser.nickname,
-                        avatar: updatedUser.avatar
-                    }
-                };
-            }
-            return message;
-        });
-    });
+	}
+	priv_msg.update((messages) => {
+		return messages.map((message) => {
+			const target = message.sender.id === updatedMetadata.id ? 'sender' : 'target';
+			if (target) {
+				return {
+					...message,
+					[target]: {
+						...(message[target] as Person),
+						nickname: updatedMetadata.nickname
+					}
+				};
+			}
+			return message;
+		});
+	});
+	if (get(receptor)) {
+		priv_chat_history.set(
+			get(priv_msg)
+				.filter((msg: any) => {
+					return (
+						msg.sender.nickname == get(receptor).nickname ||
+						msg.receiver.nickname == get(receptor).nickname
+					);
+				})
+				.sort((msgA: any, msgB: any) => {
+					const dateA = new Date(msgA.created_at).getTime();
+					const dateB = new Date(msgB.created_at).getTime();
+					return dateA - dateB;
+				})
+		);
+	}
 });
 
-UsersSocket.on('user:created', (createdUser) => {
+UsersSocket.on('user:created', (id, createdUser) => {
 	userList.update((users) => {
 		return [...users, createdUser];
 	});
