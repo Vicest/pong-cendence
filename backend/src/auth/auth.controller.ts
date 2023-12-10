@@ -1,11 +1,12 @@
-import { Controller, UseGuards, Get, Res, Req, Post, Body } from '@nestjs/common';
+import { Controller, UseGuards, Get, Res, Req, Post, Body, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IntraAuthGuard } from './intraAuth.guard';
 import { AuthService } from './auth.service';
 import { AdminGuard } from './admin.guard';
 import { JwtGuard } from './jwt.guard';
+import { Jwt2faAuthGuard } from './jwt-2fa-auth.guard';
 import { JwtRefreshGuard } from './jwtRefresh.guard';
-import { User } from '../users/entities/user.entity';
+
 
 @Controller('auth')
 export class AuthController {
@@ -40,9 +41,16 @@ export class AuthController {
 	@Get('callback')
 	async callback(@Req() req , @Res() res) {
 		const { token, refreshToken } = await this.authService.grantTokenPair(req.user);
-		res.cookie('token', token, { httpOnly: true });
-		res.cookie('refreshtToken', refreshToken, { httpOnly: true });
-		return res.redirect(`${this.env.get<string>('BASENAME')}:${this.env.get<string>('FRONTEND_PORT')}/app`);
+		if (req.user.two_factor_auth_enabled == true)
+		{
+			return res.redirect(`${this.env.get<string>('BASENAME')}:${this.env.get<string>('FRONTEND_PORT')}/2falogin`);
+		}
+		else
+		{
+			res.cookie('token', token, { httpOnly: true });
+			res.cookie('refreshtToken', refreshToken, { httpOnly: true });
+			return res.redirect(`${this.env.get<string>('BASENAME')}:${this.env.get<string>('FRONTEND_PORT')}/app`);
+		}
 	}
 	@UseGuards(JwtGuard)
 	@Get('2FA')
@@ -53,12 +61,22 @@ export class AuthController {
 		
 	
 	}
-
 	@UseGuards(JwtGuard)
-	@Post('2FA')
-	async post2fa(@Req() req, @Body() body) 
+	@Get('get2FAstatus')
+	async get2fastatus(@Req() req)
 	{
-		return (this.authService.check2FAToken(req.user, body.token))
-
+		return(req.user.two_factor_auth_enabled)
+	}
+	@UseGuards(Jwt2faAuthGuard)
+	@Post('2FA')
+	async post2fa(@Req() req, @Body() body, @Res() res) 
+	{
+		if(await this.authService.check2FAToken(req.user, body.token) == true)
+		{
+			const { token, refreshToken } = await this.authService.grantTokenPair(req.user);
+			res.cookie('token', token, { httpOnly: true });
+			res.cookie('refreshtToken', refreshToken, { httpOnly: true });
+			return res.redirect(`${this.env.get<string>('BASENAME')}:${this.env.get<string>('FRONTEND_PORT')}/app`);
+		}
 	}
 }

@@ -52,7 +52,8 @@ export class AuthService {
     public async check2FAToken(user: User, token: string) {
         return authenticator.verify({
             token,
-            secret: user.two_factor_auth_secret,
+            secret: us
+            er.two_factor_auth_secret,
           });
       }
 
