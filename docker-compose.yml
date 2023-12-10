@@ -16,7 +16,6 @@ services:
           cpus: "0.30"
           memory: 50M
         reservations:
-          cpus: "0.30"
           memory: 50M
     restart: always
 
@@ -73,7 +72,6 @@ services:
           cpus: "0.10"
           memory: 50M
         reservations:
-          cpus: "0.10"
           memory: 50M
     restart: always
 
