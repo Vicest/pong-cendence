@@ -53,6 +53,12 @@ export class Match {
 	events: MatchEvent[];
 
 	@Column({
+		type: 'boolean',
+		default: false
+	})
+	finished: boolean;
+
+	@Column({
 		type: 'timestamp',
 		default: () => 'CURRENT_TIMESTAMP'
 	})

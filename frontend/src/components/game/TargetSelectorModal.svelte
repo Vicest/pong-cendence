@@ -1,5 +1,11 @@
 <script lang="ts">
-	import { Avatar, ListBox, ListBoxItem, getDrawerStore } from '@skeletonlabs/skeleton';
+	import {
+		Avatar,
+		ListBox,
+		ListBoxItem,
+		SlideToggle,
+		getDrawerStore
+	} from '@skeletonlabs/skeleton';
 	import { userList } from '../../store/User';
 	import type { Person } from '$lib/types';
 	import { currentUser } from '../../store/Auth';
@@ -7,8 +13,21 @@
 	import { selectedGame } from '../../store/Common';
 	import { goto } from '$app/navigation';
 	import ChatAvatar from '../chat/ChatAvatar.svelte';
+	import { Api } from '$services/api';
 
 	const drawerStore = getDrawerStore();
+	//TODO I don't really know how to handle this.
+	//If the user closes the Modal, front forgets about the state, but back retains it.
+	let playerInQueue = false;
+
+	function queueToggle() {
+		if (!playerInQueue) {
+			Api.post('/games/queue');
+		} else {
+			Api.delete('/games/queue');
+		}
+		playerInQueue = !playerInQueue;
+	}
 
 	export let parent: SvelteComponent;
 	let keyword: string = '';
@@ -57,6 +76,7 @@
 	</ListBox>
 	<!-- prettier-ignore -->
 	<footer class="modal-footer flex justify-center items-center space-x-4">
+		<SlideToggle name="slider-label" on:click={() => queueToggle()}>Queueing  </SlideToggle>
 		<button class="btn variant-filled-primary"on:click={() => {
 			goto(`/app/arena/1`)
 			parent.onClose()

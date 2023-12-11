@@ -1,12 +1,13 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Headers, Param, UseGuards } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { UsersService } from 'src/users/users.service';
 import { GamesService } from './games.service';
+import { AuthService } from 'src/auth/auth.service';
 
 @Controller('games')
 @UseGuards(JwtGuard)
 export class GamesController {
-	constructor(private readonly gameService: GamesService) {}
+	constructor(private readonly gameService: GamesService, private readonly authService: AuthService) {}
 
 	@Get('/')
 	getAll() {
@@ -26,4 +27,22 @@ export class GamesController {
 		let game = this.gameService.findOne(id);
 		return game;
 	}
+
+    @Post('/queue')
+    async joinQueue(@Headers('authorization') jwtHeader:string) {
+		const token = jwtHeader.replace('Bearer ', '');
+		console.log(`Token: ${token}`);
+        const user = await this.authService.decode(token);
+		console.log(`Joining user ${user.login} with id ${user.id}`);
+		return this.gameService.joinQueue(user);
+    }
+
+    @Delete('/queue')
+    async leaveQueue(@Headers('authorization') jwtHeader:string) {
+		const token = jwtHeader.replace('Bearer ', '');
+		console.log(`Token: ${token}`);
+        const user = await this.authService.decode(token);
+		console.log(`Leaving user ${user.login} with id ${user.id}`);
+		return this.gameService.leaveQueue(user.id);
+    }
 }
