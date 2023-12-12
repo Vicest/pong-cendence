@@ -1,5 +1,6 @@
 import {
 	ConnectedSocket,
+	MessageBody,
 	OnGatewayConnection,
 	OnGatewayDisconnect,
 	OnGatewayInit,
@@ -9,8 +10,11 @@ import {
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { Inject, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
+import { GamesService } from './games.service';
+import { Match } from './entities/match.entity';
+import { PongInstance } from './instances/pong.instance';
 
 @WebSocketGateway({
 	cors: true,
@@ -20,90 +24,62 @@ export class GamesGateway
 	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
 	private log: Logger;
-	private gameEvents: any = [];
-	private tickStartDate = new Date().getTime();
-	private UserIoInstances: {
-		[game_id: number]: [
-			{
-				user_id: number;
-				socket: Socket;
-				properties: {
-					[key: number]: boolean;
-				};
-			}
-		];
-	} = {};
-
-	constructor(private jwtService: JwtService) {
-		this.log = new Logger();
-	}
+	public ActiveMatches: Match[];
+	private MatchInstances: { [key: number]: PongInstance } = {};
 
 	@WebSocketServer()
 	server: Namespace;
 
-	afterInit(server) {}
+	constructor(
+		private jwtService: JwtService,
+		private gamesService: GamesService
+	) {
+		this.log = new Logger();
+	}
 
-	@SubscribeMessage('IoEvent')
-	handleMessage(
-		client: Socket,
-		payload: {
-			user_id: number;
-			game: number;
-			keysPressed: {
-				[key: string]: boolean;
-			};
+	async afterInit(server) {
+		this.ActiveMatches = await this.gamesService.getActiveMatches();
+		this.ActiveMatches.forEach((match) => {
+			switch (match.game.name) {
+				case PongInstance.slug:
+					this.MatchInstances[match.id] = new PongInstance(match);
+					break;
+			}
+		});
+	}
+
+	@SubscribeMessage('input')
+	handleGameInput(
+		@ConnectedSocket() client: Socket,
+		@MessageBody()
+		{
+			data,
+			gameId
+		}: {
+			gameId: number;
+			data: { [key: number]: boolean }[];
 		}
 	) {
-		let diff = false;
-		if (typeof this.UserIoInstances[payload.game] === 'undefined')
-			this.UserIoInstances[payload.game] = [
-				{
-					user_id: client.data.user.id,
-					socket: client,
-					properties: payload.keysPressed
-				}
-			];
-		let user = this.UserIoInstances[payload.game].find(
-			(user) => user.user_id === client.data.user.id
-		);
-		if (!user) {
-			this.UserIoInstances[payload.game].push({
-				user_id: client.data.user.id,
-				socket: client,
-				properties: payload.keysPressed
-			});
-			diff = true;
-		} else {
-			if (
-				JSON.stringify(user.properties) !== JSON.stringify(payload.keysPressed)
-			) {
-				user.properties = payload.keysPressed;
-				diff = true;
-			}
-		}
-
-		if (diff)
-			this.log.debug(
-				`client ${client.data.user.login} updated his io to ${JSON.stringify(
-					payload.keysPressed
-				)}`,
-				this.constructor.name
-			);
+		this.MatchInstances[gameId].handleInput(client.data.user.id, data);
 	}
 
 	@Interval(1000 / 60)
-	inputEngine() {
-		Object.keys(this.UserIoInstances).forEach((game_id) => {
-			let game = this.UserIoInstances[game_id];
-			this.server.emit('IoEvent', {
-				game: parseInt(game_id),
-				users: game.map((user) => {
-					return {
-						user_id: user.socket.data.user.id,
-						properties: user.properties
-					};
-				})
-			});
+	GameEngine() {
+		this.ActiveMatches.forEach((match) => {
+			this.MatchInstances[match.id].updateState();
+			this.sendTick(match);
+		});
+	}
+
+	private async sendTick(match: Match) {
+		const state = this.MatchInstances[match.id].getState();
+		if (state.status !== match.status) {
+			this.gamesService.updateMatchStatus(match.id, state.status);
+			this.ActiveMatches = await this.gamesService.getActiveMatches();
+		}
+		this.server.emit('tick', {
+			gameId: match.game.id,
+			state
 		});
 	}
 
@@ -123,4 +99,6 @@ export class GamesGateway
 			this.constructor.name
 		);
 	}
+
+	//TODO: On game creation add it to ActiveMatches
 }

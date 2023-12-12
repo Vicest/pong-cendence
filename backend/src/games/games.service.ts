@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { Game } from './entities/game.entity';
 import { Match } from './entities/match.entity';
 
@@ -40,6 +40,7 @@ export class GamesService {
 			select: {
 				id: true,
 				created_at: true,
+				status: true,
 				game: {
 					id: true
 				},
@@ -49,6 +50,17 @@ export class GamesService {
 				events: true
 			}
 		});
+	}
+
+	public async getActiveMatches() {
+		return this.matchRepository.find({
+			where: { status: Not('finished') },
+			relations: ['game', 'players', 'events']
+		});
+	}
+
+	public async updateMatchStatus(matchId: number, status: string) {
+		return this.matchRepository.update(matchId, { id: matchId, status });
 	}
 
 	private log: Logger;

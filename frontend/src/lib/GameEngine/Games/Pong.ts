@@ -1,161 +1,198 @@
 import type { Person } from '$lib/types';
-import { GamesSocket } from '$services/socket';
+import type p5 from 'p5';
 import GameEngine from '../';
 
+const UP_ARROW = 38;
+const DOWN_ARROW = 40;
+const W = 87;
+const S = 83;
+const ESC = 27;
+
 export class PongGame extends GameEngine {
-	private keysPressed: any;
-	private _keysPressed: any;
-	private ball: any;
-	private leftPaddle: any;
-	private rightPaddle: any;
-	private playerSpeed: number;
-	private upKey: number;
-	private downKey: number;
-	private upArrow: number;
-	private downArrow: number;
+	private cache: {
+		avatars: {
+			[key: string]: p5.Image;
+		};
+	};
+
+	get alphaValue() {
+		return this.gameState.status === 'paused' ? 50 : 255;
+	}
+
+	private gameState: {
+		status: 'paused' | 'running' | 'finished';
+		players: {
+			x: number;
+			y: number;
+			score: number;
+			input: {
+				[key: number]: boolean;
+			}[];
+			paddle: {
+				width: number;
+				height: number;
+			};
+		}[];
+		ball: {
+			x: number;
+			y: number;
+			speedX: number;
+			speedY: number;
+			radius: number;
+		};
+	};
 
 	constructor(id: number, players: Person[], userId: number) {
-		super('Pong', id, '16/9', players, userId);
-		this.keysPressed = {};
-		this._keysPressed = {};
-
-		this.ball = {
-			x: 400,
-			y: 300,
-			speedX: 5,
-			speedY: 5,
-			radius: 10
+		super('Pong', id, '16/9', players, userId, [UP_ARROW, DOWN_ARROW, W, S, ESC]);
+		this.gameState = {
+			status: 'running',
+			players: [],
+			ball: {
+				x: this.p.width / 2,
+				y: this.p.height / 2,
+				speedX: 5,
+				speedY: 5,
+				radius: 10
+			}
 		};
-		this.leftPaddle = {
-			y: 250,
-			height: 100,
-			width: 10
+		this.cache = {
+			avatars: {}
 		};
-		this.rightPaddle = {
-			y: 250,
-			height: 100,
-			width: 10
-		};
-		this.playerSpeed = 10;
-		this.upKey = 87; // W key
-		this.downKey = 83; // S key
-		this.upArrow = 38; // Up arrow key
-		this.downArrow = 40; // Down arrow key
 	}
 
 	start() {
-		const self = this;
-		this.p.draw = () => {
-			this.p.background(0);
-			this.update();
-			this.drawBall();
-			this.drawPaddles();
-		};
+		console.log('Pong game started', this.playable);
+	}
 
-		this.p.keyPressed = () => {
-			this.keysPressed[this.p.keyCode] = true;
-		};
+	drawMap() {
+		this.p.background(0);
+		if (
+			typeof this.gameState === 'undefined' ||
+			typeof this.gameState.players === 'undefined' ||
+			typeof this.gameState.ball === 'undefined' ||
+			this.gameState.players.length !== 2
+		)
+			return;
+		this.drawPlayer();
+		this.drawMiddleLine();
+		this.drawPaddles();
+		this.drawBall();
+		if (this.gameState.status === 'paused') {
+			this.pauseScene();
+		}
+	}
 
-		this.p.keyReleased = () => {
-			this.keysPressed[this.p.keyCode] = false;
-		};
+	update() {}
 
-		GamesSocket.on('IoEvent', (data: any) => {
-			if (data.game === self.id) {
-				self._keysPressed = data.users.reduce((acc: any, user: any) => {
-					console.log(user);
-					if (user.user_id === 1) {
-						acc[self.upKey] = user.properties[self.upKey];
-						acc[self.downKey] = user.properties[self.downKey];
-					} else if (user.user_id === 2) {
-						acc[self.upArrow] = user.properties[self.upArrow];
-						acc[self.downArrow] = user.properties[self.downArrow];
-					}
-					return acc;
-				}, {});
+	// Drawing functions
+	private drawMiddleLine() {
+		let y = 0;
+		while (y < this.p.height) {
+			this.p.stroke(255, this.alphaValue);
+			this.p.strokeWeight(2);
+			this.p.line(this.p.width / 2, y, this.p.width / 2, y + 5);
+			y += 10;
+		}
+	}
+
+	private drawPlayer() {
+		this.players.forEach((player, index) => {
+			// Draw player avatar
+			if (!this.cache.avatars) this.cache.avatars = {};
+			if (!this.cache.avatars[player.avatar])
+				this.cache.avatars[player.avatar] = this.p.loadImage(player.avatar);
+			if (this.gameState.status === 'paused') {
+				this.p.tint(255, this.alphaValue);
+			} else {
+				this.p.noTint();
 			}
+			this.p.image(
+				this.cache.avatars[player.avatar],
+				this.p.width / 2 + (index === 0 ? -50 : 0),
+				0,
+				50,
+				50,
+				0,
+				0,
+				0,
+				0,
+				this.p.COVER
+			);
+
+			this.p.textSize(16);
+			this.p.textAlign(this.p.CENTER, this.p.CENTER);
+			this.p.fill(255, this.alphaValue);
+			this.p.stroke(0);
+			this.p.text(player.nickname, this.p.width / 2 + (index === 0 ? -100 : 100), 20);
+
+			this.p.textSize(32);
+			this.p.textAlign(this.p.CENTER, this.p.CENTER);
+			this.p.fill(255, this.alphaValue);
+			this.p.text(
+				this.gameState.players[index].score,
+				this.p.width / 2 + (index === 0 ? -100 : 100),
+				50
+			);
 		});
 	}
 
-	handleInput() {
-		GamesSocket.emit('IoEvent', {
-			game: this.id,
-			keysPressed: this.keysPressed
+	private drawPaddles() {
+		this.players.forEach((player, index) => {
+			this.p.fill(255, this.alphaValue);
+			this.p.stroke(0);
+			this.p.rect(
+				index === 0 ? 0 : this.p.width - this.gameState.players[index].paddle.width,
+				this.gameState.players[index].y,
+				this.gameState.players[index].paddle.width,
+				this.gameState.players[index].paddle.height
+			);
 		});
 	}
 
-	handleSocketInput() {
-		if (this._keysPressed[this.upKey]) {
-			this.movePaddle(this.leftPaddle, -this.playerSpeed);
-		} else if (this._keysPressed[this.downKey]) {
-			this.movePaddle(this.leftPaddle, this.playerSpeed);
-		}
-		if (this._keysPressed[this.upArrow]) {
-			this.movePaddle(this.rightPaddle, -this.playerSpeed);
-		} else if (this._keysPressed[this.downArrow]) {
-			this.movePaddle(this.rightPaddle, this.playerSpeed);
-		}
-	}
-
-	update() {
-		this.moveBall();
-		this.checkCollision();
-		if (this.players.map((p) => p.id).indexOf(this.userId) !== -1) {
-			this.handleInput();
-		}
-		this.handleSocketInput();
-	}
-
-	drawBall() {
-		this.p.fill(255);
-		this.p.ellipse(this.ball.x, this.ball.y, this.ball.radius * 2);
-	}
-
-	drawPaddles() {
-		this.p.fill(255);
-		this.p.rect(0, this.leftPaddle.y, this.leftPaddle.width, this.leftPaddle.height);
-		this.p.rect(
-			this.p.width - this.rightPaddle.width,
-			this.rightPaddle.y,
-			this.rightPaddle.width,
-			this.rightPaddle.height
+	private drawBall() {
+		this.p.fill(255, this.alphaValue);
+		this.p.stroke(0);
+		this.p.ellipse(
+			this.gameState.ball.x,
+			this.gameState.ball.y,
+			this.gameState.ball.radius * 2,
+			this.gameState.ball.radius * 2
 		);
 	}
 
-	movePaddle(paddle, dir) {
-		paddle.y += dir;
-		paddle.y = this.p.constrain(paddle.y, 0, this.p.height - paddle.height);
-	}
-
-	moveBall() {
-		this.ball.x += this.ball.speedX;
-		this.ball.y += this.ball.speedY;
-
-		if (this.ball.y <= 0 || this.ball.y >= this.p.height) {
-			this.ball.speedY *= -1;
-		}
-
-		const paddle = this.ball.speedX > 0 ? this.rightPaddle : this.leftPaddle;
-
+	public updateState(state: any) {
+		this.gameState = state;
 		if (
-			this.ball.x - this.ball.radius <= this.leftPaddle.width &&
-			this.ball.y >= this.leftPaddle.y &&
-			this.ball.y <= this.leftPaddle.y + this.leftPaddle.height
+			typeof this.gameState !== 'undefined' &&
+			this.gameState.status === 'running' &&
+			!this.p.isLooping()
 		) {
-			this.ball.speedX *= -1;
-		} else if (
-			this.ball.x + this.ball.radius >= this.p.width - this.rightPaddle.width &&
-			this.ball.y >= paddle.y &&
-			this.ball.y <= paddle.y + paddle.height
-		) {
-			this.ball.speedX *= -1;
+			this.p.loop();
 		}
 	}
 
-	checkCollision() {
-		if (this.ball.x - this.ball.radius < 0 || this.ball.x + this.ball.radius > this.p.width) {
-			this.ball.x = this.p.width / 2;
-			this.ball.y = this.p.height / 2;
+	// Game scenes
+	public pauseScene() {
+		this.p.textSize(32);
+		this.p.textAlign(this.p.CENTER, this.p.CENTER);
+		this.p.fill(255, 255, 255);
+		this.p.text('Game paused', this.p.width / 2, this.p.height / 2 - 50);
+
+		// Only show pause menu if game is playable (i.e. user is a player)
+		if (this.playable) {
+			// Show pause menu
+			this.p.textSize(16);
+			this.p.textAlign(this.p.CENTER, this.p.CENTER);
+			this.p.fill(255, 255, 255);
+			this.p.text('Press ESC to resume', this.p.width / 2, this.p.height / 2);
+
+			// Show controls
+			this.p.textSize(16);
+			this.p.textAlign(this.p.CENTER, this.p.CENTER);
+			this.p.fill(255, 255, 255);
+			this.p.text('Controls:', this.p.width / 2, this.p.height / 2 + 25);
+			this.p.text('Player 1: W and S', this.p.width / 2, this.p.height / 2 + 50);
+			this.p.text('Player 2: UP and DOWN', this.p.width / 2, this.p.height / 2 + 75);
 		}
 	}
 }

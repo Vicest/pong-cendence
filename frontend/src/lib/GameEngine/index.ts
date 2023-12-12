@@ -1,29 +1,35 @@
-import { browser } from '$app/environment';
 import type { Person } from '$lib/types';
+import { GamesSocket } from '$services/socket';
 import p5 from 'p5';
-import type { p5InstanceExtensions } from 'p5';
 
 export default class GameEngine {
 	public name: string;
 	public id: number;
 	public p: p5;
 	private gameId: number;
-	private aspectRatio: string = '16/9';
+	private aspectRatio: string;
 	protected players: Person[];
+	protected playable: boolean = false;
 	protected userId: number;
+	protected keyInputHandlers: number[] = [];
+
+	protected keyInput: [number, boolean][];
 
 	constructor(
 		name: string,
 		gameId: number,
-		aspectRatio?: string,
-		players?: Person[],
-		userId?: number
+		aspectRatio: string,
+		players: Person[],
+		userId: number,
+		keyInputHandlers: number[]
 	) {
 		this.id = gameId;
 		this.name = name;
 		this.gameId = gameId;
 		this.players = players;
+		this.playable = this.players?.some((player) => player.id === userId);
 		this.userId = userId;
+		this.keyInputHandlers = keyInputHandlers;
 		if (aspectRatio) {
 			if (!/^\d+\/\d+$/.test(aspectRatio)) {
 				throw new Error('Invalid aspect ratio');
@@ -36,29 +42,51 @@ export default class GameEngine {
 	}
 
 	private init(p: p5) {
-		let canvas: p5.Renderer;
-
 		p.setup = () => {
 			this.p = p;
 			this.SetupCanvas();
-			this.SetupListeners();
+		};
+
+		p.draw = () => {
+			this.drawMap();
+			if (this.playable) this.handleInput();
 		};
 
 		p.windowResized = () => {};
+
+		GamesSocket.on('tick', (data) => {
+			if (data.gameId !== this.gameId) return;
+			this.updateState(data.state);
+		});
 	}
 
-	protected SetupListeners() {}
+	protected drawMap() {}
+
+	protected handleInput() {
+		if (!this.playable) return;
+		let newKeyInput = this.keyInputHandlers.map((key) => {
+			return [key, this.p.keyIsDown(key)];
+		});
+		if (JSON.stringify(newKeyInput) === JSON.stringify(this.keyInput)) return;
+		this.keyInput = newKeyInput;
+		GamesSocket.emit('input', {
+			gameId: this.gameId,
+			data: this.keyInputHandlers.map((key) => {
+				return { [key]: this.p.keyIsDown(key) };
+			})
+		});
+	}
+
+	protected updateState(state: any) {}
 
 	protected SetupCanvas() {
-		let canvas: p5.Renderer;
-
-		let parentElement = document.getElementById(`game-${this.gameId}`);
+		const parentElement = document.getElementById(`game-${this.gameId}`);
 		if (!parentElement) {
 			throw new Error(`Game with id ${this.gameId} does not exist`);
 		}
-		canvas = this.p.createCanvas(1024, 600);
+		const canvas = this.p.createCanvas(1024, 600);
 		canvas.parent(`#game-${this.gameId}`);
-		let _canvas = parentElement.querySelector('canvas');
+		const _canvas = parentElement.querySelector('canvas');
 		if (!_canvas) {
 			throw new Error(`Canvas for game with id ${this.gameId} does not exist`);
 		}

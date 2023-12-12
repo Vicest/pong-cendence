@@ -28,6 +28,12 @@ export class Match {
 	})
 	game: Game;
 
+	@Column({
+		type: 'enum',
+		enum: ['paused', 'waiting', 'running', 'finished']
+	})
+	status: string;
+
 	@ManyToMany(() => User, (user) => user.id)
 	@JoinTable({
 		name: 'MatchPlayers',

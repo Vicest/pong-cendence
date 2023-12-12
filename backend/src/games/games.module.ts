@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Game } from './entities/game.entity';
 import { Match } from './entities/match.entity';
 import { MatchEvent } from './entities/events.entity';
+import { MatchesSubscriber } from './matches.subscriber';
 
 @Module({
 	imports: [
@@ -21,6 +22,6 @@ import { MatchEvent } from './entities/events.entity';
 		})
 	],
 	controllers: [GamesController],
-	providers: [GamesService, GamesGateway]
+	providers: [GamesService, GamesGateway, MatchesSubscriber]
 })
 export class GamesModule {}

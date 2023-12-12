@@ -11,8 +11,8 @@
 	import { currentUser } from '../../store/Auth';
 
 	let gameInstance: GameInstance;
+	let game;
 	gameInstances.subscribe((instances) => {
-		console.log(instances);
 		gameInstance = instances.find((instance) => instance.id.toString() === id) as GameInstance;
 	});
 
@@ -21,6 +21,9 @@
 		players = gameInstance.players.map((player) => {
 			return users.find((user) => user.id === player) as Person;
 		});
+		if (typeof game !== 'undefined') {
+			game.players = players;
+		}
 	});
 
 	/*beforeNavigate(({ cancel }) => {
@@ -33,7 +36,7 @@
 	});*/
 
 	onMount(() => {
-		let game = new PongGame(gameInstance.id, players, $currentUser.id);
+		game = new PongGame(gameInstance.id, players, $currentUser.id);
 	});
 </script>
 
