@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Get, Res, Req, Post, Body, UnauthorizedException } from '@nestjs/common';
+import { Controller, UseGuards, Get, Res, Req, Post, Body, UnauthorizedException, Headers } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IntraAuthGuard } from './intraAuth.guard';
 import { AuthService } from './auth.service';
@@ -26,8 +26,10 @@ export class AuthController {
 
 	@UseGuards(JwtRefreshGuard)
 	@Get('refresh')
-	async getRefresh(@Req() req , @Res() res) {
-		const { token, refreshToken } = await this.authService.grantTokenPair(req.user);
+	async getRefresh(@Headers('authorization') JWTToken: string, @Req() req , @Res() res) {
+		const oldtoken = JWTToken.replace("Bearer ", "");
+		const decodedtoken = this.authService.decode(oldtoken);
+		const { token, refreshToken } = await this.authService.grantTokenPair(req.user, decodedtoken["twofavalidated"]);
 		res.cookie('token', token, { httpOnly: true });
 		res.cookie('refreshtToken', refreshToken, { httpOnly: true });
 		res.send({ token, refreshToken });
@@ -40,17 +42,10 @@ export class AuthController {
     @UseGuards(IntraAuthGuard)
 	@Get('callback')
 	async callback(@Req() req , @Res() res) {
-		const { token, refreshToken } = await this.authService.grantTokenPair(req.user);
-		if (req.user.two_factor_auth_enabled == true)
-		{
-			return res.redirect(`${this.env.get<string>('BASENAME')}:${this.env.get<string>('FRONTEND_PORT')}/2falogin`);
-		}
-		else
-		{
-			res.cookie('token', token, { httpOnly: true });
-			res.cookie('refreshtToken', refreshToken, { httpOnly: true });
-			return res.redirect(`${this.env.get<string>('BASENAME')}:${this.env.get<string>('FRONTEND_PORT')}/app`);
-		}
+		const { token, refreshToken } = await this.authService.grantTokenPair(req.user, false);
+		res.cookie('token', token, { httpOnly: true });
+		res.cookie('refreshtToken', refreshToken, { httpOnly: true });
+		return res.redirect(`${this.env.get<string>('BASENAME')}:${this.env.get<string>('FRONTEND_PORT')}/app`);
 	}
 	@UseGuards(JwtGuard)
 	@Get('2FA')
@@ -67,16 +62,21 @@ export class AuthController {
 	{
 		return(req.user.two_factor_auth_enabled)
 	}
-	@UseGuards(Jwt2faAuthGuard)
+	
+	@UseGuards(Jwt2faAuthGuard)	
 	@Post('2FA')
 	async post2fa(@Req() req, @Body() body, @Res() res) 
 	{
-		if(await this.authService.check2FAToken(req.user, body.token) == true)
+		let user = await this.authService.validateUser(req.user);
+		let validate = await this.authService.check2FAToken(user, body.token);
+		console.log(validate);
+		if(validate)
 		{
-			const { token, refreshToken } = await this.authService.grantTokenPair(req.user);
-			res.cookie('token', token, { httpOnly: true });
-			res.cookie('refreshtToken', refreshToken, { httpOnly: true });
+			const { token, refreshToken } = await this.authService.grantTokenPair(req.user, true);
+			res.cookie('token', token, { httpOnly: false });
+			res.cookie('refreshtToken', refreshToken, { httpOnly: false });
 			return res.redirect(`${this.env.get<string>('BASENAME')}:${this.env.get<string>('FRONTEND_PORT')}/app`);
 		}
+		throw new UnauthorizedException();
 	}
 }

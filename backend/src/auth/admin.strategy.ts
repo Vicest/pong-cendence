@@ -18,6 +18,8 @@ export class AdminStrategy extends PassportStrategy(Strategy, 'jwt-admin') {
     async validate(payload:JwtUser) {
         const user = await this.authService.validateUser(payload);
         console.log("Admin: ", user)
+        if (payload.twofaenabled == true && payload.twofavalidated == false)
+            throw new UnauthorizedException();
         if (!user.isAdmin)
             throw new UnauthorizedException();
         return user;

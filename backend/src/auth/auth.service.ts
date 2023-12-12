@@ -5,6 +5,7 @@ import { UsersService } from '../users/users.service';
 import { User } from '../users/entities/user.entity';
 import { authenticator } from 'otplib';
 import { toDataURL } from 'qrcode';
+import { JwtUser } from './auth.interface';
 
 @Injectable()
 export class AuthService {
@@ -21,15 +22,20 @@ export class AuthService {
         return user;
     }
 
-    public async grantTokenPair(data: User) {
+	public async decode(jwt: string) {
+		return this.jwtService.decode(jwt);
+	}
+
+    public async grantTokenPair(data: User, twofastatus: boolean) {
         let user = await this.usersService.find(data.id);
         //TODO Ideally any user would go through a /auth/register endpoint insead of just getting added
+        const toSign:JwtUser = {login:user.nickname, isAdmin:user.isAdmin, twofaenabled:user.two_factor_auth_enabled, twofavalidated:twofastatus}
         if (!user) user = await this.usersService.create(data);
-        const token = await this.jwtService.signAsync({login:user.nickname/*, mail:user.email FIXME*/},
+        const token = await this.jwtService.signAsync(toSign,
         {
-            expiresIn: '5m'
+            expiresIn: '6h'
         });
-        const refreshToken = await this.jwtService.signAsync({login:user.nickname/*, mail:user.email FIXME*/},
+        const refreshToken = await this.jwtService.signAsync(toSign,
         {
             expiresIn: '1h',
             secret: this.env.get<string>('JWT_REFRESH_SECRET')
@@ -52,8 +58,7 @@ export class AuthService {
     public async check2FAToken(user: User, token: string) {
         return authenticator.verify({
             token,
-            secret: us
-            er.two_factor_auth_secret,
+            secret: user.two_factor_auth_secret,
           });
       }
 
