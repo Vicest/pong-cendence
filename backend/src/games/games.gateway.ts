@@ -6,7 +6,8 @@ import {
 	OnGatewayInit,
 	SubscribeMessage,
 	WebSocketGateway,
-	WebSocketServer
+	WebSocketServer,
+	WsException
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
@@ -48,6 +49,37 @@ export class GamesGateway
 		});
 	}
 
+	@SubscribeMessage('join')
+	async handleJoinGame(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() gameId: number
+	) {
+		client.join(`match:${gameId}`);
+	}
+
+	@SubscribeMessage('reset')
+	async handleResetGame(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() gameId: string
+	) {
+		let id = parseInt(gameId);
+		this.gamesService.updateMatchStatus(id, 'running');
+		this.ActiveMatches = await this.gamesService.getActiveMatches();
+		this.MatchInstances[id] = new PongInstance(
+			this.ActiveMatches.find((match) => match.id === id)
+		);
+	}
+
+	@SubscribeMessage('leave')
+	async handleLeaveGame(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() gameId: number
+	) {
+		const match = this.ActiveMatches.find((match) => match.id === gameId);
+		if (!match) return;
+		client.leave(`match:${match.id}`);
+	}
+
 	@SubscribeMessage('input')
 	handleGameInput(
 		@ConnectedSocket() client: Socket,
@@ -65,7 +97,7 @@ export class GamesGateway
 
 	@Interval(1000 / 60)
 	GameEngine() {
-		this.ActiveMatches.forEach((match) => {
+		this.ActiveMatches.forEach((match, key) => {
 			this.MatchInstances[match.id].updateState();
 			this.sendTick(match);
 		});
@@ -77,8 +109,8 @@ export class GamesGateway
 			this.gamesService.updateMatchStatus(match.id, state.status);
 			this.ActiveMatches = await this.gamesService.getActiveMatches();
 		}
-		this.server.emit('tick', {
-			gameId: match.game.id,
+		this.server.to(`match:${match.id}`).emit('tick', {
+			gameId: match.id,
 			state
 		});
 	}

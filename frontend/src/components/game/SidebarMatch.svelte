@@ -9,7 +9,6 @@
 	let game: number;
 	gameInstances.subscribe((instances) => {
 		gameInstance = instances.find((instance) => {
-			console.log(instance.id, id);
 			return instance.id == id;
 		}) as GameInstance;
 	});

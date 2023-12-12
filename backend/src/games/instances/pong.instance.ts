@@ -37,6 +37,7 @@ export class PongInstance extends EventEmitter {
 	private static readonly paddlesHeight = 100;
 	private static readonly ballRadius = 5;
 	private static readonly ballSpeed = 4;
+	private static readonly scoreToWin = 6;
 
 	private log: Logger;
 	private players: Match['players'];
@@ -163,13 +164,46 @@ export class PongInstance extends EventEmitter {
 		});
 	}
 
+	private checkScore() {
+		this.players.forEach((player, index) => {
+			if (this.state.players[index].score >= PongInstance.scoreToWin) {
+				this.state.status = 'finished';
+			}
+		});
+	}
+
 	public updateState() {
-		if (this.state.status === 'paused') {
+		if (['paused', 'finished'].includes(this.state.status)) {
 			return;
 		}
 		this.movePaddles();
+		this.checkScore();
 		this.checkCollision();
 		this.moveBall();
+	}
+
+	public reset() {
+		this.state = {
+			status: 'running',
+			players: this.players.map(() => ({
+				x: 0,
+				y: PongInstance.canvasHeight / 2 - PongInstance.paddlesHeight / 2,
+				score: 0,
+				input: [],
+				paddle: {
+					width: PongInstance.paddlesWidth,
+					height: PongInstance.paddlesHeight
+				},
+				ping: 0
+			})),
+			ball: {
+				x: PongInstance.canvasWidth / 2,
+				y: PongInstance.canvasHeight / 2,
+				speedX: PongInstance.ballSpeed,
+				speedY: PongInstance.ballSpeed,
+				radius: PongInstance.ballRadius
+			}
+		};
 	}
 
 	public getState() {

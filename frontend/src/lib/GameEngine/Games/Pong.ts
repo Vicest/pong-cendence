@@ -1,6 +1,7 @@
-import type { Person } from '$lib/types';
+import type { GameInstance, Person } from '$lib/types';
 import type p5 from 'p5';
 import GameEngine from '../';
+import { GamesSocket } from '$services/socket';
 
 const UP_ARROW = 38;
 const DOWN_ARROW = 40;
@@ -16,11 +17,11 @@ export class PongGame extends GameEngine {
 	};
 
 	get alphaValue() {
-		return this.gameState.status === 'paused' ? 50 : 255;
+		return ['paused', 'finished'].includes(this.gameState.status) ? 50 : 255;
 	}
 
 	private gameState: {
-		status: 'paused' | 'running' | 'finished';
+		status: 'paused' | 'running' | 'finished' | 'waiting';
 		players: {
 			x: number;
 			y: number;
@@ -32,6 +33,7 @@ export class PongGame extends GameEngine {
 				width: number;
 				height: number;
 			};
+			avatar: string;
 		}[];
 		ball: {
 			x: number;
@@ -42,10 +44,10 @@ export class PongGame extends GameEngine {
 		};
 	};
 
-	constructor(id: number, players: Person[], userId: number) {
-		super('Pong', id, '16/9', players, userId, [UP_ARROW, DOWN_ARROW, W, S, ESC]);
+	constructor(game: GameInstance, players: Person[], userId: number) {
+		super('Pong', game, '16/9', players, userId, [UP_ARROW, DOWN_ARROW, W, S, ESC]);
 		this.gameState = {
-			status: 'running',
+			status: game.status,
 			players: [],
 			ball: {
 				x: this.p.width / 2,
@@ -60,12 +62,42 @@ export class PongGame extends GameEngine {
 		};
 	}
 
-	start() {
-		console.log('Pong game started', this.playable);
-	}
+	start() {}
 
 	drawMap() {
 		this.p.background(0);
+		this.p.noCursor();
+		if (this.gameState.status === 'finished') {
+			this.p.textSize(32);
+			this.p.textAlign(this.p.CENTER, this.p.CENTER);
+			this.p.fill(255, 255, 255);
+			this.p.text('Game finished', this.p.width / 2, this.p.height / 2 - 50);
+
+			// Add clickable button to leave game
+			this.p.textSize(16);
+			this.p.textAlign(this.p.CENTER, this.p.CENTER);
+			this.p.fill(255, 255, 255);
+			this.p.text('Click here to reset', this.p.width / 2, this.p.height / 2);
+			if (
+				this.p.mouseX > this.p.width / 2 - 100 &&
+				this.p.mouseX < this.p.width / 2 + 100 &&
+				this.p.mouseY > this.p.height / 2 - 25 &&
+				this.p.mouseY < this.p.height / 2 + 25
+			) {
+				this.p.cursor(this.p.HAND);
+			} else {
+				this.p.cursor(this.p.ARROW);
+			}
+			if (
+				this.p.mouseIsPressed &&
+				this.p.mouseX > this.p.width / 2 - 100 &&
+				this.p.mouseX < this.p.width / 2 + 100 &&
+				this.p.mouseY > this.p.height / 2 - 25 &&
+				this.p.mouseY < this.p.height / 2 + 25
+			) {
+				this.resetGame();
+			}
+		}
 		if (
 			typeof this.gameState === 'undefined' ||
 			typeof this.gameState.players === 'undefined' ||
@@ -73,6 +105,9 @@ export class PongGame extends GameEngine {
 			this.gameState.players.length !== 2
 		)
 			return;
+		if (this.gameState.status === 'paused') {
+			this.pauseScene();
+		}
 		this.drawPlayer();
 		this.drawMiddleLine();
 		this.drawPaddles();
@@ -194,5 +229,12 @@ export class PongGame extends GameEngine {
 			this.p.text('Player 1: W and S', this.p.width / 2, this.p.height / 2 + 50);
 			this.p.text('Player 2: UP and DOWN', this.p.width / 2, this.p.height / 2 + 75);
 		}
+	}
+
+	public destroy() {
+		this.p.noLoop();
+		this.p.remove();
+		this.playable = false;
+		GamesSocket.emit('leave', this.id);
 	}
 }

@@ -1,31 +1,33 @@
-import type { Person } from '$lib/types';
+import type { GameInstance, Person } from '$lib/types';
 import { GamesSocket } from '$services/socket';
 import p5 from 'p5';
+import type { Socket } from 'socket.io-client';
 
 export default class GameEngine {
 	public name: string;
-	public id: number;
+	public gameInstance: GameInstance;
 	public p: p5;
 	private gameId: number;
 	private aspectRatio: string;
-	protected players: Person[];
-	protected playable: boolean = false;
+	public players: Person[];
+	public playable: boolean = false;
 	protected userId: number;
 	protected keyInputHandlers: number[] = [];
+	protected socket: Socket;
 
 	protected keyInput: [number, boolean][];
 
 	constructor(
 		name: string,
-		gameId: number,
+		gameInstance: GameInstance,
 		aspectRatio: string,
 		players: Person[],
 		userId: number,
 		keyInputHandlers: number[]
 	) {
-		this.id = gameId;
+		this.gameInstance = gameInstance;
 		this.name = name;
-		this.gameId = gameId;
+		this.gameId = gameInstance.id;
 		this.players = players;
 		this.playable = this.players?.some((player) => player.id === userId);
 		this.userId = userId;
@@ -36,6 +38,9 @@ export default class GameEngine {
 			}
 			this.aspectRatio = aspectRatio;
 		}
+		GamesSocket.emit('join', this.gameId, (data) => {
+			console.log(data);
+		});
 		this.p = new p5(this.init.bind(this));
 		this.p.frameRate(60);
 		this.start();
@@ -95,6 +100,10 @@ export default class GameEngine {
 			this.aspectRatio.split('/')[1]
 		})`;
 		_canvas.style.height = '';
+	}
+
+	protected resetGame() {
+		GamesSocket.emit('reset', this.gameId);
 	}
 
 	protected getGame() {
