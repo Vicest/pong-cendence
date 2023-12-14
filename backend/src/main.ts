@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -20,6 +21,11 @@ async function bootstrap() {
 		methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
 		credentials: true
 	});
+
+	app.use(bodyParser.json({ limit: '3mb' }));
+	app.use(bodyParser.urlencoded({ limit: '3mb', extended: true }));
+	app.use(bodyParser.raw({ limit: '3mb' }));
+
 	// Add cookie parser
 	app.use(cookieParser());
 	const backPort = conf.get<number>('BACKEND_PORT');
