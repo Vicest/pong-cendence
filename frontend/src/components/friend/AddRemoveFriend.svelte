@@ -3,25 +3,23 @@
     import { mock_friends, receptor } from '../../store/Chat';
 	import type { Person } from '$lib/types';
 
-    export let currentPerson: Person;
     let friends : any;
     let isFriend : boolean;
-
-    $:{
-        isFriend = friends.some((friend: any) => friend.nickname === currentPerson.nickname);
-    }
 
 
     mock_friends.subscribe((value) => {
         friends = value;
     });
 
-    // receptor.subscribe((value) => {
-    //     isFriend = friends.some((friend: any) => friend.nickname === currentPerson.nickname);
-    // });
+    $:{
+        isFriend = friends.some((friend: any) => friend.login === $receptor.login);
+    }
 
-    isFriend = friends.some((friend: any) => friend.nickname === currentPerson.nickname);
-
+    console.log ("EL RECEPTOR ES ", $receptor, friends)
+    if ($receptor)
+        isFriend = friends.some((friend: Person) => friend.login === $receptor.login);
+    else
+        isFriend = false;
     function add_friend(person : Person)
     {
         isFriend = friends.some((friend: any) => friend.nickname === person.nickname);
@@ -47,9 +45,9 @@
 </script>
 
 {#if !isFriend}
-<button class='btn variant-ghost-surface' on:click={() => add_friend(currentPerson)}>Add Friend</button>
+<button class='btn variant-ghost-surface' on:click={() => add_friend($receptor)}>Add Friend</button>
 {/if}
 {#if isFriend}
-<button class='btn variant-ghost-surface' on:click={() => remove_friends(currentPerson)}>Remove Friend</button>
+<button class='btn variant-ghost-surface' on:click={() => remove_friends($receptor)}>Remove Friend</button>
 {/if}
 

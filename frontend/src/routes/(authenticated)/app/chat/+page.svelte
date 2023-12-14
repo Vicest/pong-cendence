@@ -1,6 +1,8 @@
 <script lang="ts">
     import Direct_Channel from '../../../../components/chat/Direct_Channel.svelte';
     import GroupChannel from '../../../../components/chat/Group_Channel.svelte';
+    import { userList } from '.././../../../store/User';
+    import { currentUser } from '.././../../../store/Auth';
 
     let showDirect = false;
     let showGroup = false;
@@ -10,6 +12,9 @@
         showDirect = component === 'Direct';
         showGroup = component === 'Group';
     }
+
+    // console.log("La puta vida tete",$userList)
+    // console.log("Mi puto user tete",$currentUser)
 </script>
 
 <div class="card grid">

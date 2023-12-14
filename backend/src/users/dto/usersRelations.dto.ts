@@ -1,8 +1,8 @@
-import { UserDto } from "./users.dto";
+import { UserDto } from './users.dto';
 
 export class UserRelationsDto {
-    id: number;
-    sender: UserDto;
-    receptor: UserDto;
-    status: number;
+	id: number;
+	sender: UserDto;
+	receptor: UserDto;
+	status: number;
 }

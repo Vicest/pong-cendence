@@ -1,28 +1,17 @@
 <script lang="ts">
 	import { Avatar, CodeBlock, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
-    // import { aux_socket } from "../../../../store/Socket";
-    import { chat_history, mock_priv_msg} from "../../store/Chat";
-    import RelationPanel from '../friend/RelationPanel.svelte';
-	import { currentUser } from '../../store/Auth';
-	import type { MessageFeed } from '$lib/types';
 	import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
+    //Componentes
+    import RelationPanel from '../friend/RelationPanel.svelte';
+    import { Api } from '$services/api';
+    //Variable Globales
+    import { priv_chat_history, receptor} from "../../store/Chat";
+	import { currentUser } from '../../store/Auth';
 
-    export let currentPerson : any;
     let elemChat: HTMLElement;
     let currentMessage = '';
-    let messageFeed : MessageFeed[];
-    let socket : any;
-    let priv_messages : any;
-
-    mock_priv_msg.subscribe((value) => {
-        priv_messages = value;
-    });
-
-    chat_history.subscribe((value) => {
-        messageFeed = value;
-    });
 
     // Inicializar la conexión de socket.io
     onMount(async () => {
@@ -48,23 +37,34 @@
 
         let msg = {
             sender: $currentUser,
-            receiver: currentPerson,
-            content: currentMessage,
-            created_at: new Date().toLocaleString(),
+            receiver: $receptor,
+            content: currentMessage
         };
 
-        priv_messages.push(msg);
-        messageFeed.push(msg);
-        mock_priv_msg.set(priv_messages);
-        chat_history.set(messageFeed);
+        
+        // /users/priv_messages
+        Api.post('/users/priv_messages', msg)
+        .then((response) => {
+            
+            console.log('Mensaje enviado con éxito', response.data);
 
+            currentMessage = '';
+            
+            setTimeout(() => {
+                scrollChatBottom('smooth');
+            }, 0);
+        })
+        .catch((error) => {
+            console.error('Error al enviar el mensaje', error);
+        });
+         
+        console.log("Mensaje enviado -> ",msg)
 		// Smooth scroll to bottom
 		// Timeout prevents race condition
 		setTimeout(() => {
             scrollChatBottom('smooth');
 		}, 0);
 
-        console.log("Mensaje enviado -> ",msg)
 		currentMessage = '';
         // scrollChatBottom();
 	}
@@ -75,28 +75,42 @@
 <div class="div_area wrapper">
     <div class="perfil_area flex items-center space-x-6">
         <div class="avatar-container">
-            <Avatar src="{currentPerson.avatar}" width="w-12" />
+            <Avatar src="{$receptor.avatar}" width="w-12" />
         </div>
         <div style="font-size: 22px; flex: 1;">
-            {currentPerson.nickname}
+            {$receptor.nickname}
         </div>
         <div style="margin-right: 20px;">
-            <RelationPanel currentPerson={currentPerson}></RelationPanel>
+            <RelationPanel></RelationPanel>
         </div>
     </div>
 
-    <div bind:this={elemChat} class="chat_area max-h-[400px] p-4 overflow-y-auto space-y-4">
-        {#each messageFeed as $bubble}
-			<div class="grid grid-cols-[{$bubble.sender.nickname === $currentUser.nickname ? 'auto_1fr' : '1fr_auto'}] gap-4">
-				<div class="card p-4 rounded-tr-none space-y-2 variant-soft-primary">
-					<div class="flex justify-between items-center">
-						<p class="font-bold">{$bubble.sender.nickname}</p>
-						<small class="opacity-50">{$bubble.created_at}</small>
-					</div>
-					<p>{$bubble.content}</p>
-				</div>
-				<Avatar src="{$currentUser.avatar}" width="w-12" class="{$bubble.sender.nickname === $currentUser.nickname ? 'order-first' : 'order-last'}" />
-			</div>
+    <div bind:this={elemChat} class="chat_area p-4 overflow-y-auto space-y-4">
+        {#each $priv_chat_history as $bubble}
+            {#if $bubble.sender.nickname === $currentUser.nickname}
+                
+                <div class="grid grid-cols-[1fr_auto] gap-2">
+                    <div class="card p-4 rounded-tr-none space-y-2 variant-soft-primary">
+                        <div class="flex justify-between items-center">
+                            <p class="font-bold">{$bubble.sender.nickname}</p>
+                            <small class="opacity-50">{$bubble.created_at}</small>
+                        </div>
+                        <p>{$bubble.content}</p>
+                    </div>
+                    <Avatar src="{$bubble.sender.avatar}" width="w-12" />
+                </div>
+            {:else}
+                <div class="grid grid-cols-[auto_1fr] gap-2">
+                    <Avatar src="{$bubble.sender.avatar}" width="w-12" />
+                    <div class="card p-4 variant-soft rounded-tl-none space-y-2">
+                        <div class="flex justify-between items-center">
+                            <p class="font-bold">{$bubble.sender.nickname}</p>
+                            <small class="opacity-50">{$bubble.created_at}</small>
+                        </div>
+                        <p>{$bubble.content}</p>
+                    </div>
+                </div>
+            {/if}
         {/each}
     </div>
     <div class="send_msg_area border-t border-surface-500/30 p-4">
