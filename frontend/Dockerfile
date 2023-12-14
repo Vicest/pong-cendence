@@ -1,4 +1,4 @@
-FROM node:18.4.0 as build
+FROM node:18.4.0
 
 EXPOSE ${FRONTEND_PORT}
 

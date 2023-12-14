@@ -19,11 +19,10 @@ export class UsersService {
 		@InjectRepository(ChannelMessages)
 		private readonly channelmessagesRepository: Repository<ChannelMessages>,
 		@InjectRepository(UserMessages)
-		private readonly usermessagesRepository: Repository<UserMessages>,
+		private readonly usermessagesRepository: Repository<UserMessages>
 	) {
 		this.log = new Logger();
 	}
-
 	//TODO I suspect that create simply returns User or some sort of error.
 	public async create(data): Promise<User | null> {
 		console.log('Creating user', data.login);
@@ -33,7 +32,7 @@ export class UsersService {
 				nickname: data.login,
 				isRegistered: false,
 				avatar: fields.image?.link,
-				login: data.login,
+				login: data.login
 			});
 			this.log.debug(`Created user ${newUser}`);
 			if (newUser) await this.userRepository.save(newUser);
@@ -59,51 +58,41 @@ export class UsersService {
 	private log: Logger;
 
 	public updateById(id: number, userUpdate: User): Promise<UpdateResult> {
-		return this.userRepository.update({ id }, userUpdate);
+		return this.userRepository.update(
+			{ id },
+			{
+				...userUpdate,
+				id
+			}
+		);
+	}
+
+	public updateStatusById(
+		id: number,
+		userUpdate: User['status']
+	): Promise<UpdateResult> {
+		return this.userRepository.update(
+			{ id },
+			{
+				status: userUpdate,
+				id
+			}
+		);
 	}
 
 	/*Con Dios me disculpo por esta aberracion de función ...
         pero situaciones drasticas requieren medidas drasticas*/
-	async findOneUserByName(nickname: string): Promise<User | undefined> {
-		let contents = await this.userRepository.findOne({
-			where: { nickname },
-			relations: [
-				'relationshared',
-				'relationshared.sender',
-				'relationshared.receptor',
-				'relationsharedAsReceiver',
-				'relationsharedAsReceiver.sender',
-				'relationsharedAsReceiver.receptor', //I hate it
-				'channels',
-				'channels.messages',
-				'channels.messages.sender',
-				'channels.members',
-				'sent_messages',
-				'sent_messages.sender',
-				'sent_messages.receiver',
-				'received_messages',
-				'received_messages.sender',
-				'received_messages.receiver',
-			], //Puta mierda esta bro :v
+	async findUserMessages(
+		login: string,
+		login2: string
+	): Promise<UserMessages[] | undefined> {
+		let contents = await this.usermessagesRepository.find({
+			where: [
+				{ sender: { login }, receiver: { login: login2 } },
+				{ sender: { login: login2 }, receiver: { login } }
+			],
+			relations: ['sender', 'receiver']
 		});
-
-		if (contents) {
-			await contents.loadPrivateMessages();
-			await contents.loadrelationsList();
-			contents.friends = contents.relationsList
-				.filter((relation) => relation.status === 1)
-				.map((relation) =>
-					relation.sender_id === contents.id
-						? relation.receptor
-						: relation.sender,
-				);
-		}
-		delete contents._relationList;
-		delete contents.sent_messages;
-		delete contents.received_messages;
-		delete contents.relationshared;
-		delete contents.relationsharedAsReceiver;
-		// console.log(contents);
 		return contents;
 	}
 
@@ -114,26 +103,64 @@ export class UsersService {
 	async getUserWithRelations(nickname: string): Promise<User | undefined> {
 		let contents = await this.userRepository.findOne({
 			where: { nickname },
-			relations: ['relationshared', 'private_messages', 'channel_messages'],
+			relations: ['relationshared', 'private_messages', 'channel_messages']
 		});
 		console.log(contents);
 		return contents;
 	}
 
-	createRelationship(user1: User, user2: User): Observable<UserRelation> {
-		const newRelation = new UserRelation();
-		newRelation.status = 0;
-		newRelation.sender = user1;
-		newRelation.receptor = user2;
-
-		return from(this.userRelationRepository.save(newRelation));
-	}
-
+	//Funciones para el chat
+	//Mensajes privados
 	createUserMessage(priv_message: UserMessages): Observable<UserMessages> {
 		return from(this.usermessagesRepository.save(priv_message));
 	}
-
+	//Mensajes Canales
 	createChatMessage(chan_msg: ChannelMessages): Observable<ChannelMessages> {
 		return from(this.channelmessagesRepository.save(chan_msg));
 	}
 }
+
+// /*Con Dios me disculpo por esta aberracion de función ...
+//     pero situaciones drasticas requieren medidas drasticas*/
+// 	async findUserMessages(nickname: string): Promise<User | undefined> {
+// 		let contents = await this.userRepository.findOne({
+// 			where: { nickname },
+// 			relations: [
+// 				'relationshared',
+// 				'relationshared.sender',
+// 				'relationshared.receptor',
+// 				'relationsharedAsReceiver',
+// 				'relationsharedAsReceiver.sender',
+// 				'relationsharedAsReceiver.receptor', //I hate it
+// 				'channels',
+// 				'channels.messages',
+// 				'channels.messages.sender',
+// 				'channels.members',
+// 				'sent_messages',
+// 				'sent_messages.sender',
+// 				'sent_messages.receiver',
+// 				'received_messages',
+// 				'received_messages.sender',
+// 				'received_messages.receiver',
+// 			], //Puta mierda esta bro :v
+// 		});
+
+// 		if (contents) {
+// 			await contents.loadPrivateMessages();
+// 			await contents.loadrelationsList();
+// 			contents.friends = contents.relationsList
+// 				.filter((relation) => relation.status === 1)
+// 				.map((relation) =>
+// 					relation.sender_id === contents.id
+// 						? relation.receptor
+// 						: relation.sender,
+// 				);
+// 		}
+// 		delete contents._relationList;
+// 		delete contents.sent_messages;
+// 		delete contents.received_messages;
+// 		delete contents.relationshared;
+// 		delete contents.relationsharedAsReceiver;
+// 		// console.log(contents);
+// 		return contents;
+// 	}

@@ -7,15 +7,18 @@ import { JwtUser } from '../auth.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-    constructor(private env:ConfigService, private authService:AuthService) {
-        super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            ignoreExpiration: false,
-            secretOrKey: env.get<string>('JWT_SECRET'),
-        })
-    }
+	constructor(
+		private env: ConfigService,
+		private authService: AuthService
+	) {
+		super({
+			jwtFromRequest: (req) => req?.cookies?.token || null,
+			ignoreExpiration: false,
+			secretOrKey: env.get<string>('JWT_SECRET')
+		});
+	}
 
-    async validate(payload:JwtUser) {
-        return await this.authService.validateUser(payload);
-    }
+	async validate(payload: JwtUser) {
+		return await this.authService.validateUser(payload);
+	}
 }

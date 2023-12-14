@@ -9,16 +9,21 @@ import { UsersModule } from './users/users.module';
 import { GamesModule } from './games/games.module';
 import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
-import { SocketsModule } from './sockets/sockets.module';
+
+import databaseConfig from 'config/database';
+import jwtConfig from 'config/jwt';
+import frontendConfig from 'config/frontend';
+import { Interval, ScheduleModule } from '@nestjs/schedule';
 
 @Module({
 	imports: [
+		ScheduleModule.forRoot(),
 		//TODO Guarded endpoints fot the IntraAPI limiting, 2/s is what the intra allows for, we would need to adjust values here
 		ThrottlerModule.forRoot([
 			{
 				ttl: 2000,
-				limit: 1,
-			},
+				limit: 1
+			}
 		]),
 		//
 		TypeOrmModule.forRootAsync({
@@ -26,24 +31,25 @@ import { SocketsModule } from './sockets/sockets.module';
 			useFactory: (env: ConfigService) => ({
 				type: 'postgres',
 				host: 'postgres',
-				port: env.get<number>(' DB_PORT'),
-				username: env.get<string>('POSTGRES_USER'),
-				password: env.get<string>('POSTGRES_PASSWORD'),
-				database: env.get<string>('POSTGRES_DB'),
+				port: env.get('database.port'),
+				username: env.get('database.username'),
+				password: env.get('database.password'),
+				database: env.get('database.database'),
 				entities: [__dirname + '/**/*.entity{.ts,.js}'],
-				synchronize: true,
+				synchronize: true
 			}),
-			inject: [ConfigService],
+			inject: [ConfigService]
 		}),
 		ConfigModule.forRoot({
-			isGlobal: true,
+			load: [databaseConfig, jwtConfig, frontendConfig],
+			isGlobal: true
 		}),
 		UsersModule,
 		GamesModule,
 		AuthModule,
-		ChatModule,
+		ChatModule
 	],
 	controllers: [AppController],
-	providers: [AppService],
+	providers: [AppService]
 })
 export class AppModule {}

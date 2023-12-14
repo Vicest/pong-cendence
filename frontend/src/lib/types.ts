@@ -1,11 +1,15 @@
 export interface Person {
 	id: number;
+	login: string;
 	nickname: string;
 	avatar: string;
 	two_factor_auth_enabled: boolean;
+	status: 'online' | 'offline' | 'away' | 'busy' | 'invisible';
 	// feed: MessageFeed[];
 }
-export interface MessageFeed {
+export interface PrivateMessageFeed {
+	created_at: any;
+	content: any;
 	id: number;
 	host: boolean;
 	avatar: number;
@@ -16,11 +20,33 @@ export interface MessageFeed {
 }
 
 export interface Group {
-	id: number;
+	id: string;
 	nickname: string;
 	descripcion: string;
 	password: string;
 	created_at: Date;
 	members: Person[];
-	feed: MessageFeed[];
+	// feed: MessageFeed[];
+}
+
+type GameType = 'pong' | 'tetris';
+
+export interface Game {
+	id: GameType;
+	name: string;
+	image: string;
+	title: string;
+	description: string;
+	create_at: Date;
+	creator: string;
+	enabled: boolean;
+	launched_at: Date;
+}
+
+export interface GameInstance {
+	id: number;
+	game: GameType;
+	players: number[];
+	created_at: Date;
+	status: 'waiting' | 'running' | 'finished' | 'paused';
 }

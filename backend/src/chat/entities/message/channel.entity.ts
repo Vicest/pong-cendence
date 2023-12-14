@@ -1,32 +1,43 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToMany, OneToOne, PrimaryColumn, JoinTable, ManyToOne, JoinColumn } from 'typeorm';
+import {
+	Entity,
+	Column,
+	PrimaryGeneratedColumn,
+	OneToMany,
+	ManyToMany,
+	OneToOne,
+	PrimaryColumn,
+	JoinTable,
+	ManyToOne,
+	JoinColumn
+} from 'typeorm';
 import { User } from '../../../users/entities/user.entity';
 import { Channel } from '../channel.entity';
 
 @Entity({
-  name: 'ChannelMessages'
+	name: 'ChannelMessages'
 })
 export class ChannelMessages {
-  @PrimaryGeneratedColumn()
-  id: number;
+	@PrimaryGeneratedColumn()
+	id: number;
 
-  @Column({ type: 'text'})
-  content: string;
+	@Column({ type: 'text' })
+	content: string;
 
-  @ManyToOne(() => User, user => user.id)
-  @JoinColumn({
-    name: 'user_id'
-  })
-  sender: User;
+	@ManyToOne(() => User, (user) => user.id)
+	@JoinColumn({
+		name: 'user_id'
+	})
+	sender: User;
 
-  @ManyToOne(() => Channel, channel => channel.id)
-  @JoinColumn({
-    name: 'channel_id'
-  })
-  receiver: Channel;
+	@ManyToOne(() => Channel, (channel) => channel.id)
+	@JoinColumn({
+		name: 'channel_id'
+	})
+	receiver: Channel;
 
-  @Column({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  created_at: Date;
+	@Column({
+		type: 'timestamp',
+		default: () => 'CURRENT_TIMESTAMP'
+	})
+	created_at: Date;
 }

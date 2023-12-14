@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte';
 	// Global stores
 	import type { Group } from '$lib/types';
-	import { receptor , chat_history, mock_channels , mock_priv_msg } from "../../store/Chat";
+	import { receptor , mock_channels , mock_priv_msg } from "../../store/Chat";
 	// Components
 	import GroupChannelChat from './Group_Channel_Chat.svelte';
 	import GroupChannelUserList from './Group_Channel_User_List.svelte';
@@ -60,9 +60,6 @@
 
 		// console.log("Persona seleccionada es -> ",currentPerson)
 		receptor.set(currentPerson);
-		chat_history.set([]);
-
-		chat_history.set(currentPerson.messages);
 	}
 
 	function userListClick(person : any)
@@ -96,7 +93,7 @@
 		</div>
 	</div>
 	{#if displayChat}
-		<GroupChannelChat currentPerson={currentPerson}></GroupChannelChat>
+		<GroupChannelChat></GroupChannelChat>
 	{/if}
 	{#if displayUserList}
 		<GroupChannelUserList currentPerson={currentPerson}></GroupChannelUserList>
