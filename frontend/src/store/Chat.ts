@@ -13,7 +13,8 @@ export const priv_chat_history = writable<PrivateMessageFeed[]>([]);
 // export const priv_msg = writable<PrivateMessageFeed[]>([]);
 
 export const init = () => {
-	Socket().on('priv_msg:created', (createdMsg) => {
+	Socket.connect();
+	Socket.on('priv_msg:created', (createdMsg) => {
 		console.log('Mensaje de chat me llego :)', createdMsg, get(receptor));
 		if (get(receptor)) {
 			if (get(receptor).id === createdMsg.sender.id || get(receptor).id === createdMsg.receiver.id)

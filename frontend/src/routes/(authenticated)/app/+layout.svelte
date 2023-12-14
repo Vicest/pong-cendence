@@ -12,15 +12,14 @@
 	import { init as ChatInstancesInit } from '../../../store/Chat';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { GamesSocket, Socket, UsersSocket } from '$services/socket';
 
 	initializeStores();
 	onMount(() => {
 		AuthInit()
 			.then(() => {
 				console.log('Auth initialized');
-				Promise.all([UsersInit(), GameInstancesInit(), ChatInstancesInit()]).then(() => {
-					console.log('Stores initialized');
-				});
+				Promise.all([UsersInit(), GameInstancesInit(), ChatInstancesInit()]);
 			})
 			.catch((err) => {
 				if (err.statusCode === 403 || err.statusCode === 401) {
