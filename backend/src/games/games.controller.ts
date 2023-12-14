@@ -27,22 +27,4 @@ export class GamesController {
 		let game = this.gameService.findOne(id);
 		return game;
 	}
-
-    @Post('/queue')
-    async joinQueue(@Headers('authorization') jwtHeader:string) {
-		const token = jwtHeader.replace('Bearer ', '');
-		console.log(`Token: ${token}`);
-        const user = await this.authService.decode(token);
-		console.log(`Joining user ${user.login} with id ${user.id}`);
-		return this.gameService.joinQueue(user);
-    }
-
-    @Delete('/queue')
-    async leaveQueue(@Headers('authorization') jwtHeader:string) {
-		const token = jwtHeader.replace('Bearer ', '');
-		console.log(`Token: ${token}`);
-        const user = await this.authService.decode(token);
-		console.log(`Leaving user ${user.login} with id ${user.id}`);
-		return this.gameService.leaveQueue(user.id);
-    }
 }

@@ -6,6 +6,10 @@
 		SlideToggle,
 		getDrawerStore
 	} from '@skeletonlabs/skeleton';
+
+	import { Toast, getToastStore } from '@skeletonlabs/skeleton';
+	import type { ToastSettings, ToastStore } from '@skeletonlabs/skeleton';
+
 	import { userList } from '../../store/User';
 	import type { Person } from '$lib/types';
 	import { currentUser } from '../../store/Auth';
@@ -14,6 +18,7 @@
 	import { goto } from '$app/navigation';
 	import ChatAvatar from '../chat/ChatAvatar.svelte';
 	import { Api } from '$services/api';
+	import { MatchMakingSocket } from '$services/socket';
 
 	const drawerStore = getDrawerStore();
 	//TODO I don't really know how to handle this.
@@ -22,12 +27,26 @@
 
 	function queueToggle() {
 		if (!playerInQueue) {
-			Api.post('/games/queue');
+			Api.post('/matchmaking/queue');
 		} else {
-			Api.delete('/games/queue');
+			Api.delete('/matchmaking/queue');
 		}
 		playerInQueue = !playerInQueue;
 	}
+
+	function sendChallenge(targetId: number) {
+		console.log(`I challenged inside: ${selectedUser.login}`);
+		MatchMakingSocket.emit('challenge', targetId);
+		//Api.post(`matchmaking/challenge/${targetId}`);
+	}
+
+	MatchMakingSocket.on('beChallenged', (opponentId) => {
+		let accept = confirm('Wanna match?');
+		MatchMakingSocket.emit('challengeResponse', {
+			accept,
+			opponentId
+		});
+	});
 
 	export let parent: SvelteComponent;
 	let keyword: string = '';
@@ -78,8 +97,10 @@
 	<footer class="modal-footer flex justify-center items-center space-x-4">
 		<SlideToggle name="slider-label" on:click={() => queueToggle()}>Queueing  </SlideToggle>
 		<button class="btn variant-filled-primary"on:click={() => {
-			goto(`/app/arena/1`)
-			parent.onClose()
+			sendChallenge(selectedUser.id);
+			console.log(`I challenged: ${selectedUser.login}`);
+			//goto(`/app/arena/1`)
+			//parent.onClose()
 		}} disabled={!selectedUser}>Send invitation</button>
 		<button class="btn variant-ghost-surface" on:click={() => {
 			//drawerStore.open($gameListDrawerSettings);

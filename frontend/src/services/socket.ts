@@ -21,3 +21,9 @@ export const GamesSocket = io(`${PUBLIC_BACKEND_BASE}:${PUBLIC_BACKEND_PORT}/gam
 		token: Cookies.get('token')
 	}
 });
+
+export const MatchMakingSocket = io(`${PUBLIC_BACKEND_BASE}:${PUBLIC_BACKEND_PORT}/matchmaking`, {
+	auth: {
+		token: Cookies.get('token')
+	}
+});
