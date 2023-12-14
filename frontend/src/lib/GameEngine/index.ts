@@ -32,6 +32,9 @@ export default class GameEngine {
 		this.playable = this.players?.some((player) => player.id === userId);
 		this.userId = userId;
 		this.keyInputHandlers = keyInputHandlers;
+		this.keyInput = this.keyInputHandlers.map((key) => {
+			return [key, false];
+		});
 		if (aspectRatio) {
 			if (!/^\d+\/\d+$/.test(aspectRatio)) {
 				throw new Error('Invalid aspect ratio');

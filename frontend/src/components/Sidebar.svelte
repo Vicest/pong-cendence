@@ -13,6 +13,7 @@
 	import { goto } from '$app/navigation';
 	import SidebarMatch from './game/SidebarMatch.svelte';
 	import { gameInstances, gameListDrawerSettings } from '../store/Game';
+	import { Api } from '$services/api';
 	const drawerStore = getDrawerStore();
 
 	$: activeMatches = $gameInstances.filter((game) =>
@@ -21,9 +22,9 @@
 
 	let arenaTile: number = 0;
 	const logOut = () => {
-		Cookies.remove('token');
-		Cookies.remove('refreshToken');
-		goto('/login');
+		Api.post('/auth/logout').then(() => {
+			goto('/');
+		});
 	};
 </script>
 

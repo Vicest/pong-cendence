@@ -1,56 +1,30 @@
 import exp from 'constants';
-import { get , writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import type { Person, PrivateMessageFeed } from '$lib/types';
 import { Api } from '$services/api';
 import { Socket } from '$services/socket';
-import { loading as Authloading , currentUser } from './Auth';
-
+import { loading as Authloading, currentUser } from './Auth';
 
 export const receptor = writable<Person>();
 export const type_Channel = writable();
 export const chat_history = writable();
 
-export const priv_chat_history = writable<PrivateMessageFeed[]>([])
+export const priv_chat_history = writable<PrivateMessageFeed[]>([]);
 // export const priv_msg = writable<PrivateMessageFeed[]>([]);
 
-// export const init = () => {
-// 	const unsubscribe = Authloading.subscribe((value) => {
-//         if (!value) {
-//             unsubscribe(); // Detener la suscripción una vez que Authloading sea falso
-//             Api.get('/users/messages/' + get(currentUser).nickname)
-//                 .then(({ data }) => {
-// 					priv_msg.set(data._privateMessages);
-//                     setTimeout(() => {
-// 						loading.set(false);
-//                     }, 1000);
-// 					console.log("Pillamos mensajes? -> ", get(priv_msg));
-//                 })
-//                 .catch((err) => {
-//                     console.log(err);
-//                 })
-//                 .finally(() => {});
-//         }
-//     });
-// };
-
-Socket.on('priv_msg:created', (createdMsg) => {
-	console.log("Mensaje de chat me llego :)", createdMsg, get(receptor))
-	if (get(receptor))
-	{
-		if (get(receptor).id === createdMsg.sender.id || get(receptor).id === createdMsg.receiver.id)
-			priv_chat_history.update((msg) => {
-				console.log("Actualizamos el mensaje")	
-				return [...msg, createdMsg];
-			});
-	}
-	console.log("Actualizamos el historial privado")
-});
-
-
-
-
-
-
+export const init = () => {
+	Socket().on('priv_msg:created', (createdMsg) => {
+		console.log('Mensaje de chat me llego :)', createdMsg, get(receptor));
+		if (get(receptor)) {
+			if (get(receptor).id === createdMsg.sender.id || get(receptor).id === createdMsg.receiver.id)
+				priv_chat_history.update((msg) => {
+					console.log('Actualizamos el mensaje');
+					return [...msg, createdMsg];
+				});
+		}
+		console.log('Actualizamos el historial privado');
+	});
+};
 
 export const mock_user_list = writable<Array<Person>>([]);
 export const mock_friends = writable<Array<Person>>([]);
@@ -337,5 +311,3 @@ mock_channels.set([
 		]
 	}
 ]);
-
-

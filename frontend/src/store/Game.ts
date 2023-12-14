@@ -45,17 +45,17 @@ export const init = () => {
 			})
 		);
 	});
-};
 
-GamesSocket.on('match:updated', (id, updatedMetadata) => {
-	gameInstances.update((matches) => {
-		return matches
-			.map((match) => {
-				if (match.id === id) {
-					return { ...match, ...updatedMetadata };
-				}
-				return match;
-			})
-			.sort((a, b) => a.id - b.id);
+	GamesSocket.on('match:updated', (id, updatedMetadata) => {
+		gameInstances.update((matches) => {
+			return matches
+				.map((match) => {
+					if (match.id === id) {
+						return { ...match, ...updatedMetadata };
+					}
+					return match;
+				})
+				.sort((a, b) => a.id - b.id);
+		});
 	});
-});
+};

@@ -1,4 +1,12 @@
-import { Controller, UseGuards, Get, Res, Req, Inject } from '@nestjs/common';
+import {
+	Controller,
+	UseGuards,
+	Get,
+	Res,
+	Req,
+	Inject,
+	Post
+} from '@nestjs/common';
 import { ConfigService, ConfigType } from '@nestjs/config';
 import { IntraAuthGuard } from './guards/intraAuth.guard';
 import { AuthService } from './auth.service';
@@ -32,20 +40,32 @@ export class AuthController {
 		res.send(req.user);
 	}
 
+	@UseGuards(JwtGuard)
+	@Post('logout')
+	async logout(@Req() req, @Res() res: Response) {
+		return res.clearCookie('token').clearCookie('refreshToken').sendStatus(200);
+	}
+
 	@UseGuards(JwtRefreshGuard)
-	@Get('refresh')
+	@Post('refresh')
 	async getRefresh(@Req() req, @Res() res: Response) {
 		const { token, refreshToken } = await this.authService.grantTokenPair(
 			req.user
 		);
-		res
+		return res
 			.cookie('token', token, {
+				httpOnly: true,
+				sameSite: 'strict',
+				secure: this.env.get('NODE_ENV') === 'production' ? true : false,
 				maxAge: this.jwtConfig.expiresIn * 1000
 			})
 			.cookie('refreshToken', refreshToken, {
+				httpOnly: true,
+				sameSite: 'strict',
+				secure: this.env.get('NODE_ENV') === 'production' ? true : false,
 				maxAge: this.jwtConfig.refreshExpiresIn * 1000
-			});
-		res.send({ token, refreshToken });
+			})
+			.sendStatus(200);
 	}
 
 	@UseGuards(IntraAuthGuard)
@@ -58,13 +78,19 @@ export class AuthController {
 		const { token, refreshToken } = await this.authService.grantTokenPair(
 			req.user
 		);
-		res
+		return res
 			.cookie('token', token, {
+				httpOnly: true,
+				sameSite: 'strict',
+				secure: this.env.get('NODE_ENV') === 'production' ? true : false,
 				maxAge: this.jwtConfig.expiresIn * 1000
 			})
 			.cookie('refreshToken', refreshToken, {
+				httpOnly: true,
+				sameSite: 'strict',
+				secure: this.env.get('NODE_ENV') === 'production' ? true : false,
 				maxAge: this.jwtConfig.refreshExpiresIn * 1000
-			});
-		return res.redirect(this.frontendConfig.baseUrl.concat('/app'));
+			})
+			.redirect(this.frontendConfig.baseUrl.concat('/app'));
 	}
 }

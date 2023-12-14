@@ -17,58 +17,58 @@ export const init = () => {
 			setTimeout(() => {
 				loading.set(false);
 			}, 1000);
+
+			UsersSocket.on('user:updated', (id, updatedMetadata) => {
+				userList.update((users) => {
+					return users
+						.map((user) => {
+							if (user.id === id) {
+								return { ...user, ...updatedMetadata };
+							}
+							return user;
+						})
+						.sort((a, b) => a.id - b.id);
+				});
+				const user = get(currentUser);
+				if (user.id === id) {
+					currentUser.update((user) => {
+						return { ...user, ...updatedMetadata };
+					});
+				}
+				priv_chat_history.update((messages) => {
+					return messages.map((message) => {
+						if (message.sender.id === updatedUser.id) {
+							return {
+								...message,
+								sender: {
+									...message.sender,
+									nickname: updatedUser.nickname,
+									avatar: updatedUser.avatar
+								}
+							};
+						} else if (message.receiver.id === updatedUser.id) {
+							return {
+								...message,
+								receiver: {
+									...message.receiver,
+									nickname: updatedUser.nickname,
+									avatar: updatedUser.avatar
+								}
+							};
+						}
+						return message;
+					});
+				});
+			});
+
+			UsersSocket.on('user:created', (createdUser) => {
+				userList.update((users) => {
+					return [...users, createdUser];
+				});
+			});
 		})
 		.catch((err) => {
 			console.log(err);
 		})
 		.finally(() => {});
 };
-
-UsersSocket.on('user:updated', (id, updatedMetadata) => {
-	userList.update((users) => {
-		return users
-			.map((user) => {
-				if (user.id === id) {
-					return { ...user, ...updatedMetadata };
-				}
-				return user;
-			})
-			.sort((a, b) => a.id - b.id);
-	});
-	const user = get(currentUser);
-	if (user.id === id) {
-		currentUser.update((user) => {
-			return { ...user, ...updatedMetadata };
-		});
-	}
-	priv_chat_history.update((messages) => {
-		return messages.map((message) => {
-			if (message.sender.id === updatedUser.id) {
-				return {
-					...message,
-					sender: {
-						...message.sender,
-						nickname: updatedUser.nickname,
-						avatar: updatedUser.avatar
-					}
-				};
-			} else if (message.receiver.id === updatedUser.id) {
-				return {
-					...message,
-					receiver: {
-						...message.receiver,
-						nickname: updatedUser.nickname,
-						avatar: updatedUser.avatar
-					}
-				};
-			}
-			return message;
-		});
-	});
-});
-
-UsersSocket.on('user:created', (createdUser) => {
-	userList.update((users) => {
-		return [...users, createdUser];
-	});
-});

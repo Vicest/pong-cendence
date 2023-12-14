@@ -9,13 +9,24 @@
 	import { loading, init as AuthInit } from '../../../store/Auth';
 	import { init as UsersInit } from '../../../store/User';
 	import { init as GameInstancesInit } from '../../../store/Game';
+	import { init as ChatInstancesInit } from '../../../store/Chat';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 
 	initializeStores();
 	onMount(() => {
-		Promise.allSettled([AuthInit(), UsersInit(), GameInstancesInit()]).then(() => {
-			console.log('Stores initialized');
-		});
+		AuthInit()
+			.then(() => {
+				console.log('Auth initialized');
+				Promise.all([UsersInit(), GameInstancesInit(), ChatInstancesInit()]).then(() => {
+					console.log('Stores initialized');
+				});
+			})
+			.catch((err) => {
+				if (err.statusCode === 403 || err.statusCode === 401) {
+					goto('/login');
+				}
+			});
 	});
 </script>
 
@@ -24,12 +35,6 @@
 	<div class="flex justify-center items-center h-screen animate-pulse">
 		<a href="/" aria-label="Home">
 			<img src="/images/logo.png" alt="logo" class="h-20" />
-		</a>
-	</div>
-{:else if $loading}
-	<div class="flex justify-center items-center h-screen animate-pulse">
-		<a href="/" aria-label="Home">
-			<img src="/images/logo.png" alt="logo" class="h-10" />
 		</a>
 	</div>
 {:else}

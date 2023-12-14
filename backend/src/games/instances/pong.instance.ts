@@ -37,7 +37,7 @@ export class PongInstance extends EventEmitter {
 	private static readonly paddlesHeight = 100;
 	private static readonly ballRadius = 5;
 	private static readonly ballSpeed = 4;
-	private static readonly scoreToWin = 6;
+	private static readonly scoreToWin = 10;
 
 	private log: Logger;
 	private players: Match['players'];

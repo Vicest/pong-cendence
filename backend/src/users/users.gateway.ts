@@ -12,7 +12,10 @@ import { Logger } from '@nestjs/common';
 import { UsersService } from './users.service';
 
 @WebSocketGateway({
-	cors: true,
+	cors: {
+		origin: `${process.env.BACKEND_BASE}:${process.env.FRONTEND_PORT}`,
+		credentials: true
+	},
 	namespace: 'users'
 })
 export class UsersGateway
@@ -31,15 +34,27 @@ export class UsersGateway
 
 	afterInit(server) {}
 
+	private getAuthCookie(socket: Socket) {
+		if (!socket.request.headers?.cookie) {
+			throw new Error('Missing cookie header');
+		}
+		const token = socket.request.headers.cookie
+			.split(';')
+			.find((cookie) => cookie.trim().startsWith('token='));
+		if (!token) throw new Error('Missing token cookie');
+		return token.split('=')[1];
+	}
+
 	handleConnection(@ConnectedSocket() client: Socket, ...args) {
 		try {
-			const decoded = this.jwtService.verify(client.handshake.auth.token);
+			const decoded = this.jwtService.verify(this.getAuthCookie(client));
 			client.data.user = decoded;
 			setTimeout(() => {
 				this.usersService.updateStatusById(client.data.user.id, 'online');
 			}, 500);
 			this.log.debug(`${decoded.login} connected`, this.constructor.name);
 		} catch (error) {
+			this.log.error(error, this.constructor.name);
 			client.disconnect();
 		}
 	}

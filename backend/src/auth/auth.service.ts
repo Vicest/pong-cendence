@@ -28,23 +28,20 @@ export class AuthService {
 		//TODO Ideally any user would go through a /auth/register endpoint insead of just getting added
 		if (!user) user = await this.usersService.create(data);
 		const token = await this.jwtService.signAsync(
-			{ login: user.login, id: user.id /*, mail:user.email FIXME*/ },
+			{ login: user.login, id: user.id },
 			{
 				expiresIn: this.jwtConfig.expiresIn,
 				secret: this.jwtConfig.secret
 			}
 		);
 		const refreshToken = await this.jwtService.signAsync(
-			{ login: user.login, id: user.id /*, mail:user.email FIXME*/ },
+			{ login: user.login, id: user.id },
 			{
 				expiresIn: this.jwtConfig.refreshExpiresIn,
 				secret: this.jwtConfig.refreshSecret
 			}
 		);
-
-		this.log.debug(
-			`Grant token pair to: ${user}\nToken: ${token}\nRefresh: ${refreshToken}`
-		);
+		this.log.debug(`Token granted for ${user.login}`, this.constructor.name);
 		return { token, refreshToken };
 	}
 
