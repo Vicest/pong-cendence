@@ -12,6 +12,10 @@ export class Challenge {
         return this.expireDate_ < Date.now();
     }
 
+    public hasPlayer(id: number): boolean {
+        return this.challengerId_ == id || this.challengedId_ == id;
+    }
+
     private readonly challengerId_: number;
     private readonly challengedId_: number;
     private readonly expireDate_: number;

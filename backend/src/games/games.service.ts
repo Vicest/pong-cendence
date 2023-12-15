@@ -20,6 +20,13 @@ export class GamesService {
 		return null;
 	}
 
+	public async createMatch(data): Promise<Match | null> {
+		console.log('Creating match', data);
+		const newMatch:Match |null = this.matchRepository.create();
+		this.matchRepository.save(newMatch);
+		return newMatch;
+	}
+
 	public async find(id: number): Promise<Game | null> {
 		console.log('Finding game', id);
 		return null;

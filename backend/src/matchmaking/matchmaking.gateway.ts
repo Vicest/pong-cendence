@@ -13,6 +13,8 @@ import { JwtService } from '@nestjs/jwt';
 import { Logger } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { Challenge } from './challenge';
+import { GamesService } from 'src/games/games.service';
+import { UsersService } from 'src/users/users.service';
 
 @WebSocketGateway({
 	cors: true,
@@ -35,7 +37,7 @@ export class MatchMakingGateway
 		];
 	} = {};
 
-	constructor(private jwtService: JwtService) {
+	constructor(private jwtService: JwtService, private gameService: GamesService, private userService: UsersService) {
 		this.pendingChallenges_ = [];
 		this.log = new Logger();
 	}
@@ -89,15 +91,22 @@ export class MatchMakingGateway
 			);
 			return;
 		}
-		//TODO Maybe check to avoid duplicate challenges.
-		this.pendingChallenges_.push(new Challenge(challengerId, opponentId, 15));
-		console.log(`ALL ${this.server.sockets}`);
-		//this.server.to(opponentId.toString()).emit('beChallenged', challengerId);
-		this.server.sockets.forEach((socket) => {
+		//Don't accept dupplicate challenges
+		for (const challenge of this.pendingChallenges_) {
+			if (challenge.hasPlayer(challengerId) && challenge.hasPlayer(opponentId) && !challenge.expired()) {
+				//TODO emit back an already emitted challenge feedback.
+				this.log.warn(
+					`${challengerId} vs ${opponentId} or ${opponentId} vs ${challengerId} already exists.`
+				);
+				return;
+			}
+		}
 
-			console.log(`Try to: ${socket.data.user.login}`)
+		this.pendingChallenges_.push(new Challenge(challengerId, opponentId, 15000));
+		//this.server.to(opponentId.toString()).emit('beChallenged', challengerId);
+		//TODO I think it is cleaner to join clients with the same id to the same room instead of looping.
+		this.server.sockets.forEach((socket) => {
             if (socket.data.user.id === opponentId) {
-				console.log(`Send to: ${socket.data.user.login}`)
                 socket.emit('beChallenged', challengerId);
             }
         });
@@ -126,8 +135,9 @@ export class MatchMakingGateway
 		//Create match on an accept.
 		if (response.accept) {
 			console.log("Challenge accepted.");
-			//TODO update to have the gameserver handle the ids?
-			//this.ogs.newMatch(roomId, [challengerLogin, opponentLogin]);
+			const p1 = this.userService.find(challengerId);
+			const p2 = this.userService.find(responseId);
+			this.gameService.createMatch({ players:[p1, p2] });
 		}
 	}
 

@@ -25,6 +25,7 @@ import { AuthModule } from 'src/auth/auth.module';
 		})
 	],
 	controllers: [GamesController],
-	providers: [GamesService, GamesGateway]
+	providers: [GamesService, GamesGateway],
+	exports: [GamesService]
 })
 export class GamesModule {}
