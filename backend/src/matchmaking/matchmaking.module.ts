@@ -19,7 +19,7 @@ import { GamesModule } from 'src/games/games.module';
 		}),
 		UsersModule,
 		GamesModule,
-		AuthModule,
+		AuthModule
 	],
 	controllers: [MatchMakingController],
 	providers: [MatchMakingService, MatchMakingGateway]

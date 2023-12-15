@@ -10,7 +10,7 @@ export class GamesService {
 		@InjectRepository(Game)
 		private readonly gameRepository: Repository<Game>,
 		@InjectRepository(Match)
-		private readonly matchRepository: Repository<Match>,
+		private readonly matchRepository: Repository<Match>
 	) {
 		this.log = new Logger();
 	}
@@ -22,7 +22,7 @@ export class GamesService {
 
 	public async createMatch(data): Promise<Match | null> {
 		console.log('Creating match', data);
-		const newMatch:Match |null = this.matchRepository.create();
+		const newMatch: Match | null = this.matchRepository.create();
 		this.matchRepository.save(newMatch);
 		return newMatch;
 	}
