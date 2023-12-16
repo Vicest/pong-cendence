@@ -17,7 +17,6 @@ import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import * as fs from 'fs';
 import { ConfigService } from '@nestjs/config';
 
-let imgCount: boolean = true;
 @Controller('users')
 @UseGuards(JwtGuard)
 
@@ -36,7 +35,8 @@ export class UsersController {
 			res.setHeader('Content-Type', 'image/png');
 			res.send(fileContent);
 		}
-		return null;
+		else
+			res.send(404)
 	}
 
 
@@ -96,8 +96,7 @@ export class UsersController {
 		{
 			let imageType;
 			
-			imgCount = !imgCount;
-			let imageName = req.user.login + imgCount;
+			let imageName = req.user.login + Date.now().toString();
 			if (user.avatar.includes('image/jpeg')) imageType = 'jpeg';
 			else if (user.avatar.includes('image/png')) imageType = 'png';
 			else {
@@ -109,6 +108,7 @@ export class UsersController {
 				''
 			);
 			try {
+				
 				if (!fs.existsSync('usersdata')) fs.mkdirSync('usersdata');
 				fs.writeFile(
 					`usersdata/${imageName}.png`,
@@ -118,15 +118,27 @@ export class UsersController {
 						console.log(err);
 					}
 				);
+				
 			} catch (e) {
 				console.log(e);
+				res.send(500)
 			}
+			try{
+				this.userService.findOne(req.user.login).then((res) => {
+					let pathFile = "usersdata/"+res.avatar.split("/")[4] + ".png"
+					if (fs.existsSync(pathFile))
+						fs.unlinkSync(pathFile);
+				})
+			} catch (e) {
+				console.log(e)
+			}
+
+
 			// Especificar la url de la imagen del usuario
 			const databasePort = this.configService.get<number>('BACKEND_PORT');
 			const databaseUri = this.configService.get<string>('BACKEND_BASE');
 			user.avatar = `${databaseUri}:${databasePort}/users/${imageName}/img`;
 		}
-		
 
 		res.send(this.userService.updateById(req.user.id, user));
 

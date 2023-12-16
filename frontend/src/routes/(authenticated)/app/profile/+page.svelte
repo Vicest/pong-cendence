@@ -9,7 +9,7 @@
 	let currentUserCopy = { ...$currentUser };
 
 	let editMode: boolean = false;
-	let imageValue: any = null;
+	let imageValue: string = $currentUser.avatar;
 	const handleFileChange = (event: any) => {
 		let imageFile = event.target.files[0];
 		if (imageFile.size > 2097152) {
@@ -36,7 +36,7 @@
 		try{
 		const res = await Api.put('/users', updateinfo)
 			if (res.status === 200) {
-				currentUserCopy.avatar =""
+
 				editMode = false;
 			} else {
 				console.log(res);
@@ -52,7 +52,7 @@
 			<div class="line" />
 			<div class="relative">
 				<!-- TODO Mergear feat-add-storage , para poder acceder a la url del avatar con autorizacion -->
-				<Avatar src={$currentUser.avatar} width="w-40" class="border-4 border-white rounded-full" />
+				<Avatar src={imageValue} width="w-40" class="border-4 border-white rounded-full" />
 				<!-- <Fa icon={faEdit} class="text-5xl absolute w-full h-full z-10 text-black" /> -->
 				<label for="profile-avatar" class="profile-avatar-label" />
 			</div>
