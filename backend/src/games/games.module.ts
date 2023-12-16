@@ -26,7 +26,7 @@ import { MatchesSubscriber } from './matches.subscriber';
 		})
 	],
 	controllers: [GamesController],
-	providers: [GamesService, GamesGateway],
+	providers: [GamesService, GamesGateway, MatchesSubscriber],
 	exports: [GamesService]
 })
 export class GamesModule {}

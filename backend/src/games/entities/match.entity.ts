@@ -19,7 +19,7 @@ export class Match {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@ManyToOne(() => Game, (game) => game.id, {nullable: false})
+	@ManyToOne(() => Game, (game) => game.id, { nullable: false })
 	@JoinColumn({
 		name: 'game_id'
 	})
@@ -27,7 +27,8 @@ export class Match {
 
 	@Column({
 		type: 'enum',
-		enum: ['paused', 'waiting', 'running', 'finished']
+		enum: ['paused', 'waiting', 'running', 'finished'],
+		default: 'waiting'
 	})
 	status: string;
 

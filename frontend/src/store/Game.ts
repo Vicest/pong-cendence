@@ -59,4 +59,13 @@ export const init = () => {
 				.sort((a, b) => a.id - b.id);
 		});
 	});
+
+	GamesSocket.on('match:created', (id, game) => {
+		gameInstances.update((matches) => {
+			return matches.concat({
+				...game,
+				players: game.players.map((player) => player.id)
+			});
+		});
+	});
 };
