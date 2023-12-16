@@ -8,7 +8,7 @@ import { User } from 'src/users/entities/user.entity';
 export class MatchMakingService {
 	constructor(private userService: UsersService) {
 		this.log = new Logger();
-        this.queuedPlayers_ = [];
+		this.queuedPlayers_ = [];
 	}
 
 	public async joinQueue(user: User): Promise<boolean> {
@@ -16,18 +16,25 @@ export class MatchMakingService {
 
 		const joiningPlayer = await this.userService.find(user.id);
 		if (joiningPlayer === null) {
-            this.log.warn(`ID: ${user.id} requested joining queue but not found in DB.`);
+			this.log.warn(
+				`ID: ${user.id} requested joining queue but not found in DB.`
+			);
 			return false;
 		}
 
-		const queuedPlayer = new QueuePlayer(user, 123/*TODO joiningPlayer.Rating*/);
-		console.log("The qp: ", queuedPlayer)
+		const queuedPlayer = new QueuePlayer(
+			user,
+			123 /*TODO joiningPlayer.Rating*/
+		);
+		console.log('The qp: ', queuedPlayer);
 		if (
 			this.queuedPlayers_.find((player: QueuePlayer): boolean => {
 				return player.id == queuedPlayer.id;
 			}) != undefined
 		) {
-            this.log.warn(`ID: ${user.id} requested joining queue but it is already in it.`);
+			this.log.warn(
+				`ID: ${user.id} requested joining queue but it is already in it.`
+			);
 			return false;
 		}
 		//TODO Check user status. Can't join if not online, not gaming, etc...
@@ -37,7 +44,9 @@ export class MatchMakingService {
 
 	public leaveQueue(id: number): void {
 		this.log.verbose(`ID: ${id} leaves queue.\n ${this.queuedPlayers_}`);
-		const leavingPlayer = (queuedPlayer:QueuePlayer) => { return id == queuedPlayer.id };
+		const leavingPlayer = (queuedPlayer: QueuePlayer) => {
+			return id == queuedPlayer.id;
+		};
 		const index = this.queuedPlayers_.findIndex(leavingPlayer);
 		if (index == -1) {
 			//TODO use a LOGGER
@@ -49,8 +58,8 @@ export class MatchMakingService {
 	private log: Logger;
 	private queuedPlayers_: QueuePlayer[];
 
-	@Interval(1000)//TODO tick_rate in env
-    private matchMakingTick(): void {
+	@Interval(1000) //TODO tick_rate in env
+	private matchMakingTick(): void {
 		//this.log.debug(JSON.stringify(this.queuedPlayers_))
 		const checkDate: number = Date.now();
 		const compareMax: number = this.queuedPlayers_.length - 1;
@@ -60,10 +69,14 @@ export class MatchMakingService {
 			//Will be a shallow copy
 			let candidates: Array<QueuePlayer> = [];
 			const lhsRange: [number, number] = lhs.ratingRange(checkDate);
-			for (let jPlayer: number = iPlayer + 1; jPlayer <= compareMax; jPlayer++) {
+			for (
+				let jPlayer: number = iPlayer + 1;
+				jPlayer <= compareMax;
+				jPlayer++
+			) {
 				let rhs: QueuePlayer = this.queuedPlayers_[jPlayer];
 				if (rhs.matchedWith !== undefined) continue;
-				
+
 				//Compare lhs with rhs.
 				const rhsRange: [number, number] = rhs.ratingRange(checkDate);
 				if (rhsRange[1] >= lhsRange[0] && rhsRange[0] <= lhsRange[1])
@@ -90,5 +103,5 @@ export class MatchMakingService {
 			this.leaveQueue(candidates[0].id);
 			//TODO ^^ also change user status as busy. A nivel de match listener^^
 		}
-    }
+	}
 }

@@ -17,7 +17,7 @@
 	import { goto } from '$app/navigation';
 	import ChatAvatar from '../chat/ChatAvatar.svelte';
 	import { Api } from '$services/api';
-	import { MatchMakingSocket } from '$services/socket';
+	import { GamesSocket, MatchMakingSocket } from '$services/socket';
 
 	let toastStore = getToastStore();
 	//TODO I don't really know how to handle this.

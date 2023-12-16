@@ -93,7 +93,7 @@ export class User {
 	@OneToMany(() => ChannelMessages, (message) => message.sender)
 	channel_messages: ChannelMessages[];
 
-	// message.sender || message.receiver 
+	// message.sender || message.receiver
 	// @OneToMany(() => UserMessages, (message => message.sender || message.receiver ))
 	// messages_privatosos: UserMessages[];
 

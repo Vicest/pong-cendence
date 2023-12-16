@@ -13,6 +13,8 @@ import { JwtService } from '@nestjs/jwt';
 import { Logger } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { Challenge } from './challenge';
+import { GamesService } from 'src/games/games.service';
+import { UsersService } from 'src/users/users.service';
 
 @WebSocketGateway({
 	cors: true,
@@ -35,7 +37,11 @@ export class MatchMakingGateway
 		];
 	} = {};
 
-	constructor(private jwtService: JwtService) {
+	constructor(
+		private jwtService: JwtService,
+		private gameService: GamesService,
+		private userService: UsersService
+	) {
 		this.pendingChallenges_ = [];
 		this.log = new Logger();
 	}
@@ -76,18 +82,27 @@ export class MatchMakingGateway
 		try {
 			const decoded = this.jwtService.verify(this.getAuthCookie(client));
 			client.data.user = decoded;
-			this.log.debug(`${decoded.login} connected`, this.constructor.name);
-			//this.server.socketsJoin()
+			this.log.debug(
+				`${decoded.login} connected in room ${decoded.id}`,
+				this.constructor.name
+			);
+			client.join(decoded.id.toString());
 		} catch (error) {
+			this.log.warn(`Error on connect: ${error}`);
 			client.disconnect();
 		}
 	}
 
-	handleDisconnect(client) {
-		this.log.debug(
-			`${client.data.user.login} disconnected`,
-			this.constructor.name
-		);
+	handleDisconnect(@ConnectedSocket() client: Socket) {
+		try {
+			const decoded = this.jwtService.verify(client.handshake.auth.token);
+			client.data.user = decoded;
+			this.log.debug(`${decoded.login} disconnected`, this.constructor.name);
+			client.leave(decoded.id.toString());
+		} catch (error) {
+			this.log.error(`Error on disconnect: ${error}`);
+			client.disconnect();
+		}
 	}
 
 	@SubscribeMessage('challenge')
@@ -103,30 +118,42 @@ export class MatchMakingGateway
 			);
 			return;
 		}
-		//TODO Maybe check to avoid duplicate challenges.
+		//Don't accept dupplicate challenges
+		for (const challenge of this.pendingChallenges_) {
+			if (
+				challenge.hasPlayer(challengerId) &&
+				challenge.hasPlayer(opponentId) &&
+				!challenge.expired()
+			) {
+				//TODO emit back an already emitted challenge feedback.
+				this.server
+					.to(challengerId.toString())
+					.emit('challengeExists', { challenger: challengerId });
+				this.log.warn(
+					`${challengerId} vs ${opponentId} or ${opponentId} vs ${challengerId} already exists.`
+				);
+				return;
+			}
+		}
+
 		this.pendingChallenges_.push(
 			new Challenge(challengerId, opponentId, 15000)
 		);
-		console.log(`ALL ${this.server.sockets}`);
 		//this.server.to(opponentId.toString()).emit('beChallenged', challengerId);
-		this.server.sockets.forEach((socket) => {
-			console.log(`Try to: ${socket.data.user.login}`);
-			if (socket.data.user.id === opponentId) {
-				console.log(`Send to: ${socket.data.user.login}`);
-				socket.emit('beChallenged', challengerId);
-			}
-		});
+		//TODO I think it is cleaner to join clients with the same id to the same room instead of looping.
+		console.log(`Send beChallenged emmitted to: ${opponentId.toString()}`);
+		this.server.to(opponentId.toString()).emit('beChallenged', challengerId);
 	}
 
 	@SubscribeMessage('challengeResponse')
-	onChallengeResponse(
+	async onChallengeResponse(
 		@ConnectedSocket() client: Socket,
 		@MessageBody()
 		response: {
 			accept: boolean;
 			opponentId: number;
 		}
-	): void {
+	): Promise<void> {
 		const responseId: number = client.data.user.id;
 		const challengerId: number = response.opponentId;
 		//Remove the challenger from my list of challengers.
@@ -147,14 +174,21 @@ export class MatchMakingGateway
 		console.log('Challenge response received.', response.accept);
 		//Create match on an accept.
 		if (response.accept) {
-			console.log('Challenge accepted.');
-			//TODO update to have the gameserver handle the ids?
-			//this.ogs.newMatch(roomId, [challengerLogin, opponentLogin]);
+			const p1 = await this.userService.find(challengerId);
+			const p2 = await this.userService.find(responseId);
+			//TODO Add socket emit?? to listener
+			const pong = await this.gameService.findGameByName('pong'); //Definitely not a hardcode because we are short on time
+			console.log(`Find gamebyid: ${JSON.stringify(pong)}`);
+			await this.gameService.createMatch({
+				game: pong,
+				players: [p1, p2]
+			});
 		}
 	}
 
 	@Interval(500)
 	removeExpiredChallenges() {
+		//this.log.verbose(`Current challenges: ${JSON.stringify(this.pendingChallenges_)}`);
 		//Challenges are pushed oredered in time, older first.
 		while (
 			this.pendingChallenges_.length > 0 &&
