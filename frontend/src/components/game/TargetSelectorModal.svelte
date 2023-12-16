@@ -1,5 +1,14 @@
 <script lang="ts">
-	import { Avatar, ListBox, ListBoxItem, getDrawerStore } from '@skeletonlabs/skeleton';
+	import {
+		Avatar,
+		ListBox,
+		ListBoxItem,
+		SlideToggle,
+		getDrawerStore,
+		Toast,
+		getToastStore
+	} from '@skeletonlabs/skeleton';
+	import type { ToastSettings, ToastStore } from '@skeletonlabs/skeleton';
 	import { userList } from '../../store/User';
 	import type { Person } from '$lib/types';
 	import { currentUser } from '../../store/Auth';
@@ -7,8 +16,31 @@
 	import { selectedGame } from '../../store/Common';
 	import { goto } from '$app/navigation';
 	import ChatAvatar from '../chat/ChatAvatar.svelte';
+	import { Api } from '$services/api';
+	import { GamesSocket, MatchMakingSocket } from '$services/socket';
 
-	const drawerStore = getDrawerStore();
+	let toastStore = getToastStore();
+	//TODO I don't really know how to handle this.
+	//If the user closes the Modal, front forgets about the state, but back retains it.
+	let playerInQueue = false;
+
+	function queueToggle() {
+		if (!playerInQueue) {
+			Api.post('/matchmaking/queue');
+		} else {
+			Api.delete('/matchmaking/queue');
+		}
+		playerInQueue = !playerInQueue;
+	}
+
+	function sendChallenge(targetId: number) {
+		console.log(`I challenged inside: ${selectedUser.login}`);
+		MatchMakingSocket.emit('challenge', targetId);
+		toastStore.trigger({
+			message: `You challenged ${selectedUser.nickname}`
+		});
+		//Api.post(`matchmaking/challenge/${targetId}`);
+	}
 
 	export let parent: SvelteComponent;
 	let keyword: string = '';
@@ -57,9 +89,12 @@
 	</ListBox>
 	<!-- prettier-ignore -->
 	<footer class="modal-footer flex justify-center items-center space-x-4">
+		<SlideToggle name="slider-label" on:click={() => queueToggle()}>Queueing  </SlideToggle>
 		<button class="btn variant-filled-primary"on:click={() => {
-			goto(`/app/arena/1`)
-			parent.onClose()
+			sendChallenge(selectedUser.id);
+			console.log(`I challenged: ${selectedUser.login}`);
+			//goto(`/app/arena/1`)
+			//parent.onClose()
 		}} disabled={!selectedUser}>Send invitation</button>
 		<button class="btn variant-ghost-surface" on:click={() => {
 			//drawerStore.open($gameListDrawerSettings);

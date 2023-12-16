@@ -8,10 +8,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Game } from './entities/game.entity';
 import { Match } from './entities/match.entity';
 import { MatchEvent } from './entities/events.entity';
+import { UsersModule } from 'src/users/users.module';
+import { AuthModule } from 'src/auth/auth.module';
 import { MatchesSubscriber } from './matches.subscriber';
 
 @Module({
 	imports: [
+		UsersModule,
+		AuthModule,
 		TypeOrmModule.forFeature([Game, Match, MatchEvent]),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
@@ -22,6 +26,7 @@ import { MatchesSubscriber } from './matches.subscriber';
 		})
 	],
 	controllers: [GamesController],
-	providers: [GamesService, GamesGateway, MatchesSubscriber]
+	providers: [GamesService, GamesGateway, MatchesSubscriber],
+	exports: [GamesService]
 })
 export class GamesModule {}

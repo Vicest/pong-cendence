@@ -23,6 +23,10 @@ export class AuthService {
 		return user;
 	}
 
+	public async decode(jwt: string) {
+		return this.jwtService.decode(jwt);
+	}
+
 	public async grantTokenPair(data: User) {
 		let user = await this.usersService.findOne(data.login);
 		//TODO Ideally any user would go through a /auth/register endpoint insead of just getting added

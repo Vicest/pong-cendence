@@ -41,6 +41,6 @@ import { AdminStrategy } from './strategies/admin.strategy';
 		JwtRefreshGuard,
 		AuthService
 	],
-	exports: [IntraAuthGuard]
+	exports: [IntraAuthGuard, AuthService]
 })
 export class AuthModule {}
