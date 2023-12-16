@@ -11,17 +11,14 @@ import {
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
-import { GamesService } from './games.service';
 import { Match } from './entities/match.entity';
 import { PongInstance } from './instances/pong.instance';
+import { GamesService } from './games.service';
 
 @WebSocketGateway({
-	cors: {
-		origin: `${process.env.BACKEND_BASE}:${process.env.FRONTEND_PORT}`,
-		credentials: true
-	},
+	cors: true,
 	namespace: 'games'
 })
 export class GamesGateway

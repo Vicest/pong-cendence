@@ -14,6 +14,7 @@ import databaseConfig from 'config/database';
 import jwtConfig from 'config/jwt';
 import frontendConfig from 'config/frontend';
 import { Interval, ScheduleModule } from '@nestjs/schedule';
+import { MatchMakingModule } from './matchmaking/matchmaking.module';
 
 @Module({
 	imports: [
@@ -47,7 +48,8 @@ import { Interval, ScheduleModule } from '@nestjs/schedule';
 		UsersModule,
 		GamesModule,
 		AuthModule,
-		ChatModule
+		ChatModule,
+		MatchMakingModule
 	],
 	controllers: [AppController],
 	providers: [AppService]
