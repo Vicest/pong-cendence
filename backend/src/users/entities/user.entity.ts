@@ -10,6 +10,7 @@ import { Channel } from '../../chat/entities/channel.entity';
 import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
 import { UserRelation } from './userRelations.entity';
+import { IsString, IsOptional, IsBase64, Validate, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 
 @Entity({
 	name: 'Users'

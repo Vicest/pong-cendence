@@ -7,7 +7,10 @@ import {
 	UseGuards,
 	Put,
 	Req,
-	Res
+	Res,
+	MaxFileSizeValidator,
+	ParseFilePipe,
+	UploadedFile
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Observable } from 'rxjs';
@@ -16,6 +19,8 @@ import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import * as fs from 'fs';
 import { ConfigService } from '@nestjs/config';
+import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
+
 
 @Controller('users')
 @UseGuards(JwtGuard)
@@ -36,7 +41,7 @@ export class UsersController {
 			res.send(fileContent);
 		}
 		else
-			res.send(404)
+			res.sendStatus(404)
 	}
 
 
@@ -55,7 +60,7 @@ export class UsersController {
 		return this.userService.createUserMessage(msg);
 	}
 
-	/* ----------------------------- USERs ------------------------------ */
+	/* ----------------------------- USERS ------------------------------ */
 	// Get /users
 	@Get('/')
 	getAll() {
@@ -86,7 +91,15 @@ export class UsersController {
 	}
 	
 
-	// Put /
+	// @UploadedFile(
+	// 	new ParseFilePipe({
+	// 	  validators: [
+	// 		new MaxFileSizeValidator({ maxSize: 1000 }),
+	// 	  ],
+	// 	}),
+	//   )
+	//   file: Express.Multer.File,
+	// PUT /
 	@Put('/')
 	updateCurrentUser(@Req() req, @Res() res, @Body() user: User) {
 		//TODO: validar imagen
@@ -108,11 +121,10 @@ export class UsersController {
 				''
 			);
 			try {
-				
 				if (!fs.existsSync('usersdata')) fs.mkdirSync('usersdata');
 				fs.writeFile(
 					`usersdata/${imageName}.png`,
-					base64Data,
+					"base64Data",
 					'base64',
 					(err) => {
 						console.log(err);
@@ -121,7 +133,7 @@ export class UsersController {
 				
 			} catch (e) {
 				console.log(e);
-				res.send(500)
+				res.sendStatus(500)
 			}
 			try{
 				this.userService.findOne(req.user.login).then((res) => {
