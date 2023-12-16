@@ -39,6 +39,7 @@ export class UsersController {
 		return null;
 	}
 
+
 	/* ----------------------------- CHAT ------------------------------ */
 
 	// GET /users/messages/:id

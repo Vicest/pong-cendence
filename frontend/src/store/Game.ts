@@ -20,6 +20,7 @@ export const gameList = writable<Game[]>();
 export const gameInstances = writable<GameInstance[]>();
 
 export const init = () => {
+	GamesSocket.connect();
 	Api.get('/games').then((response) => {
 		gameList.set(
 			response.data.map((game) => {

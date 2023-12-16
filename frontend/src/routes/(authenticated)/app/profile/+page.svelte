@@ -3,7 +3,7 @@
 	import { Avatar } from '@skeletonlabs/skeleton';
 	import { faEdit } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
-	import { Api } from '$services/api';;
+	import { Api } from '$services/api';
 
 	// Create a copy of the current user to edit
 	let currentUserCopy = { ...$currentUser };
@@ -43,10 +43,9 @@
 			}
 		} catch (error) {
 			console.error('An error occurred:', error);
-		}
+		} 
 	}
 </script>
-
 <div class="container h-full mx-auto flex flex-col items-center">
 	<div class="flex flex-col justify-center items-center my-10 card w-full p-10">
 		<div class="flex justify-center items-center w-full">

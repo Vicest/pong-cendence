@@ -11,6 +11,7 @@ loading.set(true);
 export const userList = writable<Person[]>();
 
 export const init = () => {
+	UsersSocket.connect();
 	Api.get('/users')
 		.then(({ data }) => {
 			userList.set(data);
