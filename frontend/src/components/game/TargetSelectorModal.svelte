@@ -4,12 +4,11 @@
 		ListBox,
 		ListBoxItem,
 		SlideToggle,
-		getDrawerStore
+		getDrawerStore,
+		Toast,
+		getToastStore
 	} from '@skeletonlabs/skeleton';
-
-	import { Toast, getToastStore } from '@skeletonlabs/skeleton';
 	import type { ToastSettings, ToastStore } from '@skeletonlabs/skeleton';
-
 	import { userList } from '../../store/User';
 	import type { Person } from '$lib/types';
 	import { currentUser } from '../../store/Auth';
@@ -20,7 +19,7 @@
 	import { Api } from '$services/api';
 	import { MatchMakingSocket } from '$services/socket';
 
-	const drawerStore = getDrawerStore();
+	let toastStore = getToastStore();
 	//TODO I don't really know how to handle this.
 	//If the user closes the Modal, front forgets about the state, but back retains it.
 	let playerInQueue = false;
@@ -37,16 +36,11 @@
 	function sendChallenge(targetId: number) {
 		console.log(`I challenged inside: ${selectedUser.login}`);
 		MatchMakingSocket.emit('challenge', targetId);
+		toastStore.trigger({
+			message: `You challenged ${selectedUser.nickname}`
+		});
 		//Api.post(`matchmaking/challenge/${targetId}`);
 	}
-
-	MatchMakingSocket.on('beChallenged', (opponentId) => {
-		let accept = confirm('Wanna match?');
-		MatchMakingSocket.emit('challengeResponse', {
-			accept,
-			opponentId
-		});
-	});
 
 	export let parent: SvelteComponent;
 	let keyword: string = '';

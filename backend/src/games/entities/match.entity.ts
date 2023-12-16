@@ -4,11 +4,8 @@ import {
 	PrimaryGeneratedColumn,
 	OneToMany,
 	ManyToMany,
-	OneToOne,
-	PrimaryColumn,
 	JoinTable,
 	JoinColumn,
-	Unique,
 	ManyToOne
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
@@ -27,6 +24,12 @@ export class Match {
 		name: 'game_id'
 	})
 	game: Game;
+
+	@Column({
+		type: 'enum',
+		enum: ['paused', 'waiting', 'running', 'finished']
+	})
+	status: string;
 
 	@ManyToMany(() => User, (user) => user.id)
 	@JoinTable({
@@ -51,12 +54,6 @@ export class Match {
 		}
 	})
 	events: MatchEvent[];
-
-	@Column({
-		type: 'boolean',
-		default: false
-	})
-	finished: boolean;
 
 	@Column({
 		type: 'timestamp',

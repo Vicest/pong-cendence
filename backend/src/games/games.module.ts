@@ -10,6 +10,7 @@ import { Match } from './entities/match.entity';
 import { MatchEvent } from './entities/events.entity';
 import { UsersModule } from 'src/users/users.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { MatchesSubscriber } from './matches.subscriber';
 
 @Module({
 	imports: [
@@ -25,6 +26,6 @@ import { AuthModule } from 'src/auth/auth.module';
 		})
 	],
 	controllers: [GamesController],
-	providers: [GamesService, GamesGateway]
+	providers: [GamesService, GamesGateway, MatchesSubscriber]
 })
 export class GamesModule {}

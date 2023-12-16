@@ -48,4 +48,5 @@ export interface GameInstance {
 	game: GameType;
 	players: number[];
 	created_at: Date;
+	status: 'waiting' | 'running' | 'finished' | 'paused';
 }

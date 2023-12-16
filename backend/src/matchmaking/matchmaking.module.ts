@@ -5,12 +5,19 @@ import { MatchMakingController } from './matchmaking.controller';
 import { MatchMakingService } from './matchmaking.service';
 import { MatchMakingGateway } from './matchmaking.gateway';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
 	imports: [
-		JwtModule,
+		JwtModule.registerAsync({
+			imports: [ConfigModule],
+			useFactory: (env: ConfigService) => ({
+				secret: env.get<string>('JWT_SECRET')
+			}),
+			inject: [ConfigService]
+		}),
 		UsersModule,
-		AuthModule,
+		AuthModule
 	],
 	controllers: [MatchMakingController],
 	providers: [MatchMakingService, MatchMakingGateway]

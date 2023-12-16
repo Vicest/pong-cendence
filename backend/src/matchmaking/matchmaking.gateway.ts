@@ -61,9 +61,20 @@ export class MatchMakingGateway
 		});
 	}
 
+	private getAuthCookie(socket: Socket) {
+		if (!socket.request.headers?.cookie) {
+			throw new Error('Missing cookie header');
+		}
+		const token = socket.request.headers.cookie
+			.split(';')
+			.find((cookie) => cookie.trim().startsWith('token='));
+		if (!token) throw new Error('Missing token cookie');
+		return token.split('=')[1];
+	}
+
 	handleConnection(@ConnectedSocket() client: Socket, ...args) {
 		try {
-			const decoded = this.jwtService.verify(client.handshake.auth.token);
+			const decoded = this.jwtService.verify(this.getAuthCookie(client));
 			client.data.user = decoded;
 			this.log.debug(`${decoded.login} connected`, this.constructor.name);
 			//this.server.socketsJoin()
@@ -80,7 +91,10 @@ export class MatchMakingGateway
 	}
 
 	@SubscribeMessage('challenge')
-	onChallenge(@ConnectedSocket() client: Socket, @MessageBody() opponentId: number) {
+	onChallenge(
+		@ConnectedSocket() client: Socket,
+		@MessageBody() opponentId: number
+	) {
 		const challengerId: number = client.data.user.id;
 		this.log.verbose(challengerId + ' challenges ' + opponentId);
 		if (challengerId == opponentId) {
@@ -90,17 +104,18 @@ export class MatchMakingGateway
 			return;
 		}
 		//TODO Maybe check to avoid duplicate challenges.
-		this.pendingChallenges_.push(new Challenge(challengerId, opponentId, 15));
+		this.pendingChallenges_.push(
+			new Challenge(challengerId, opponentId, 15000)
+		);
 		console.log(`ALL ${this.server.sockets}`);
 		//this.server.to(opponentId.toString()).emit('beChallenged', challengerId);
 		this.server.sockets.forEach((socket) => {
-
-			console.log(`Try to: ${socket.data.user.login}`)
-            if (socket.data.user.id === opponentId) {
-				console.log(`Send to: ${socket.data.user.login}`)
-                socket.emit('beChallenged', challengerId);
-            }
-        });
+			console.log(`Try to: ${socket.data.user.login}`);
+			if (socket.data.user.id === opponentId) {
+				console.log(`Send to: ${socket.data.user.login}`);
+				socket.emit('beChallenged', challengerId);
+			}
+		});
 	}
 
 	@SubscribeMessage('challengeResponse')
@@ -115,17 +130,24 @@ export class MatchMakingGateway
 		const responseId: number = client.data.user.id;
 		const challengerId: number = response.opponentId;
 		//Remove the challenger from my list of challengers.
-		const challengeIdx = this.pendingChallenges_.findIndex( (e) => {
-			return e.challengedId === responseId && e.challengerId === challengerId && !e.expired()
+		const challengeIdx = this.pendingChallenges_.findIndex((e) => {
+			return (
+				e.challengedId === responseId &&
+				e.challengerId === challengerId &&
+				!e.expired()
+			);
 		});
 		if (challengeIdx === -1) {
-			this.log.warn(`Response from ${responseId} to non-existing challenge ${challengerId} vs ${responseId}`)
-			return ;
+			this.log.warn(
+				`Response from ${responseId} to non-existing challenge ${challengerId} vs ${responseId}`
+			);
+			return;
 		}
 		this.pendingChallenges_.slice(challengeIdx, 1);
+		console.log('Challenge response received.', response.accept);
 		//Create match on an accept.
 		if (response.accept) {
-			console.log("Challenge accepted.");
+			console.log('Challenge accepted.');
 			//TODO update to have the gameserver handle the ids?
 			//this.ogs.newMatch(roomId, [challengerLogin, opponentLogin]);
 		}
@@ -134,8 +156,10 @@ export class MatchMakingGateway
 	@Interval(500)
 	removeExpiredChallenges() {
 		//Challenges are pushed oredered in time, older first.
-		while (this.pendingChallenges_.length > 0 &&
-			 this.pendingChallenges_[0].expired()) {
+		while (
+			this.pendingChallenges_.length > 0 &&
+			this.pendingChallenges_[0].expired()
+		) {
 			this.pendingChallenges_.splice(0, 1);
 		}
 	}

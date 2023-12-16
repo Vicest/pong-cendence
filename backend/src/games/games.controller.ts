@@ -1,13 +1,11 @@
-import { Controller, Get, Post, Delete, Headers, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
-import { UsersService } from 'src/users/users.service';
 import { GamesService } from './games.service';
-import { AuthService } from 'src/auth/auth.service';
 
 @Controller('games')
 @UseGuards(JwtGuard)
 export class GamesController {
-	constructor(private readonly gameService: GamesService, private readonly authService: AuthService) {}
+	constructor(private readonly gameService: GamesService) {}
 
 	@Get('/')
 	getAll() {

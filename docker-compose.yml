@@ -10,13 +10,6 @@ services:
       - ${POSTGRES_PORT}
     networks:
       - pong-network
-    deploy:
-      resources:
-        limits:
-          cpus: "0.30"
-          memory: 50M
-        reservations:
-          memory: 50M
     restart: always
 
   backend:
@@ -30,20 +23,20 @@ services:
     ports:
       - ${BACKEND_PORT}:${BACKEND_PORT}
       - ${BACKEND_WEBSOCKETS_PORT}:${BACKEND_WEBSOCKETS_PORT}
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public
     volumes:
       - ./backend:/app
     networks:
       - pong-network
     restart: always
 
-  front:
+  frontend:
     build: ./frontend
     container_name: frontend-container
     hostname: frontend
     image: "frontend-image"
     env_file: .env
-    depends_on:
-      - postgres
     ports:
       - ${FRONTEND_PORT}:${FRONTEND_PORT}
     volumes:
@@ -66,13 +59,6 @@ services:
       - postgres
     networks:
       - pong-network
-    deploy:
-      resources:
-        limits:
-          cpus: "0.10"
-          memory: 50M
-        reservations:
-          memory: 50M
     restart: always
 
 networks:
