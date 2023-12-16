@@ -15,21 +15,11 @@ export class GamesService {
 		this.log = new Logger();
 	}
 
-	public async create(data): Promise<Game | null> {
-		console.log('Creating game', data.login);
-		return null;
-	}
-
-	public async createMatch(data): Promise<Match | null> {
+	public async createMatch(data: Partial<Match>): Promise<Match | null> {
 		console.log('Creating match', data);
 		const newMatch: Match | null = this.matchRepository.create();
-		this.matchRepository.save(newMatch);
+		this.matchRepository.save(data);
 		return newMatch;
-	}
-
-	public async find(id: number): Promise<Game | null> {
-		console.log('Finding game', id);
-		return null;
 	}
 
 	public async findAll(): Promise<Game[]> {
@@ -38,6 +28,10 @@ export class GamesService {
 
 	public async findOne(id: number): Promise<Game | null> {
 		return this.gameRepository.findOneBy({ id: id });
+	}
+
+	public async findGameByName(name: string): Promise<Game | null> {
+		return this.gameRepository.findOneBy({ name: name });
 	}
 
 	public async findAllMatches() {

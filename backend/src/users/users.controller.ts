@@ -35,7 +35,6 @@ export class UsersController {
 	createPrivateMessages(
 		@Body() msg: UserMessages
 	): Observable<UserMessages | null> {
-		console.log('Creamos una fecha');
 		return this.userService.createUserMessage(msg);
 	}
 

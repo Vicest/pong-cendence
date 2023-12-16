@@ -18,7 +18,7 @@
 	import { goto } from '$app/navigation';
 	import ChatAvatar from '../chat/ChatAvatar.svelte';
 	import { Api } from '$services/api';
-	import { MatchMakingSocket } from '$services/socket';
+	import { GamesSocket, MatchMakingSocket } from '$services/socket';
 
 	const drawerStore = getDrawerStore();
 	//TODO I don't really know how to handle this.
@@ -41,11 +41,18 @@
 	}
 
 	MatchMakingSocket.on('beChallenged', (opponentId) => {
-		let accept = confirm('Wanna match?');
+		console.log('patatteishon');
+		//let accept = confirm('Wanna match?');
+		let accept = true;
 		MatchMakingSocket.emit('challengeResponse', {
 			accept,
 			opponentId
 		});
+	});
+
+	GamesSocket.on('match:created', (matchId, match) => {
+		console.log(`Match reached front ${matchId}-${match}`);
+		goto(`/app/arena/${matchId}`);
 	});
 
 	export let parent: SvelteComponent;

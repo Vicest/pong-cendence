@@ -22,7 +22,7 @@ export class Match {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@ManyToOne(() => Game, (game) => game.id)
+	@ManyToOne(() => Game, (game) => game.id, {nullable: false})
 	@JoinColumn({
 		name: 'game_id'
 	})
