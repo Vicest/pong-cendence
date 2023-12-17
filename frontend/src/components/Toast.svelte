@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { MatchMakingSocket } from '$services/socket';
 	import { Toast, getToastStore } from '@skeletonlabs/skeleton';
+	import { lastError } from '../store/Common';
 	const toastStore = getToastStore();
 
 	MatchMakingSocket.on('beChallenged', (opponentId) => {
@@ -21,6 +22,19 @@
 			}
 		});
 	});
+
+	lastError.subscribe((message) => {
+		if (message)
+		{
+			toastStore.trigger({
+				message,
+				timeout: 1200,
+				background: 'variant-filled-error'
+			})
+		}
+		lastError.set(null)
+	});
+
 </script>
 
 <Toast />

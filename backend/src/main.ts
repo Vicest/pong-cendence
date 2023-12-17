@@ -3,9 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import * as bodyParser from 'body-parser';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
+	app.useGlobalPipes(new ValidationPipe());
 	const conf: ConfigService = app.get(ConfigService);
 	['BACKEND_PORT', 'FRONTEND_PORT', 'BACKEND_BASE'].forEach((key) => {
 		if (!conf.get(key)) {

@@ -31,8 +31,23 @@ import { Multer } from 'multer'
 @UseGuards(JwtGuard)
 
 export class UsersController {
-	constructor(private readonly userService: UsersService) {}
+	constructor(
+		private readonly userService: UsersService,
+		private readonly configService: ConfigService,
+	) {  }
 
+
+	@Get(':login/img')
+	getUserImg(@Param('login') login: string, @Res() res) {
+		const imagePath = `usersdata/${login}.png`;
+		if (fs.existsSync(imagePath)) {
+			const fileContent = fs.readFileSync(imagePath);
+			res.setHeader('Content-Type', 'image/png');
+			res.send(fileContent);
+		}
+		else
+			res.sendStatus(404)
+	}
 
 	/* ----------------------------- CHAT ------------------------------ */
 
@@ -80,7 +95,7 @@ export class UsersController {
 		return this.userService.createUser(user);
 	}
 	
-	// Put /users
+	// PUT /
 	@Put('/')
 	@UseInterceptors(FileInterceptor('file'))
 		updateCurrentUser(@Req() req,
@@ -101,24 +116,12 @@ export class UsersController {
 		//Crear imagen y guardarla en el servidor
 		if(user.avatar)
 		{
-			let imageType;
-			
 			let imageName = req.user.login + Date.now().toString();
-			if (user.avatar.includes('image/jpeg')) imageType = 'jpeg';
-			else if (user.avatar.includes('image/png')) imageType = 'png';
-			else {
-				console.log('Uknown Image extension');
-				return 'Error Uknown Image extension';
-			}
-			const base64Data = user.avatar.replace(
-				`data:image/${imageType};base64,`,
-				''
-			);
 			try {
 				if (!fs.existsSync('usersdata')) fs.mkdirSync('usersdata');
 				fs.writeFile(
 					`usersdata/${imageName}.png`,
-					base64Data,
+					user.avatar,
 					'base64',
 					(err) => {
 						console.log(err);
@@ -149,7 +152,4 @@ export class UsersController {
 		res.send(this.userService.updateById(req.user.id, user));
 
 	}
-	
-	
-
 }

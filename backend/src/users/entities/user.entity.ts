@@ -10,8 +10,9 @@ import { Channel } from '../../chat/entities/channel.entity';
 import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
 import { UserRelation } from './userRelations.entity';
-import { IsString, IsOptional, IsBase64, Validate, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
+import { IsString, IsOptional, IsBase64, Validate, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface, length, MaxLength, IsMimeType } from 'class-validator';
 import { IsImageFile } from 'src/app.service';
+import { SqlInMemory } from 'typeorm/driver/SqlInMemory';
 
 @Entity({
 	name: 'Users'
@@ -30,6 +31,7 @@ export class User {
 		unique: true,
 		length: 20
 	})
+	@MaxLength(20)
 	nickname: string;
 	@Column({
 		type: 'bool',
@@ -42,16 +44,13 @@ export class User {
 		default: false
 	})
 	isAdmin: boolean;
-	//@Column({
-	//  type: 'text',
-	//  unique: true
-	//})
-	//email: string;
 	@Column({
 		type: 'text',
 		nullable: true,
 		default: null
 	})
+	@IsBase64()
+	@IsOptional()
 	avatar: string;
 	@Column({
 		type: 'text',

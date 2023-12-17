@@ -34,10 +34,12 @@
 		let updateinfo = {
 			nickname: currentUserCopy.nickname
 		};
-		if (encodedImg) updateinfo.avatar = encodedImg;
+		if (encodedImg) {
+			updateinfo.avatar = encodedImg.replace(/^data:image\/(png|jpeg);base64,/, '');
+		}
 
 		try {
-			const res = await Api.put('/users', updateinfo)
+			const res = await Api.put('/users', updateinfo)	
 			// const res = await Api.request({
 			// 	url: '/users',
 			// 	method: 'PUT',
@@ -50,8 +52,6 @@
 			// });
 			if (res.status === 200) {
 				editMode = false;
-			} else {
-				console.log(res);
 			}
 		} catch (error) {
 			console.error('An error occurred:', error);
