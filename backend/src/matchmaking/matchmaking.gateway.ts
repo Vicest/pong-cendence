@@ -215,7 +215,6 @@ export class MatchMakingGateway
 			console.log(`Checking challenge ${e.id} for expiration`);
 			return e.expired();
 		});
-		console.log(`Expired challenges: ${JSON.stringify(expiredChallenges)}`);
 		for (const challenge of expiredChallenges) {
 			this.deleteChallenge(challenge);
 		}

@@ -41,7 +41,9 @@
 		"rxjs": "^7.8.1",
 		"socket.io": "^4.7.2",
 		"svelte-routing": "^2.10.0",
-		"typeorm": "^0.3.17"
+		"typeorm": "^0.3.17",
+	    "otplib": "latest",
+    	"qrcode": "latest"
 	},
 	"devDependencies": {
 		"@nestjs/cli": "^10.0.0",

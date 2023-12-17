@@ -52,16 +52,22 @@ export class User {
 	})
 	avatar: string;
 	@Column({
-		type: 'text',
+		type: 'bytea',
 		nullable: true,
-		default: null,
-		select: false
-	})
-	two_factor_auth_secret: string;
-	@Column({
+		default: null
+	  })
+	  two_factor_auth_secret: Buffer;
+	
+	  @Column({
 		default: false
-	})
-	two_factor_auth_enabled: boolean;
+	  })
+	  two_factor_auth_enabled: boolean;
+	
+	  @Column({
+		type: 'bytea',
+		default: null
+	  })
+	  IV: Buffer;
 
 	@Column({
 		enum: ['online', 'offline', 'away', 'busy', 'invisible'],
