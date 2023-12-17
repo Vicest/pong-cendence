@@ -140,15 +140,14 @@ export class MatchMakingGateway
 			}
 		}
 
+		const timeout: number = 15000;
 		this.pendingChallenges_.push(
-			new Challenge(data.gameId, challengerId, data.opponentId, 15000)
+			new Challenge(data.gameId, challengerId, data.opponentId, timeout)
 		);
-		//this.server.to(data.opponentId.toString()).emit('beChallenged', challengerId);
-		//TODO I think it is cleaner to join clients with the same id to the same room instead of looping.
 		console.log(`Send beChallenged emmitted to: ${data.opponentId.toString()}`);
 		this.server
 			.to(data.opponentId.toString())
-			.emit('beChallenged', challengerId);
+			.emit('beChallenged', challengerId, data.gameId, timeout);
 	}
 
 	@SubscribeMessage('challengeResponse')
@@ -156,14 +155,17 @@ export class MatchMakingGateway
 		@ConnectedSocket() client: Socket,
 		@MessageBody()
 		response: {
+			gameId: number;
 			accept: boolean;
 			opponentId: number;
 		}
 	): Promise<void> {
 		const responseId: number = client.data.user.id;
 		const challengerId: number = response.opponentId;
+		const gameId: number = response.gameId;
 		let challenge: Challenge = this.pendingChallenges_.find((e) => {
 			return (
+				e.gameId === gameId &&
 				e.challengedId === responseId &&
 				e.challengerId === challengerId &&
 				!e.expired()
@@ -176,27 +178,23 @@ export class MatchMakingGateway
 			);
 			return;
 		}
-		console.log('Challenge response received.', response.accept);
 		//Create match on an accept.
 		if (response.accept) {
 			const p1 = await this.userService.find(challengerId);
 			const p2 = await this.userService.find(responseId);
 			//TODO Add socket emit?? to listener
-			const pong = await this.gameService.findGameByName('pong'); //Definitely not a hardcode because we are short on time
-			console.log(`Find gamebyid: ${JSON.stringify(pong)}`);
+			const gameId = await this.gameService.findGame(challenge.gameId);
 			await this.gameService.createMatch({
-				game: pong,
+				game: gameId,
 				players: [p1, p2]
 			});
 		}
 	}
 
-	deleteChallenge(challenge: Challenge) {
+	private deleteChallenge(challenge: Challenge) {
 		const challengeIdx = this.pendingChallenges_.findIndex(
 			(e) => e.id === challenge.id
 		);
-		console.log(`Deleting challenge ${challenge.id} at index ${challengeIdx}`);
-		console.log(`sending challengeDeleted to ${challenge.challengedId}`);
 		this.server
 			.to([
 				challenge.challengedId.toString(),
@@ -208,14 +206,11 @@ export class MatchMakingGateway
 
 	@Interval(500)
 	removeExpiredChallenges() {
-		//this.log.verbose(`Current challenges: ${JSON.stringify(this.pendingChallenges_)}`);
 		//Challenges are pushed oredered in time, older first.
-
 		let expiredChallenges = this.pendingChallenges_.filter((e) => {
 			console.log(`Checking challenge ${e.id} for expiration`);
 			return e.expired();
 		});
-		console.log(`Expired challenges: ${JSON.stringify(expiredChallenges)}`);
 		for (const challenge of expiredChallenges) {
 			this.deleteChallenge(challenge);
 		}
