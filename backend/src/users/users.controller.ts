@@ -71,9 +71,9 @@ export class UsersController {
 	/* ----------------------------- USERS ------------------------------ */
 	// Get /users
 	@Get('/')
-	getAll() {
+	getAll(@Res() res) {
 		let users = this.userService.findAll();
-		return users;
+		res.send(users)
 	}
 
 	// GET /users/:login
@@ -81,6 +81,13 @@ export class UsersController {
 	getOneUsers(@Param('id') id: number): Promise<User | null> {
 		console.log('PEDIMOS EL USUARIO X');
 		return this.userService.find(id);
+	}
+
+	// GET /users/:login
+	@Get('user/:login')
+	async getUserByLogin(@Param('login') login: string,@Res() res) {
+		let user = await this.userService.findOne(login)
+		res.send(user);
 	}
 
 	// POST /users/:id
