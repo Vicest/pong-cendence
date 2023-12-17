@@ -10,7 +10,9 @@ import {
 	Res,
 	MaxFileSizeValidator,
 	ParseFilePipe,
-	UploadedFile
+	UploadedFile,
+	UseInterceptors,
+	FileTypeValidator
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Observable } from 'rxjs';
@@ -20,6 +22,9 @@ import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import * as fs from 'fs';
 import { ConfigService } from '@nestjs/config';
 import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
+import { IsImageFile } from 'src/app.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Multer } from 'multer'
 
 
 @Controller('users')
@@ -90,20 +95,24 @@ export class UsersController {
 		return this.userService.createUser(user);
 	}
 	
-
-	// @UploadedFile(
-	// 	new ParseFilePipe({
-	// 	  validators: [
-	// 		new MaxFileSizeValidator({ maxSize: 1000 }),
-	// 	  ],
-	// 	}),
-	//   )
-	//   file: Express.Multer.File,
 	// PUT /
 	@Put('/')
-	updateCurrentUser(@Req() req, @Res() res, @Body() user: User) {
-		//TODO: validar imagen
-
+	@UseInterceptors(FileInterceptor('file'))
+		updateCurrentUser(@Req() req,
+	    @Res() res,
+	    @Body() user: User,
+	    @UploadedFile(
+	      new ParseFilePipe({
+			fileIsRequired: false,
+	        validators: [
+	          new MaxFileSizeValidator({ maxSize: 1000000 }),
+	          new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
+	        ],
+	      }),
+	    ) file: Express.Multer.File,
+	  ) {
+		//TODO: validar imagen como multipart/form-data y no como json
+		
 		//Crear imagen y guardarla en el servidor
 		if(user.avatar)
 		{
@@ -124,7 +133,7 @@ export class UsersController {
 				if (!fs.existsSync('usersdata')) fs.mkdirSync('usersdata');
 				fs.writeFile(
 					`usersdata/${imageName}.png`,
-					"base64Data",
+					base64Data,
 					'base64',
 					(err) => {
 						console.log(err);
