@@ -43,6 +43,12 @@ export class UsersService {
 		}
 	}
 
+	public async updateUser(id: number, user: Partial<User>): Promise<User>
+    {
+        await this.userRepository.update(id, user);
+        return this.userRepository.findOne({ where: { id } });
+    }
+
 	public async find(id: number): Promise<User | null> {
 		return this.userRepository.findOneBy({ id: id });
 	}
