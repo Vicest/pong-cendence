@@ -21,7 +21,7 @@
 		}*/
 	});
 
-	/*MatchMakingSocket.on('beChallenged', (opponentId) => {
+	/*MatchMakingSocket.on('beChallenged', (opponentId, gameId, timeout) => {
 		console.log('beChallenged');
 		console.log(`I was challenged by: ${opponentId}`);
 		toastStore.trigger({
@@ -32,6 +32,7 @@
 				label: 'Accept',
 				response: () => {
 					MatchMakingSocket.emit('challengeResponse', {
+						gameId: gameId,
 						accept: true,
 						opponentId
 					});
