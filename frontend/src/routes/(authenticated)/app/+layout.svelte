@@ -14,7 +14,6 @@
 	import { init as ChatInstancesInit } from '../../../store/Chat';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { GamesSocket, Socket, UsersSocket } from '$services/socket';
 
 	initializeStores();
 	onMount(() => {
