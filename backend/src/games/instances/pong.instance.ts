@@ -7,7 +7,7 @@ type PongInstanceInput = {
 };
 
 type State = {
-	status: 'paused' | 'running' | 'finished';
+	status: 'paused' | 'running' | 'finished' | 'waiting';
 	players: {
 		x: number;
 		y: number;
@@ -37,20 +37,23 @@ export class PongInstance extends EventEmitter {
 	private static readonly paddlesHeight = 100;
 	private static readonly ballRadius = 5;
 	private static readonly ballSpeed = 4;
-	private static readonly scoreToWin = 8;
+	private static readonly scoreToWin = 5;
+	private static readonly waitingTime = 5000;
 
 	private log: Logger;
 	private players: Match['players'];
 	private events: Match['events'];
 	private state: State;
+	private match: Match;
 
 	constructor(match: Match) {
 		super();
 		this.log = new Logger();
+		this.match = match;
 		this.players = match.players;
 		this.events = match.events;
 		this.state = {
-			status: 'running',
+			status: 'waiting',
 			players: this.players.map(() => ({
 				x: 0,
 				y: PongInstance.canvasHeight / 2 - PongInstance.paddlesHeight / 2,
@@ -166,7 +169,7 @@ export class PongInstance extends EventEmitter {
 
 	private checkScore() {
 		this.players.forEach((player, index) => {
-			if (this.state.players[index].score >= PongInstance.scoreToWin) {
+			if (this.state.players[index].score > PongInstance.scoreToWin) {
 				this.state.status = 'finished';
 			}
 		});
@@ -175,6 +178,14 @@ export class PongInstance extends EventEmitter {
 	public updateState() {
 		if (['paused', 'finished'].includes(this.state.status)) {
 			return;
+		} else if (this.state.status === 'waiting') {
+			if (
+				this.match.created_at.getTime() + PongInstance.waitingTime <
+				Date.now()
+			) {
+				this.state.status = 'running';
+				return;
+			}
 		}
 		this.movePaddles();
 		this.checkScore();

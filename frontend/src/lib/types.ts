@@ -32,8 +32,8 @@ export interface Group {
 type GameType = 'pong' | 'tetris';
 
 export interface Game {
-	id: GameType;
-	name: string;
+	id: number;
+	name: GameType;
 	image: string;
 	title: string;
 	description: string;

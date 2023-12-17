@@ -1,18 +1,10 @@
 <script lang="ts">
-	import {
-		AppRail,
-		AppRailAnchor,
-		AppRailTile,
-		Avatar,
-		LightSwitch,
-		getDrawerStore
-	} from '@skeletonlabs/skeleton';
-	import { faMoon, faSignOut } from '@fortawesome/free-solid-svg-icons';
+	import { AppRail, AppRailAnchor, LightSwitch, getDrawerStore } from '@skeletonlabs/skeleton';
+	import { faSignOut } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
-	import Cookies from 'js-cookie';
 	import { goto } from '$app/navigation';
 	import SidebarMatch from './game/SidebarMatch.svelte';
-	import { gameInstances, gameListDrawerSettings } from '../store/Game';
+	import { gameInstances } from '../store/Game';
 	import { Api } from '$services/api';
 	const drawerStore = getDrawerStore();
 
@@ -35,15 +27,6 @@
 			<AppRailAnchor href={`/app/arena/${game.id}`} current={arenaTile === i}>
 				<div class="flex flex-col items-center space-y-6">
 					<SidebarMatch id={game.id} />
-				</div>
-			</AppRailAnchor>
-		{:else}
-			<AppRailAnchor
-				on:click={() => drawerStore.open($gameListDrawerSettings)}
-				class="cursor-pointer"
-			>
-				<div class="flex flex-col items-center space-y-6 w-full h-full">
-					<Fa icon={faMoon} size="1.5x" />
 				</div>
 			</AppRailAnchor>
 		{/each}
