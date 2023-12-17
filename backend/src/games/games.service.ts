@@ -17,8 +17,8 @@ export class GamesService {
 
 	public async createMatch(data: Partial<Match>): Promise<Match | null> {
 		console.log('Creating match', data);
-		const newMatch: Match | null = this.matchRepository.create();
-		this.matchRepository.save(data);
+		let newMatch = await this.matchRepository.save(data);
+		console.log('Created match', newMatch);
 		return newMatch;
 	}
 

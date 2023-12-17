@@ -2,23 +2,32 @@
 	import { MatchMakingSocket } from '$services/socket';
 	import { Toast, getToastStore } from '@skeletonlabs/skeleton';
 	import { matchMakingChallenges } from '../store/Matchmaking';
+	import { userList } from '../store/User';
+	import { gameList } from '../store/Game';
 	const toastStore = getToastStore();
 
 	matchMakingChallenges.subscribe((challenges) => {
 		console.log('challenges', challenges);
-		/*if (challenges.length > 0) {
-			toastStore.trigger({
-				message: `You have ${challenges.length} pending challenges`,
-				hideDismiss: true,
-				timeout: 15000,
-				action: {
-					label: 'View',
-					response: () => {
-						console.log('View challenges');
-					}
+		if (challenges.length === 0) return;
+		let challenge = challenges[challenges.length - 1];
+		let user = $userList.find((user) => user.id === challenge.opponentId);
+		let game = $gameList.find((game) => game.id === challenge.gameId);
+		if (!user || !game) return;
+		toastStore.trigger({
+			message: `You've been challenged by ${user.nickname} to play ${game.name}`,
+			hideDismiss: true,
+			timeout: challenge.timeout,
+			action: {
+				label: 'Accept',
+				response: () => {
+					MatchMakingSocket.emit('challengeResponse', {
+						gameId: challenge.gameId,
+						accept: true,
+						opponentId: challenge.opponentId
+					});
 				}
-			});
-		}*/
+			}
+		});
 	});
 
 	/*MatchMakingSocket.on('beChallenged', (opponentId, gameId, timeout) => {

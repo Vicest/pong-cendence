@@ -25,6 +25,7 @@ export class MatchMakingGateway
 {
 	private log: Logger;
 	private pendingChallenges_: Challenge[];
+	private acceptTimeout = 5000;
 	private UserIoInstances: {
 		[game_id: number]: [
 			{
@@ -139,15 +140,20 @@ export class MatchMakingGateway
 				return;
 			}
 		}
-
-		const timeout: number = 15000;
 		this.pendingChallenges_.push(
-			new Challenge(data.gameId, challengerId, data.opponentId, timeout)
+			new Challenge(
+				data.gameId,
+				challengerId,
+				data.opponentId,
+				this.acceptTimeout
+			)
 		);
 		console.log(`Send beChallenged emmitted to: ${data.opponentId.toString()}`);
-		this.server
-			.to(data.opponentId.toString())
-			.emit('beChallenged', challengerId, data.gameId, timeout);
+		this.server.to(data.opponentId.toString()).emit('beChallenged', {
+			opponentId: challengerId,
+			gameId: data.gameId,
+			timeout: this.acceptTimeout
+		});
 	}
 
 	@SubscribeMessage('challengeResponse')
@@ -184,10 +190,15 @@ export class MatchMakingGateway
 			const p2 = await this.userService.find(responseId);
 			//TODO Add socket emit?? to listener
 			const gameId = await this.gameService.findGame(challenge.gameId);
-			await this.gameService.createMatch({
+			const match = await this.gameService.createMatch({
 				game: gameId,
-				players: [p1, p2]
+				players: [p1, p2],
+				status: 'waiting'
 			});
+			console.log(`Challenge accepted`, match);
+			this.server
+				.to([challengerId.toString(), responseId.toString()])
+				.emit('challengeAccepted', match.id);
 		}
 	}
 
