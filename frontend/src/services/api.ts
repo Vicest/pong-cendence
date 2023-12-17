@@ -31,7 +31,6 @@ const successHandler = async (response: AxiosResponse) => {
 const errorHandler = (error: AxiosError) => {
 	const resError: AxiosResponse<any> | undefined = error.response;
 	const originalRequest: any = error.config;
-
 	if (resError?.status === 401) {
 		if (!isRefreshing) {
 			isRefreshing = true;
@@ -47,6 +46,7 @@ const errorHandler = (error: AxiosError) => {
 			});
 		});
 	}
+	console.log(resError);
 	return Promise.reject({ ...resError?.data });
 };
 
