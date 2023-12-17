@@ -3,7 +3,7 @@ import {
 	EntitySubscriberInterface,
 	EventSubscriber,
 	InsertEvent,
-	UpdateEvent,
+	UpdateEvent
 } from 'typeorm';
 import { UserMessages } from './entities/message/user.entity';
 import { ChatGateway } from './chat.gateway';
@@ -12,7 +12,7 @@ import { ChatGateway } from './chat.gateway';
 export class ChatSubscriber implements EntitySubscriberInterface<UserMessages> {
 	constructor(
 		dataSource: DataSource,
-		private readonly chatGateway: ChatGateway,
+		private readonly chatGateway: ChatGateway
 	) {
 		dataSource.subscribers.push(this);
 	}

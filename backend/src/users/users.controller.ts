@@ -31,37 +31,25 @@ import { Multer } from 'multer'
 @UseGuards(JwtGuard)
 
 export class UsersController {
-	constructor(
-		private readonly userService: UsersService,
-		private readonly configService: ConfigService,
-	) {  }
-
-
-	@Get(':login/img')
-	getUserImg(@Param('login') login: string, @Res() res) {
-		const imagePath = `usersdata/${login}.png`;
-		if (fs.existsSync(imagePath)) {
-			const fileContent = fs.readFileSync(imagePath);
-			res.setHeader('Content-Type', 'image/png');
-			res.send(fileContent);
-		}
-		else
-			res.sendStatus(404)
-	}
+	constructor(private readonly userService: UsersService) {}
 
 
 	/* ----------------------------- CHAT ------------------------------ */
 
 	// GET /users/messages/:id
 	@Get('messages/:login/:login2')
-	getMessages(@Param('login') login: string, @Param('login2') login2: string): Promise<UserMessages[] | null> {
+	getMessages(
+		@Param('login') login: string,
+		@Param('login2') login2: string
+	): Promise<UserMessages[] | null> {
 		return this.userService.findUserMessages(login, login2);
 	}
 
 	// POST /users/priv_messages
 	@Post('priv_messages')
-	createPrivateMessages(@Body() msg: UserMessages): Observable<UserMessages | null> {
-		console.log ("Creamos una fecha")
+	createPrivateMessages(
+		@Body() msg: UserMessages
+	): Observable<UserMessages | null> {
 		return this.userService.createUserMessage(msg);
 	}
 
@@ -73,29 +61,26 @@ export class UsersController {
 		return users;
 	}
 
-	
-	// GET /users/:login 
+	// GET /users/:login
 	@Get(':id')
 	getOneUsers(@Param('id') id: number): Promise<User | null> {
-		console.log("PEDIMOS EL USUARIO X")
+		console.log('PEDIMOS EL USUARIO X');
 		return this.userService.find(id);
 	}
-	
-	
 
-	// POST /users/:id 
+	// POST /users/:id
 	@Post(':id')
 	updateUser(@Param('id') id: number, @Body() body) {
 		this.userService.updateById(id, body.data);
 	}
-	
+
 	// POST /users
 	@Post('/')
 	createUsers(@Body() user: User): Observable<User> {
 		return this.userService.createUser(user);
 	}
 	
-	// PUT /
+	// Put /users
 	@Put('/')
 	@UseInterceptors(FileInterceptor('file'))
 		updateCurrentUser(@Req() req,
@@ -164,7 +149,6 @@ export class UsersController {
 		res.send(this.userService.updateById(req.user.id, user));
 
 	}
-
 	
 	
 

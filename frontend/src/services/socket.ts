@@ -19,3 +19,9 @@ export const GamesSocket = io(`${PUBLIC_BACKEND_BASE}:${PUBLIC_BACKEND_PORT}/gam
 	transports: ['websocket'],
 	autoConnect: false
 });
+
+export const MatchMakingSocket = io(`${PUBLIC_BACKEND_BASE}:${PUBLIC_BACKEND_PORT}/matchmaking`, {
+	withCredentials: true,
+	transports: ['websocket'],
+	autoConnect: false
+});
