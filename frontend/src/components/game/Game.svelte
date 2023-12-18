@@ -35,7 +35,7 @@
 		}
 	}
 
-	beforeNavigate(({ cancel }) => {
+	/*beforeNavigate(({ cancel }) => {
 		if (
 			game.playable &&
 			!confirm('Are you sure you want to leave this page? All the progress will be lost.')
@@ -43,7 +43,7 @@
 			cancel();
 			game.destroy();
 		}
-	});
+	});*/
 
 	onDestroy(() => {
 		game.destroy();
