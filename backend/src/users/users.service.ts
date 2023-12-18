@@ -43,18 +43,21 @@ export class UsersService {
 		}
 	}
 
-	public async updateUser(id: number, user: Partial<User>): Promise<User>
-    {
-        await this.userRepository.update(id, user);
-        return this.userRepository.findOne({ where: { id } });
-    }
+	public async updateUser(id: number, user: Partial<User>): Promise<User> {
+		await this.userRepository.update(id, user);
+		return this.userRepository.findOne({ where: { id } });
+	}
 
 	public async find(id: number): Promise<User | null> {
 		return this.userRepository.findOneBy({ id: id });
 	}
 
 	public async findAll(): Promise<User[]> {
-		return this.userRepository.find();
+		return this.userRepository.find({
+			order: {
+				id: 'ASC'
+			}
+		});
 	}
 
 	public async findOne(login: string): Promise<User | null> {
@@ -62,9 +65,8 @@ export class UsersService {
 	}
 
 	public async findNickname(nickname: string): Promise<User | null> {
-		return this.userRepository.findOneBy({ nickname: nickname });	
+		return this.userRepository.findOneBy({ nickname: nickname });
 	}
-
 
 	private log: Logger;
 

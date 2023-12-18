@@ -20,7 +20,15 @@
 		}
 		let gameInstance = get(gameInstances).find((instance) => instance.id === id);
 		if (typeof gameInstance !== 'undefined') {
-			let players = get(userList).filter((user) => gameInstance?.players.includes(user.id));
+			let players = get(userList)
+				.filter((user) => gameInstance?.players.includes(user.id))
+				.sort((a, b) => {
+					if (gameInstance?.players.indexOf(a.id) < gameInstance?.players.indexOf(b.id)) {
+						return -1;
+					} else {
+						return 1;
+					}
+				});
 			loading = false;
 			await tick();
 			game = new PongGame(gameInstance, players, get(currentUser).id);
