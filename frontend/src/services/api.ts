@@ -62,4 +62,4 @@ const errorHandler = (error: AxiosError) => {
 Api.interceptors.response.use(
 	(response: AxiosResponse) => successHandler(response),
 	(error: AxiosError) => errorHandler(error)
-);
+);}

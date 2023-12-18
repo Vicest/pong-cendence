@@ -79,12 +79,12 @@ export class UsersController {
 		return this.userService.find(id);
 	}
 
-	@Get(':id/rank')
-	async getRank(@Param('id') id: number) {
-		const matchesPlayed = await this.gameService.findGamesOf(id);
-		//TODO Use the matches played to calculate rank
-		return matchesPlayed;
-	}
+	// @Get(':id/rank')
+	// async getRank(@Param('id') id: number) {
+	// 	const matchesPlayed = await this.gameService.findGamesOf(id);
+	// 	//TODO Use the matches played to calculate rank
+	// 	return matchesPlayed;
+	// }
 
 	// POST /users/:id
 	@Post(':id')

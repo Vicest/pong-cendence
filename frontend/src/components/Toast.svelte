@@ -49,24 +49,7 @@
 				}
 			}
 		});
-<<<<<<< HEAD
-	});
-
-	lastError.subscribe((message) => {
-		if (message)
-		{
-			toastStore.trigger({
-				message,
-				timeout: 1200,
-				background: 'variant-filled-error'
-			})
-		}
-		lastError.set(null)
-	});
-
-=======
 	});*/
->>>>>>> dev
 </script>
 
 <Toast />
