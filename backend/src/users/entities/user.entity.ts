@@ -55,19 +55,19 @@ export class User {
 		type: 'bytea',
 		nullable: true,
 		default: null
-	  })
-	  two_factor_auth_secret: Buffer;
-	
-	  @Column({
+	})
+	two_factor_auth_secret: Buffer;
+
+	@Column({
 		default: false
-	  })
-	  two_factor_auth_enabled: boolean;
-	
-	  @Column({
+	})
+	two_factor_auth_enabled: boolean;
+
+	@Column({
 		type: 'bytea',
 		default: null
-	  })
-	  IV: Buffer;
+	})
+	IV: Buffer;
 
 	@Column({
 		enum: ['online', 'offline', 'in_game', 'away', 'busy', 'invisible'],

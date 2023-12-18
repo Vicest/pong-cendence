@@ -19,11 +19,10 @@ import { MatchMakingModule } from './matchmaking/matchmaking.module';
 		ScheduleModule.forRoot(),
 		ThrottlerModule.forRoot([
 			{
-				ttl: 60000,
+				ttl: 1000,
 				limit: 1
 			}
 		]),
-		//
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule],
 			useFactory: (env: ConfigService) => ({

@@ -96,7 +96,7 @@ export class MatchMakingGateway
 
 	handleDisconnect(@ConnectedSocket() client: Socket) {
 		try {
-			const decoded = this.jwtService.verify(client.handshake.auth.token);
+			const decoded = this.jwtService.verify(this.getAuthCookie(client));
 			client.data.user = decoded;
 			this.log.debug(`${decoded.login} disconnected`, this.constructor.name);
 			client.leave(decoded.id.toString());

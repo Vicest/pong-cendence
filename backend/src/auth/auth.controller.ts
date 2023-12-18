@@ -21,7 +21,7 @@ import { Jwt2faAuthGuard } from './guards/jwt-2fa-auth.guard';
 import { Response } from 'express';
 import jwtConfiguration from 'config/jwt';
 import frontendConfiguration from 'config/frontend';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -77,6 +77,12 @@ export class AuthController {
 	}
 
 	@UseGuards(ThrottlerGuard, IntraAuthGuard)
+	@Throttle({
+		default: {
+			ttl: 1000,
+			limit: 1
+		}
+	})
 	@Get('login')
 	async login() {}
 
