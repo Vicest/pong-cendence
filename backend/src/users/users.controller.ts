@@ -13,7 +13,8 @@ import {
 	UploadedFile,
 	UseInterceptors,
 	FileTypeValidator,
-	Delete
+	Delete,
+	NotFoundException
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Observable } from 'rxjs';
@@ -47,15 +48,6 @@ export class UsersController {
 	}
 
 	/* ----------------------------- CHAT ------------------------------ */
-
-	// GET /users/messages/:id
-	/*@Get('messages/:login/:login2')
-	getMessages(
-		@Param('login') login: string,
-		@Param('login2') login2: string
-	): Promise<ChannelMessages[] | null> {
-		//return this.userService.findMessages(login, login2);
-	} */
 
 	// POST /users/priv_messages
 	@Post('priv_messages')
@@ -102,14 +94,10 @@ export class UsersController {
 
 	@Get(':id/rank')
 	async getRank(@Param('id') id: number) {
-		const matchesPlayed = await this.gameService.findGamesOf(id);
-		const rankedMatches = matchesPlayed.filter( (m) => m.rankShift !== 0 );
-		let totalRankShift: number = 0;
-		for(const match of rankedMatches) {
-			totalRankShift += match.winner.id === id ? match.rankShift : -match.rankShift;
-		}
-		//No ranked matches means you are 'Unranked'
-		return matchesPlayed.length > 0 ? 1500 + totalRankShift : -1;
+		if (!this.userService.exists(id))
+			throw new NotFoundException();
+		const userRank:number = await this.userService.getUserRank(id);
+		return userRank;
 	}
 
 	// POST /users/:id

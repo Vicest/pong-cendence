@@ -2,16 +2,18 @@ import { Injectable, Logger } from '@nestjs/common';
 import { User } from './entities/user.entity';
 
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, UpdateResult, DeleteResult } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { Observable, from } from 'rxjs';
 import { Channel, MessageType } from 'src/chat/entities/channel.entity';
 import { UsersGateway } from './users.gateway';
 import { ChatGateway } from 'src/chat/chat.gateway';
 import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
+import { GamesService } from 'src/games/games.service';
 
 @Injectable()
 export class UsersService {
 	constructor(
+		private readonly gameService: GamesService,
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
 		@InjectRepository(ChannelMessages)
@@ -67,6 +69,21 @@ export class UsersService {
 
 	public async findNickname(nickname: string): Promise<User | null> {
 		return this.userRepository.findOneBy({ nickname: nickname });
+	}
+		
+	public async getUserRank(id: number) {
+		const matchesPlayed = await this.gameService.findGamesOf(id);
+		const rankedMatches = matchesPlayed.filter( (m) => m.rankShift !== 0 );
+		let totalRankShift: number = 0;
+		for(const match of rankedMatches) {
+			totalRankShift += match.winner.id === id ? match.rankShift : -match.rankShift;
+		}
+		//No ranked matches means you are 'Unranked'
+		return matchesPlayed.length > 0 ? 1500 + totalRankShift : -1;
+	}
+
+	public async exists(id: number): Promise<boolean> {
+		return (await this.userRepository.findOne({ where: { id: id } })) !== undefined;
 	}
 
 	public async removeFriend(id: number, friend: number): Promise<User> {
