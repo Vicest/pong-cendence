@@ -6,7 +6,7 @@
 	import type { SvelteComponent } from 'svelte';
 	import { selectedGame } from '../../store/Common';
 	import { goto } from '$app/navigation';
-	import ChatAvatar from '../chat/ChatAvatar.svelte';
+	import ChatAvatar from '../ChatInvididual/ChatAvatar.svelte';
 
 	const drawerStore = getDrawerStore();
 

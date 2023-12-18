@@ -6,6 +6,17 @@ import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
 import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { Channel } from 'src/chat/entities/channel.entity';
 import { User } from 'src/users/entities/user.entity';
+import { ChannelMembers } from './entities/channelmembers.entity';
+
+
+enum MemberType {
+	INVITED = 'Invited',
+	BANNED = 'Banned',
+	MEMBER = 'Member',
+    ADMIN = 'Admin',
+    OWNER = 'Owner'
+}
+
 @Injectable()
 export class ChatService {
 	constructor(
@@ -16,7 +27,11 @@ export class ChatService {
 		@InjectRepository(ChannelMessages)
 		private readonly channelmessagesRepository: Repository<ChannelMessages>,
 		@InjectRepository(UserMessages)
-		private readonly usermessagesRepository: Repository<UserMessages>
+		private readonly usermessagesRepository: Repository<UserMessages>,
+		@InjectRepository(ChannelMembers)
+		private readonly channelMembersRepository: Repository<ChannelMembers>
+		
+		
 	) {
 		this.log = new Logger();
 	}
@@ -58,31 +73,103 @@ export class ChatService {
 		return from(this.channelmessagesRepository.save(chan_msg));
 	}
 
-	async findChannelsbyID(id: number): Promise<Channel[] | undefined> {
+	createChannel(channel: Channel): Observable<Channel> {
+		return from(this.channelRepository.save(channel));
+	}
+
+	createUserChannelRelation(id_user: number, id_channel: number ,status: MemberType): Observable<ChannelMembers> {
+		let userRelation = new ChannelMembers();
+		userRelation.channel_id = id_channel;
+		userRelation.user_id = id_user;
+		userRelation.status = status;
+		return from(this.channelMembersRepository.save(userRelation));
+	}
+
+	async findChannelMember(channel_id: number, user_id : number): Promise<ChannelMembers | undefined> {
+		let contents = await this.channelMembersRepository.findOne({
+			where: { channel_id, user_id },
+		});
+		return contents;
+	}
+
+	async updateChannelMember(channel_id: number, user_id : number, status:MemberType): Promise<ChannelMembers | undefined> {
+		let contents = await this.channelMembersRepository.findOne({
+			where: { channel_id, user_id },
+		});
+		if (contents) {
+            contents.status = status;
+            let update = await this.channelMembersRepository.save(contents); 
+            return update; 
+        }
+
+	}
+
+	async deleteChannelMember(channel_id: number, user_id : number): Promise<boolean> {
+		let channelMember = await this.channelMembersRepository.findOne({
+			where: { channel_id, user_id },
+		});
+		if (channelMember)
+		{
+			(await this.channelMembersRepository.delete({ channel_id, user_id }));
+			return true;
+		}
+	
+		return false;
+	}
+
+	async findChannelsbyUserID(id: number): Promise<Channel[] | undefined> {
 		// return contents;
 		let contents = await this.userRepository.findOne({
 			where: { id },
 			relations: [
-				'channels',
-				'channels.messages',
-				'channels.messages.sender',
-				'channels.members'
-			] //Puta mierda esta bro :v
+				'channels_relation.channel.channels_relation.user',
+				'channels_relation.channel.messages.sender'
+			]
 		});
-		// console.log(' User : be like ', id, contents);
+		console.log(' User : be like ', id);
+		contents.loadChannels()
 		return contents.channels;
 	}
 
+	async findChannelsbyChannelID(id: number): Promise<Channel | undefined> {
+		// return contents;
+		let contents = await this.channelRepository.findOne({
+			where: { id }
+		});
+		return contents;
+	}
+
+	async findInvitationsChannelsbyID(id: number): Promise<Channel[] | undefined> {
+		// return contents;
+		let contents = await this.userRepository.findOne({
+			where: { id },
+			relations: [
+				'channels_relation.channel.channels_relation.user',
+				'channels_relation.channel.messages.sender'
+			]
+		});
+		contents.loadChannelsInvitations()
+		return contents.channels;
+	}	
+
 	async findChannelswhereimnot(id: number): Promise<Channel[] | undefined> {
+		
 		const allChannels = await this.channelRepository.find({
-			relations: ['members']
+			relations: ['channels_relation.user']
 		});
 
+		allChannels.forEach((channel) => {
+			channel.loadMembers();
+		});
+		
 		const channelsWhereImNot = allChannels.filter((channel) => {
 			// Filtrar canales donde el usuario no es miembro
 			return !channel.members.find((member) => member.id === id);
 		});
 
 		return channelsWhereImNot;
+		return undefined;
 	}
+
+
 }

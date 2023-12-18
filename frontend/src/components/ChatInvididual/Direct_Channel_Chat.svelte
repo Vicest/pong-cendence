@@ -40,10 +40,8 @@
 		// /users/priv_messages
 		Api.post('/chat/priv_messages', msg)
 			.then((response) => {
-				console.log('Mensaje enviado con éxito', response.data);
-
+				// console.log('Mensaje enviado con éxito', response.data);
 				currentMessage = '';
-
 				setTimeout(() => {
 					scrollChatBottom('smooth');
 				}, 0);

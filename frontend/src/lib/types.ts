@@ -5,6 +5,7 @@ export interface Person {
 	avatar: string;
 	two_factor_auth_enabled: boolean;
 	status: 'online' | 'offline' | 'away' | 'busy' | 'invisible';
+	channel_status: 'Owner' | 'Admin' | 'Member' | 'Invited' | 'Banned';
 	// feed: MessageFeed[];
 }
 export interface PrivateMessageFeed {
@@ -35,6 +36,7 @@ export interface Channel {
 	description: string;
 	password: string;
 	created_at: string;
+	type: 'Public' | 'Protected' | 'Private';
 	members: Person[];
 	messages: ChatMessageFeed[];
 }

@@ -3,63 +3,69 @@
 	import { onMount } from 'svelte';
 	// Global stores
 	import type { Channel } from '$lib/types';
-	import { receptor, chat_history } from '../../store/Chat';
+	import { chat_receptor, chat_history } from '../../store/Chat';
 	import { joined_channels } from '../../store/Chat';
 	// Components
-	import GroupChannelChat from './Group_Channel_Chat.svelte';
-	import GroupChannelUserList from './Group_Channel_User_List.svelte';
+	import Group_Channel_Chat from './Group_Channel_Chat.svelte';
+	import Group_Channel_User_List from './Group_Channel_User_List.svelte';
 
-	let people: Channel[] = [];
-
-	let currentPerson: any;
+	let channels: Channel[] = [];
 	let displayChat = false;
 	let displayUserList = false;
-
-	let channel_list: any;
+	let chatText = '';
 
 	joined_channels.subscribe((value) => {
-		channel_list = value;
-		// console.log("User changed -> ", value)
+		channels = [...value];
 	});
 
 	// When DOM mounted, scroll to bottom
 	onMount(async () => {
 		// scrollChatBottom();
-		people = [...channel_list];
+		channels = [...$joined_channels];
 	});
 
 	function filterChannel(keyword: string): void {
 		displayChat = false;
 		if (!keyword) {
-			people = [...channel_list];
+			channels = [...$joined_channels];
 		} else {
-			people = channel_list.filter((person: Channel) => {
-				return person.nickname.toLowerCase().includes(keyword.toLowerCase());
+			channels = $joined_channels.filter((channel: Channel) => {
+				return channel.nickname.toLowerCase().includes(keyword.toLowerCase());
 			});
 		}
 	}
 
-	function avatarClick(person: any) {
+	function avatarClick(channel: Channel) {
 		displayUserList = false;
 		displayChat = true;
-		currentPerson = person;
-
-		// console.log("Persona seleccionada es -> ",currentPerson)
-		receptor.set(currentPerson);
+		// console.log('channel activated -> ', channel);
+		chat_receptor.set(channel);
 		chat_history.set([]);
-
-		chat_history.set(currentPerson.messages);
+		chat_history.set($chat_receptor.messages);
+		console.log('channel activated -> ', $chat_history);
 	}
 
-	function userListClick(person: any) {
-		currentPerson = person;
-		// console.log("Persona seleccionada es -> ",currentPerson)
-		receptor.set(currentPerson);
+	function userListClick(channel: Channel) {
+		chat_receptor.set(channel);
 		displayUserList = true;
 		displayChat = false;
 	}
 </script>
 
+<div class="border-b border-surface-500/30 p-4">
+	<button
+		class="btn variant-ghost-surface"
+		on:click={() => {
+			chatText = 'Canales Buscados';
+		}}>Buscar canales</button
+	>
+	<button
+		class="btn variant-ghost-surface"
+		on:click={() => {
+			chatText = 'Añadir canales';
+		}}>+</button
+	>
+</div>
 <div class="card chat-card wrapper">
 	<div class="list_channel">
 		<div class="border-b border-surface-500/30 p-4">
@@ -72,34 +78,34 @@
 		</div>
 
 		<div class="user-list-container p-4 space-y-4 overflow-y-auto">
-			{#each people as person}
+			{#each channels as channel}
 				<div class="list-item">
 					<ListBoxItem
-						bind:group={currentPerson}
+						bind:group={$chat_receptor}
 						on:click={() => {
-							avatarClick(person);
+							avatarClick(channel);
 						}}
 						name="people"
-						value={person}
+						value={channel}
 					>
-						{person.nickname}
+						{channel.nickname}
 					</ListBoxItem>
 					<button
 						class="btn variant-ghost-surface"
 						on:click={() => {
-							avatarClick(person);
-							userListClick(person);
-						}}>User List</button
-					>
+							userListClick(channel);
+						}}
+						>User List
+					</button>
 				</div>
 			{/each}
 		</div>
 	</div>
 	{#if displayChat}
-		<GroupChannelChat {currentPerson} />
+		<Group_Channel_Chat />
 	{/if}
 	{#if displayUserList}
-		<GroupChannelUserList {currentPerson} />
+		<Group_Channel_User_List />
 	{/if}
 </div>
 

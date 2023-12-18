@@ -54,24 +54,9 @@
 	function avatarClick(person: any) {
 		displayChat = true;
 		currentPerson = person;
-		// console.log("Persona seleccionada es -> ",currentPerson)
-
-		// console.log("Persona seleccionada es -> ",currentPerson)
-
 		receptor.set(person);
 		priv_chat_history.set([]);
 
-		// Api.get('/chat/messages/' + $receptor.login)
-		// 	.then(({ data }) => {
-		// 		console.log('El dato es', data);
-		// 		priv_chat_history.set(data);
-		// 	})
-		// 	.catch((err) => {
-		// 		console.log(err);
-		// 	})
-		// 	.finally(() => {});
-
-		// console.log("Mensajes privados -> ",aux_user._privateMessages)
 		priv_chat_history.set(
 			$priv_msg
 				.filter((msg: any) => {

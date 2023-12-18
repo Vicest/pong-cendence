@@ -1,20 +1,25 @@
-import exp from 'constants';
 import { get, writable } from 'svelte/store';
-import type { Channel, Person, PrivateMessageFeed } from '$lib/types';
+import type { Channel, Person, PrivateMessageFeed , ChatMessageFeed } from '$lib/types';
 import { Api } from '$services/api';
 import { ChatSocket } from '$services/socket';
 import { loading as Authloading, currentUser } from './Auth';
+import { userList } from './User';
 
-export const receptor = writable<Person>();
+//Chat de Grupos
+export const chat_receptor = writable<Channel>();//
 export const type_Channel = writable();
-export const chat_history = writable();
+export const chat_history = writable<ChatMessageFeed[]>([]);
+export const unjoined_channels = writable<Channel[]>([]);
+export const joined_channels = writable<Channel[]>([]);
+export const invitations_channels = writable<Channel[]>([]);
 
+//Chat Privados
+export const receptor = writable<Person>();
 export const priv_chat_history = writable<PrivateMessageFeed[]>([]);
 export const priv_msg = writable<PrivateMessageFeed[]>([]);
-export const joined_channels = writable<Channel[]>([]);
-export const unjoined_channels = writable<Channel[]>([]);
-export const loading = writable<boolean>(true);
 
+
+export const loading = writable<boolean>(true);
 loading.set(true);
 
 export const init = () => {
@@ -59,30 +64,264 @@ export const init = () => {
 					console.log(err);
 				})
 				.finally(() => {});
+				Api.get('/chat/invitations_channels')
+				.then(({ data }) => {
+					invitations_channels.set(data);
+					console.log('Obtenemos todos los canales en los que me han invitado', get(invitations_channels));
+					setTimeout(() => {
+						loading.set(false);
+					}, 1000);
+				})
+				.catch((err) => {
+					console.log(err);
+				})
+				.finally(() => {});
 		}
 	});
 };
 
 ChatSocket.on('priv_msg:created', (createdMsg) => {
-	console.log('Mensaje de chat me llego :)', createdMsg, get(receptor));
+	console.log('priv_msg:created -> ', createdMsg);
 	priv_msg.update((messages) => {
 		return [...messages, createdMsg];
 	});
 	if (get(receptor)) {
 		if (get(receptor).id === createdMsg.sender.id || get(receptor).id === createdMsg.receiver.id)
 			priv_chat_history.update((msg) => {
-				console.log('Añadimos el mensaje al historial abierto');
+				console.log('Añadimos el mensaje al historial entre personas');
 				return [...msg, createdMsg];
 			});
 	}
-	console.log('Actualizamos el historial privado');
 });
+
+ChatSocket.on('chat_msg:created', (createdMsg) => {
+	console.log('chat_msg:created -> ', createdMsg);
+	joined_channels.update((channels) => {
+        const channelToUpdate = channels.find((channel) => channel.id === createdMsg.receiver.id);
+        if (channelToUpdate) {
+            channelToUpdate.messages.push(createdMsg);
+        }
+        return channels;
+    });
+	if (get(chat_receptor)) {
+		if (get(chat_receptor).id === createdMsg.receiver.id)
+			chat_history.update((chat) => {
+				// chat.push(createdMsg);
+				return chat;
+			});
+	}
+});
+
+ChatSocket.on('channel:created', (createdChannel) => {
+	console.log('channel:created -> ', createdChannel);
+	unjoined_channels.update((channels) => {
+		createdChannel.messages = [];
+		createdChannel.members = [];
+		return [...channels, createdChannel];
+	});
+});
+
+
+function updateChannel(channelId : number, updatedChannel : Channel) {
+	return (channels) => {
+		const channelIndex = channels.findIndex(channel => channel.id === channelId);
+		if (channelIndex !== -1) {
+			channels[channelIndex] = {
+				...channels[channelIndex],
+				nickname: updatedChannel.nickname,
+				password: updatedChannel.password,
+				description: updatedChannel.description,
+				type: updatedChannel.type
+			};
+		}
+		return channels;
+	};
+}
+
+ChatSocket.on('channel:updated', (updatedChannel) => {
+	console.log('channel:updated -> ', updatedChannel);
+	
+	unjoined_channels.update(updateChannel(updatedChannel.id, updatedChannel));
+	joined_channels.update(updateChannel(updatedChannel.id, updatedChannel));
+	invitations_channels.update(updateChannel(updatedChannel.id, updatedChannel));
+});
+
+
+
+ChatSocket.on('channelmember:created', (createdChannelMember) => {
+    console.log('channelmember:created -> ', createdChannelMember);
+	if (get(currentUser).id === createdChannelMember.user_id)
+	{
+		Api.get('/chat/channel/'+ createdChannelMember.channel_id)
+			.then((response) => {
+				console.log("Respuesta de la peticion", response.data);
+				if (createdChannelMember.status === 'Invited') {
+					invitations_channels.update((channels) => {
+						return [...channels, response.data];
+					});
+					console.log('Obtenemos todos los canales en los que me han invitado', get(invitations_channels));
+				}
+				else
+				{
+					joined_channels.update((channels) => {
+						return [...channels, response.data];
+					});
+					invitations_channels.update((channels) => {
+						return channels.filter((channel) => channel.id !== createdChannelMember.channel_id);
+					});
+					console.log('Obtenemos todos los canales en los que estoy', get(joined_channels));
+				}
+				unjoined_channels.update((channels) => {
+					return channels.filter((channel) => channel.id !== createdChannelMember.channel_id);
+				});
+				
+		})
+	}
+	else
+	{
+		joined_channels.update((channels) => {
+			return channels.map((channel) => {
+				if (channel.id === createdChannelMember.channel_id) {
+					let index = get(userList).findIndex((user) => user.id === createdChannelMember.user_id);
+					let newMember = get(userList)[index];
+					newMember.channel_status = createdChannelMember.status;
+					return {
+						...channel,
+						members: [...channel.members, newMember]
+					};
+				}
+				return channel;
+			});
+		});
+
+		
+	} 
+});
+
+
+ChatSocket.on('channelmember:updated', (updatedMember) => {
+	console.log('channelmember:updated -> ', updatedMember);
+	if (get(currentUser).id === updatedMember.user_id)
+	{
+		joined_channels.update((channels) => {
+			let chan_index = channels.findIndex((channel) => channel.id === updatedMember.channel_id);
+			if (chan_index !== -1) {
+				let user_index = channels[chan_index].members.findIndex((user) => user.id === updatedMember.user_id);
+				if (user_index !== -1)
+				channels[chan_index].members[user_index].channel_status = updatedMember.status;
+			}
+			return channels;
+		});
+		unjoined_channels.update((channels) => {
+			return channels.filter((channel) => channel.id !== updatedMember.channel_id);
+		});
+		invitations_channels.update((channels) => {
+			return channels.filter((channel) => channel.id !== updatedMember.channel_id);
+		});
+		
+	}
+	else
+	{
+		joined_channels.update((channels) => {
+			let chan_index = channels.findIndex((channel) => channel.id === updatedMember.channel_id);
+			if (chan_index !== -1) {
+				let user_index = channels[chan_index].members.findIndex((user) => user.id === updatedMember.user_id);
+				if (user_index !== -1)
+				channels[chan_index].members[user_index].channel_status = updatedMember.status;
+			}
+			return channels;
+		});
+		invitations_channels.update((channels) => {
+			let chan_index = channels.findIndex((channel) => channel.id === updatedMember.channel_id);
+			if (chan_index !== -1) {
+				let user_index = channels[chan_index].members.findIndex((user) => user.id === updatedMember.user_id);
+				if (user_index !== -1)
+				channels[chan_index].members[user_index].channel_status = updatedMember.status;
+			}
+			return channels;
+		});
+	}
+});
+
+
+ChatSocket.on('channelmember:deleted', (deletedChannelMember) => {
+	console.log('channelmember:deleted -> ', deletedChannelMember);
+	joined_channels.update((channels) => {
+		let updatedChannels = channels.map((channel) => {
+            if (channel.id === deletedChannelMember.channel_id) {
+                channel.members = channel.members.filter((user) => user.id !== deletedChannelMember.user_id);
+            }
+            return channel;
+        });
+        return updatedChannels;
+	});
+	invitations_channels.update((channels) => {
+		let updatedChannels = channels.map((channel) => {
+            if (channel.id === deletedChannelMember.channel_id) {
+                channel.members = channel.members.filter((user) => user.id !== deletedChannelMember.user_id);
+            }
+            return channel;
+        });
+        return updatedChannels;
+	});
+
+	if (get(currentUser).id === deletedChannelMember.user_id)
+	{
+		let index = get(joined_channels).findIndex((channel) => channel.id === deletedChannelMember.channel_id);
+		let findedChannel : Channel;
+		if (!index)
+		{
+			index = get(invitations_channels).findIndex((channel) => channel.id === deletedChannelMember.channel_id);
+			findedChannel = get(invitations_channels)[index]
+		}
+		else
+			findedChannel = get(joined_channels)[index];
+		joined_channels.update((channels) => {
+			return channels.filter((channel) => channel.id !== deletedChannelMember.channel_id);
+		});
+		invitations_channels.update((channels) => {
+			return channels.filter((channel) => channel.id !== deletedChannelMember.channel_id);
+		});
+		unjoined_channels.update((channels) => {
+			return [...channels, findedChannel];
+		});
+	}
+	
+});
+
 
 export const mock_user_list = writable<Array<Person>>([]);
 export const mock_friends = writable<Array<Person>>([]);
 export const mock_blocked = writable<Array<Person>>([]);
 export const mock_priv_msg = writable([{}]);
 export const mock_channels = writable([{}]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 mock_blocked.set([
 	{

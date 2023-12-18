@@ -7,9 +7,19 @@ import {
 	JoinTable
 } from 'typeorm';
 import { Channel } from '../../chat/entities/channel.entity';
+import { ChannelMembers } from 'src/chat/entities/channelmembers.entity';
 import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
 import { UserRelation } from './userRelations.entity';
+import { fileURLToPath } from 'url';
+
+enum MemberType {
+	INVITED = 'Invited',
+	BANNED = 'Banned',
+	MEMBER = 'Member',
+    ADMIN = 'Admin',
+    OWNER = 'Owner'
+}
 
 @Entity({
 	name: 'Users'
@@ -40,11 +50,7 @@ export class User {
 		default: false
 	})
 	isAdmin: boolean;
-	//@Column({
-	//  type: 'text',
-	//  unique: true
-	//})
-	//email: string;
+	
 	@Column({
 		type: 'text',
 		nullable: true,
@@ -75,17 +81,7 @@ export class User {
 	})
 	created_at: Date;
 
-	@ManyToMany(() => Channel, (channel) => channel.members)
-	@JoinTable({
-		name: 'ChannelMembers',
-		joinColumn: {
-			name: 'user_id'
-		},
-		inverseJoinColumn: {
-			name: 'channel_id'
-		}
-	})
-	channels: Channel[];
+	
 
 	// @ManyToMany(() => Channel, (channel) => channel.members)
 	// channels: Channel[];
@@ -124,6 +120,7 @@ export class User {
 	relationsharedAsReceiver: UserRelation[];
 
 	_relationList: UserRelation[];
+	channel_status: MemberType;
 
 	async loadrelationsList(): Promise<void> {
 		const relationList = await Promise.all([
@@ -136,8 +133,57 @@ export class User {
 	get relationsList(): UserRelation[] {
 		return this._relationList;
 	}
-
 	friends: User[];
+
+
+	@OneToMany(() => ChannelMembers, (channelmembers) => channelmembers.user)
+    channels_relation: ChannelMembers[];
+
+	async loadChannels(): Promise<void> {
+		if (!this.channels_relation) {
+			return; // Retorna si channels_relation es undefined o null
+		}
+	
+		const filteredChannels = this.channels_relation.filter(channels_relation => {
+			return channels_relation.status !== MemberType.INVITED;
+		});
+	
+		this.channels = filteredChannels.map(channel => channel.channel);
+
+		this.channels.forEach((channel) => {
+			channel.loadMembers();
+		});
+	}
+	channels: Channel[];
+
+	async loadChannelsInvitations(): Promise<void> {
+		if (!this.channels_relation) {
+			return;
+		}
+		const filteredChannels = this.channels_relation.filter(channels_relation => {
+			return  channels_relation.status === MemberType.INVITED;
+		});
+		this.channels = filteredChannels.map(channel => channel.channel);
+		this.channels.forEach((channel) => {
+			channel.loadMembers();
+		});
+	}
+	invite_channels: Channel[];
+
+	// @ManyToMany(() => Channel, (channel) => channel.members)
+	// @JoinTable({
+	// 	name: 'ChannelMembers',
+	// 	joinColumn: {
+	// 		name: 'user_id'
+	// 	},
+	// 	inverseJoinColumn: {
+	// 		name: 'channel_id'
+	// 	}
+	// })
+	// channels: Channel[];
+
+	// @OneToMany(() => ChannelMembers, (channelMembers) => channelMembers.channel)
+	// channels: Channel[];
 
 	// @ManyToMany(() => UserRelation, UserRelation => (UserRelation.receptor))
 	// @JoinTable({

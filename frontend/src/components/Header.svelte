@@ -6,7 +6,7 @@
 	import { faBattleNet } from '@fortawesome/free-brands-svg-icons';
 	import { currentUser } from '../store/Auth';
 	import { gameListDrawerSettings } from '../store/Game';
-	import ChatAvatar from './chat/ChatAvatar.svelte';
+	import ChatAvatar from './ChatInvididual/ChatAvatar.svelte';
 	const drawerStore = getDrawerStore();
 	drawerStore.close();
 

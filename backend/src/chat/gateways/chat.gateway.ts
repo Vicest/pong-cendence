@@ -9,7 +9,7 @@ import {
 import { Namespace, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { Logger } from '@nestjs/common';
-import { ChatService } from './chat.service';
+import { ChatService } from '../chat.service';
 
 @WebSocketGateway({
 	cors: true,
@@ -21,7 +21,7 @@ export class ChatGateway
 	private log: Logger;
 	constructor(
 		private jwtService: JwtService,
-		private usersService: ChatService
+		private chatService: ChatService
 	) {
 		this.log = new Logger();
 	}

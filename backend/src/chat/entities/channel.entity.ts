@@ -10,11 +10,20 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { ChannelMessages } from './message/channel.entity';
+import { ChannelMembers } from './channelmembers.entity';
 
 enum ChatType {
 	PRIVATE = 'Private',
 	PROTECTED = 'Protected',
 	PUBLIC = 'Public'
+}
+
+enum MemberType {
+	INVITED = 'Invited',
+	BANNED = 'Banned',
+	MEMBER = 'Member',
+    ADMIN = 'Admin',
+    OWNER = 'Owner'
 }
 @Entity({
 	name: 'Channels'
@@ -44,19 +53,35 @@ export class Channel {
 		default: () => 'CURRENT_TIMESTAMP'
 	})
 	created_at: Date;
+	
+	@OneToMany(() => ChannelMembers, (channelMembers) => channelMembers.channel)
+	channels_relation: ChannelMembers[];
 
-	@ManyToMany(() => User, (user) => user.channels)
-	@JoinTable({
-		name: 'ChannelMembers',
-		joinColumn: {
-			name: 'channel_id'
-		},
-		inverseJoinColumn: {
-			name: 'user_id'
-		}
-	})
+	async loadMembers(): Promise<void> {
+		
+		const filteredMembers = this.channels_relation.filter(channels_relation => {
+			return channels_relation.status !== MemberType.INVITED;
+		});
+		this.members = filteredMembers.map(channel => {
+			channel.user.channel_status = this.channels_relation.find(relation => relation.user.id === channel.user.id).status;
+			return channel.user
+		});
+	}
 	members: User[];
-
+	// @ManyToMany(() => User, (user) => user.channels)
+	// @JoinTable({
+	// 	name: 'ChannelMembers',
+	// 	joinColumn: {
+	// 		name: 'channel_id'
+	// 	},
+	// 	inverseJoinColumn: {
+	// 		name: 'user_id'
+	// 	}
+	// })
+	// members: User[];
+	
 	@OneToMany(() => ChannelMessages, (message) => message.receiver)
 	messages: ChannelMessages[];
+
 }
+

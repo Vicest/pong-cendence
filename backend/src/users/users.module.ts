@@ -11,6 +11,7 @@ import { UsersSubscriber } from './users.subscriber';
 import { UsersGateway } from './users.gateway';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ChannelMembers } from 'src/chat/entities/channelmembers.entity';
 
 @Module({
 	imports: [
@@ -19,7 +20,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 			UserRelation,
 			Channel,
 			ChannelMessages,
-			UserMessages
+			UserMessages,
+			ChannelMembers
 		]),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
