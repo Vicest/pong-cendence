@@ -2,16 +2,17 @@ import { Injectable, Logger } from '@nestjs/common';
 import { User } from './entities/user.entity';
 
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, UpdateResult, DeleteResult } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { Observable, from } from 'rxjs';
 import { UserRelation } from './entities/userRelations.entity';
 import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
 import { UserMessages } from 'src/chat/entities/message/user.entity';
-import { Channel } from 'src/chat/entities/channel.entity';
+import { GamesService } from 'src/games/games.service';
 
 @Injectable()
 export class UsersService {
 	constructor(
+		private readonly gameService: GamesService,
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
 		@InjectRepository(UserRelation)
@@ -19,7 +20,7 @@ export class UsersService {
 		@InjectRepository(ChannelMessages)
 		private readonly channelmessagesRepository: Repository<ChannelMessages>,
 		@InjectRepository(UserMessages)
-		private readonly usermessagesRepository: Repository<UserMessages>
+		private readonly usermessagesRepository: Repository<UserMessages>,
 	) {
 		this.log = new Logger();
 	}
@@ -66,6 +67,21 @@ export class UsersService {
 
 	public async findNickname(nickname: string): Promise<User | null> {
 		return this.userRepository.findOneBy({ nickname: nickname });
+	}
+		
+	public async getUserRank(id: number) {
+		const matchesPlayed = await this.gameService.findGamesOf(id);
+		const rankedMatches = matchesPlayed.filter( (m) => m.rankShift !== 0 );
+		let totalRankShift: number = 0;
+		for(const match of rankedMatches) {
+			totalRankShift += match.winner.id === id ? match.rankShift : -match.rankShift;
+		}
+		//No ranked matches means you are 'Unranked'
+		return matchesPlayed.length > 0 ? 1500 + totalRankShift : -1;
+	}
+
+	public async exists(id: number): Promise<boolean> {
+		return (await this.userRepository.findOne({ where: { id: id } })) !== undefined;
 	}
 
 	private log: Logger;
