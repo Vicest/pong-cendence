@@ -54,6 +54,11 @@ const errorHandler = (error: AxiosError) => {
 			});
 		});
 	}
+	else {
+		resError.data.message.forEach(message => {
+			lastError.set(message)
+		});
+	}
 	return Promise.reject({ ...resError?.data });
 };
 

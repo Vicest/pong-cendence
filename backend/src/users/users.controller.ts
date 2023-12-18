@@ -108,6 +108,7 @@ export class UsersController {
 		)
 		file: Express.Multer.File
 	) {
+		console.log(user,req.user.login)
 		//TODO: validar imagen como multipart/form-data y no como json
 
 		//Crear imagen y guardarla en el servidor
@@ -141,8 +142,9 @@ export class UsersController {
 			const databaseUri = this.configService.get<string>('BACKEND_BASE');
 			user.avatar = `${databaseUri}:${databasePort}/users/${imageName}/img`;
 		}
-		if ((await this.userService.findOne(req.user.login)) && req.user.login)
-			res.sendStatus(400);
-		else res.send(this.userService.updateById(req.user.id, user));
+		if(await this.userService.findOne(user.nickname))
+			res.sendStatus(500);
+		else
+			res.send(this.userService.updateById(req.user.id, user));
 	}
 }

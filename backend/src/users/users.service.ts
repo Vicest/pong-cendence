@@ -55,6 +55,11 @@ export class UsersService {
 		return this.userRepository.findOneBy({ login: login });
 	}
 
+	public async findNickname(nickname: string): Promise<User | null> {
+		return this.userRepository.findOneBy({ nickname: nickname });
+	}
+
+
 	private log: Logger;
 
 	public updateById(id: number, userUpdate: User): Promise<UpdateResult> {

@@ -30,15 +30,15 @@
 	};
 	// Save the changes
 	async function saveChanges() {
-		
-		let updateinfo = {
-			nickname: currentUserCopy.nickname
-		};
-		if (encodedImg) {
+		let updateinfo = {};
+		if (encodedImg)
 			updateinfo.avatar = encodedImg.replace(/^data:image\/(png|jpeg);base64,/, '');
-		}
+		if($currentUser.nickname != currentUserCopy.nickname)
+			updateinfo.nickname = currentUserCopy.nickname;
+
 
 		try {
+			// TODO: multiparted image
 			const res = await Api.put('/users', updateinfo)	
 			// const res = await Api.request({
 			// 	url: '/users',
@@ -70,9 +70,7 @@
 					width="w-40"
 					class="border-4 border-white rounded-full opacity-50"
 				/>
-				{#if !editMode}
-					<Fa icon={faEdit} class="text-5xl absolute w-full h-full z-10 top-12 text-black opacity-100 text-white" />
-				{/if}
+					<Fa icon={faEdit} class="text-5xl absolute w-full h-full z-10 top-12 text-black opacity-100 text-white" />	
 				<label for="profile-avatar" class="profile-avatar-label" />
 			</div>
 			<div class="line" />
