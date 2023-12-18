@@ -10,7 +10,7 @@
 
 	let editMode: boolean = false;
 	let encodedImg: string;
-	let imageFile : any;
+	let imageFile: any;
 
 	const handleFileChange = (event: any) => {
 		imageFile = event.target.files[0];
@@ -33,31 +33,15 @@
 	// Save the changes
 	async function saveChanges() {
 		let updateinfo = {};
-		if (encodedImg)
-			updateinfo.avatar = encodedImg.replace(/^data:image\/(png|jpeg);base64,/, '');
-		if($currentUser.nickname != currentUserCopy.nickname)
+		if (encodedImg) updateinfo.avatar = encodedImg.replace(/^data:image\/(png|jpeg);base64,/, '');
+		if ($currentUser.nickname != currentUserCopy.nickname)
 			updateinfo.nickname = currentUserCopy.nickname;
 
-		if (Object.keys(updateinfo).length > 0)
-		{
-			try {
-				// TODO: multiparted image
-				const res = await Api.put('/users', updateinfo)	
-				// const res = await Api.request({
-				// 	url: '/users',
-				// 	method: 'PUT',
-				// 	headers: {
-				// 		'Content-Type': 'multipart/form-data'
-				// 	},
-				// 	data: {
-				// 		...updateinfo,
-				// 	}
-				// });
-				if (res.status === 200) {
-					editMode = false;
-				}
-			} catch (error) {
-				console.error('An error occurred:', error);
+		if (Object.keys(updateinfo).length > 0) {
+			// TODO: multiparted image
+			const res = await Api.put('/users', updateinfo);
+			if (res.status === 200) {
+				editMode = false;
 			}
 		}
 	}
@@ -84,13 +68,15 @@
 		<div class="flex justify-center items-center w-full">
 			<div class="line" />
 			<div class="relative">
-
 				<Avatar
 					src={encodedImg || currentUserCopy.avatar}
 					width="w-40"
 					class="border-4 border-white rounded-full opacity-50"
 				/>
-					<Fa icon={faEdit} class="text-5xl absolute w-full h-full z-10 top-12 text-black opacity-100 text-white" />	
+				<Fa
+					icon={faEdit}
+					class="text-5xl absolute w-full h-full z-10 top-12 text-black opacity-100 text-white"
+				/>
 				<label for="profile-avatar" class="profile-avatar-label" />
 			</div>
 			<div class="line" />
@@ -110,7 +96,7 @@
 			accept=".png, .jpeg, .jpg"
 			on:change={handleFileChange}
 		/>
-		
+
 		{#if editMode}
 			<div class="flex flex-col justify-center items-cvariant-filledenter mt-4">
 				<label class="label">
@@ -164,11 +150,9 @@
 		height: 100%;
 		z-index: 10000;
 		border-radius: 50%;
-		
 	}
 	.profile-avatar-label:hover {
 		background: rgba(255, 255, 255, 0.7);
 		cursor: pointer;
 	}
-
 </style>

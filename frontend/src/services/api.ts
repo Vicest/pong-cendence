@@ -35,31 +35,30 @@ const errorHandler = (error: AxiosError) => {
 	const resError: AxiosResponse<any> | undefined = error.response;
 	const originalRequest: any = error.config;
 	if (resError?.status === 400) {
-		resError.data.message.forEach(message => {
-			lastError.set(message)
+		resError.data.message.forEach((message) => {
+			lastError.set(message);
 		});
-	}
-	else if (resError?.status === 401) {
-	if (resError?.status === 401) {
-		if (!isRefreshing) {
-			isRefreshing = true;
-			onRefreshToken()
-				.then(() => onRefreshed())
-				.catch(() => {
-					isRefreshing = false;
+	} else if (resError?.status === 401) {
+		if (resError?.status === 401) {
+			if (!isRefreshing) {
+				isRefreshing = true;
+				onRefreshToken()
+					.then(() => onRefreshed())
+					.catch(() => {
+						isRefreshing = false;
+					});
+			}
+			return new Promise((resolve) => {
+				subscribeTokenRefresh(async (token: string) => {
+					resolve(Api.request(originalRequest));
 				});
-		}
-		return new Promise((resolve) => {
-			subscribeTokenRefresh(async (token: string) => {
-				resolve(Api.request(originalRequest));
 			});
-		});
+		}
 	}
-	console.log(resError);
 	return Promise.reject({ ...resError?.data });
 };
 
 Api.interceptors.response.use(
 	(response: AxiosResponse) => successHandler(response),
 	(error: AxiosError) => errorHandler(error)
-);}
+);

@@ -31,6 +31,17 @@
 		});
 	});
 
+	lastError.subscribe((message) => {
+		if (message) {
+			toastStore.trigger({
+				message,
+				timeout: 1200,
+				background: 'variant-filled-error'
+			});
+		}
+		lastError.set(null);
+	});
+
 	/*MatchMakingSocket.on('beChallenged', (opponentId, gameId, timeout) => {
 		console.log('beChallenged');
 		console.log(`I was challenged by: ${opponentId}`);
