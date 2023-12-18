@@ -25,6 +25,7 @@ export class MatchMakingGateway
 {
 	private log: Logger;
 	private pendingChallenges_: Challenge[];
+	private acceptTimeout = 5000;
 	private UserIoInstances: {
 		[game_id: number]: [
 			{
@@ -95,7 +96,7 @@ export class MatchMakingGateway
 
 	handleDisconnect(@ConnectedSocket() client: Socket) {
 		try {
-			const decoded = this.jwtService.verify(client.handshake.auth.token);
+			const decoded = this.jwtService.verify(this.getAuthCookie(client));
 			client.data.user = decoded;
 			this.log.debug(`${decoded.login} disconnected`, this.constructor.name);
 			client.leave(decoded.id.toString());
@@ -108,11 +109,15 @@ export class MatchMakingGateway
 	@SubscribeMessage('challenge')
 	onChallenge(
 		@ConnectedSocket() client: Socket,
-		@MessageBody() opponentId: number
+		@MessageBody()
+		data: {
+			opponentId: number;
+			gameId: number;
+		}
 	) {
 		const challengerId: number = client.data.user.id;
-		this.log.verbose(challengerId + ' challenges ' + opponentId);
-		if (challengerId == opponentId) {
+		this.log.verbose(challengerId + ' challenges ' + data.opponentId);
+		if (challengerId == data.opponentId) {
 			this.log.warn(
 				`${challengerId} challenges self. That would be overly suicidal`
 			);
@@ -122,7 +127,7 @@ export class MatchMakingGateway
 		for (const challenge of this.pendingChallenges_) {
 			if (
 				challenge.hasPlayer(challengerId) &&
-				challenge.hasPlayer(opponentId) &&
+				challenge.hasPlayer(data.opponentId) &&
 				!challenge.expired()
 			) {
 				//TODO emit back an already emitted challenge feedback.
@@ -130,19 +135,25 @@ export class MatchMakingGateway
 					.to(challengerId.toString())
 					.emit('challengeExists', { challenger: challengerId });
 				this.log.warn(
-					`${challengerId} vs ${opponentId} or ${opponentId} vs ${challengerId} already exists.`
+					`${challengerId} vs ${data.opponentId} or ${data.opponentId} vs ${challengerId} already exists.`
 				);
 				return;
 			}
 		}
-
 		this.pendingChallenges_.push(
-			new Challenge(challengerId, opponentId, 15000)
+			new Challenge(
+				data.gameId,
+				challengerId,
+				data.opponentId,
+				this.acceptTimeout
+			)
 		);
-		//this.server.to(opponentId.toString()).emit('beChallenged', challengerId);
-		//TODO I think it is cleaner to join clients with the same id to the same room instead of looping.
-		console.log(`Send beChallenged emmitted to: ${opponentId.toString()}`);
-		this.server.to(opponentId.toString()).emit('beChallenged', challengerId);
+		console.log(`Send beChallenged emmitted to: ${data.opponentId.toString()}`);
+		this.server.to(data.opponentId.toString()).emit('beChallenged', {
+			opponentId: challengerId,
+			gameId: data.gameId,
+			timeout: this.acceptTimeout
+		});
 	}
 
 	@SubscribeMessage('challengeResponse')
@@ -150,51 +161,69 @@ export class MatchMakingGateway
 		@ConnectedSocket() client: Socket,
 		@MessageBody()
 		response: {
+			gameId: number;
 			accept: boolean;
 			opponentId: number;
 		}
 	): Promise<void> {
 		const responseId: number = client.data.user.id;
 		const challengerId: number = response.opponentId;
-		//Remove the challenger from my list of challengers.
-		const challengeIdx = this.pendingChallenges_.findIndex((e) => {
+		const gameId: number = response.gameId;
+		let challenge: Challenge = this.pendingChallenges_.find((e) => {
 			return (
+				e.gameId === gameId &&
 				e.challengedId === responseId &&
 				e.challengerId === challengerId &&
 				!e.expired()
 			);
 		});
-		if (challengeIdx === -1) {
+		if (challenge) this.deleteChallenge(challenge);
+		else {
 			this.log.warn(
 				`Response from ${responseId} to non-existing challenge ${challengerId} vs ${responseId}`
 			);
 			return;
 		}
-		this.pendingChallenges_.slice(challengeIdx, 1);
-		console.log('Challenge response received.', response.accept);
 		//Create match on an accept.
 		if (response.accept) {
 			const p1 = await this.userService.find(challengerId);
 			const p2 = await this.userService.find(responseId);
 			//TODO Add socket emit?? to listener
-			const pong = await this.gameService.findGameByName('pong'); //Definitely not a hardcode because we are short on time
-			console.log(`Find gamebyid: ${JSON.stringify(pong)}`);
-			await this.gameService.createMatch({
-				game: pong,
-				players: [p1, p2]
+			const gameId = await this.gameService.findGame(challenge.gameId);
+			const match = await this.gameService.createMatch({
+				game: gameId,
+				players: [p1, p2],
+				status: 'waiting'
 			});
+			console.log(`Challenge accepted`, match);
+			this.server
+				.to([challengerId.toString(), responseId.toString()])
+				.emit('challengeAccepted', match.id);
 		}
+	}
+
+	private deleteChallenge(challenge: Challenge) {
+		const challengeIdx = this.pendingChallenges_.findIndex(
+			(e) => e.id === challenge.id
+		);
+		this.server
+			.to([
+				challenge.challengedId.toString(),
+				challenge.challengerId.toString()
+			])
+			.emit('challengeDeleted', challenge.id);
+		this.pendingChallenges_.splice(challengeIdx, 1);
 	}
 
 	@Interval(500)
 	removeExpiredChallenges() {
-		//this.log.verbose(`Current challenges: ${JSON.stringify(this.pendingChallenges_)}`);
 		//Challenges are pushed oredered in time, older first.
-		while (
-			this.pendingChallenges_.length > 0 &&
-			this.pendingChallenges_[0].expired()
-		) {
-			this.pendingChallenges_.splice(0, 1);
+		let expiredChallenges = this.pendingChallenges_.filter((e) => {
+			console.log(`Checking challenge ${e.id} for expiration`);
+			return e.expired();
+		});
+		for (const challenge of expiredChallenges) {
+			this.deleteChallenge(challenge);
 		}
 	}
 }

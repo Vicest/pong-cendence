@@ -52,19 +52,25 @@ export class User {
 	@IsOptional()
 	avatar: string;
 	@Column({
-		type: 'text',
+		type: 'bytea',
 		nullable: true,
-		default: null,
-		select: false
+		default: null
 	})
-	two_factor_auth_secret: string;
+	two_factor_auth_secret: Buffer;
+
 	@Column({
 		default: false
 	})
 	two_factor_auth_enabled: boolean;
 
 	@Column({
-		enum: ['online', 'offline', 'away', 'busy', 'invisible'],
+		type: 'bytea',
+		default: null
+	})
+	IV: Buffer;
+
+	@Column({
+		enum: ['online', 'offline', 'in_game', 'away', 'busy', 'invisible'],
 		default: 'offline'
 	})
 	status: string;

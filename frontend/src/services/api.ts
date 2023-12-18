@@ -40,6 +40,7 @@ const errorHandler = (error: AxiosError) => {
 		});
 	}
 	else if (resError?.status === 401) {
+	if (resError?.status === 401) {
 		if (!isRefreshing) {
 			isRefreshing = true;
 			onRefreshToken()
@@ -54,6 +55,7 @@ const errorHandler = (error: AxiosError) => {
 			});
 		});
 	}
+	console.log(resError);
 	return Promise.reject({ ...resError?.data });
 };
 

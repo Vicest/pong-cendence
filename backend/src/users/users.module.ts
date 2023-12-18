@@ -11,9 +11,11 @@ import { UsersSubscriber } from './users.subscriber';
 import { UsersGateway } from './users.gateway';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { GamesModule } from 'src/games/games.module';
 
 @Module({
 	imports: [
+		GamesModule,
 		TypeOrmModule.forFeature([
 			User,
 			UserRelation,

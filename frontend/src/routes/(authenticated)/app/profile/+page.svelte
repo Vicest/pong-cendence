@@ -28,6 +28,8 @@
 			reader.readAsDataURL(imageFile);
 		}
 	};
+	let edit2FAMode: boolean = false;
+
 	// Save the changes
 	async function saveChanges() {
 		let updateinfo = {};
@@ -58,6 +60,22 @@
 				console.error('An error occurred:', error);
 			}
 		}
+	}
+
+	let edit2FABase64Qr: string | null = null;
+	async function get2FAData() {
+		if (edit2FAMode) {
+			return;
+		}
+		Api.get('/auth/2FA').then((res) => {
+			edit2FABase64Qr = res.data;
+			console.log(edit2FABase64Qr);
+		});
+		edit2FAMode = true;
+	}
+
+	async function save2FAChanges() {
+		console.log('save2FAChanges');
 	}
 </script>
 
@@ -107,6 +125,23 @@
 						}}
 					/>
 					<button class="btn variant-filled mt-2" on:click={saveChanges}>Save</button>
+				</label>
+			</div>
+		{/if}
+	</div>
+	<div class="flex flex-col justify-center items-center my-10 card w-full p-10">
+		<div class="flex gap-5 justify-center items-center mt-4 relative">
+			<span class="text-2xl font-bold">2FA</span>
+			<div class="ml-2 cursor-pointer" on:click={get2FAData}>
+				<Fa icon={faEdit} class="text-2xl" />
+			</div>
+		</div>
+		{#if edit2FAMode}
+			<div class="flex flex-col justify-center items-center mt-4">
+				<label class="label">
+					<span class="text-2xl font-bold 2fa-label">2FA</span>
+					<img src={edit2FABase64Qr} alt="2FA QR Code" />
+					<button class="btn btn-primary mt-2" on:click={save2FAChanges}>Save</button>
 				</label>
 			</div>
 		{/if}

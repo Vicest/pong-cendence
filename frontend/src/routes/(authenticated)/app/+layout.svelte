@@ -14,7 +14,6 @@
 	import { init as ChatInstancesInit } from '../../../store/Chat';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { GamesSocket, Socket, UsersSocket } from '$services/socket';
 
 	initializeStores();
 	onMount(() => {
@@ -31,6 +30,8 @@
 			.catch((err) => {
 				if (err.statusCode === 403 || err.statusCode === 401) {
 					goto('/login');
+				} else if (err.statusCode === 400 && err.message === '2FA not validated') {
+					goto('/login/2fa');
 				}
 			});
 	});

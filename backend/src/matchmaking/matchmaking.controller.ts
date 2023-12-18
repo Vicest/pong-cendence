@@ -5,7 +5,8 @@ import {
 	Delete,
 	Headers,
 	Param,
-	UseGuards
+	UseGuards,
+	Req
 } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
@@ -21,20 +22,14 @@ export class MatchMakingController {
 	) {}
 
 	@Post('/queue')
-	async joinQueue(@Headers('authorization') jwtHeader: string) {
-		const token = jwtHeader.replace('Bearer ', '');
-		console.log(`Token: ${token}`);
-		const user = await this.authService.decode(token);
-		console.log(`Joining user ${user.login} with id ${user.id}`);
-		return this.matchMakingService.joinQueue(user);
+	async joinQueue(@Req() req) {
+		console.log(`Joining user ${req.user.login} with id ${req.user.id}`);
+		return this.matchMakingService.joinQueue(req.user);
 	}
 
 	@Delete('/queue')
-	async leaveQueue(@Headers('authorization') jwtHeader: string) {
-		const token = jwtHeader.replace('Bearer ', '');
-		console.log(`Token: ${token}`);
-		const user = await this.authService.decode(token);
-		console.log(`Leaving user ${user.login} with id ${user.id}`);
-		return this.matchMakingService.leaveQueue(user.id);
+	async leaveQueue(@Req() req) {
+		console.log(`Leaving user ${req.user.login} with id ${req.user.id}`);
+		return this.matchMakingService.leaveQueue(req.user.id);
 	}
 }

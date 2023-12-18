@@ -35,7 +35,10 @@
 
 	function sendChallenge(targetId: number) {
 		console.log(`I challenged inside: ${selectedUser.login}`);
-		MatchMakingSocket.emit('challenge', targetId);
+		MatchMakingSocket.emit('challenge', {
+			opponentId: targetId,
+			gameId: $selectedGame?.id
+		});
 		toastStore.trigger({
 			message: `You challenged ${selectedUser.nickname}`
 		});
@@ -46,7 +49,9 @@
 	let keyword: string = '';
 	$: people = $userList.filter(
 		(person: any) =>
-			person.nickname.toLowerCase().includes(keyword.toLowerCase()) && person.id !== $currentUser.id
+			person.nickname.toLowerCase().includes(keyword.toLowerCase()) &&
+			person.id !== $currentUser.id &&
+			person.status === 'online'
 	);
 	let selectedUser: Person;
 </script>
@@ -94,7 +99,7 @@
 			sendChallenge(selectedUser.id);
 			console.log(`I challenged: ${selectedUser.login}`);
 			//goto(`/app/arena/1`)
-			//parent.onClose()
+			parent.onClose()
 		}} disabled={!selectedUser}>Send invitation</button>
 		<button class="btn variant-ghost-surface" on:click={() => {
 			//drawerStore.open($gameListDrawerSettings);

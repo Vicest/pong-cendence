@@ -24,6 +24,7 @@ import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 
+import { GamesService } from 'src/games/games.service';
 
 @Controller('users')
 @UseGuards(JwtGuard)
@@ -76,6 +77,13 @@ export class UsersController {
 	getOneUsers(@Param('id') id: number): Promise<User | null> {
 		console.log('PEDIMOS EL USUARIO X');
 		return this.userService.find(id);
+	}
+
+	@Get(':id/rank')
+	async getRank(@Param('id') id: number) {
+		const matchesPlayed = await this.gameService.findGamesOf(id);
+		//TODO Use the matches played to calculate rank
+		return matchesPlayed;
 	}
 
 	// POST /users/:id
