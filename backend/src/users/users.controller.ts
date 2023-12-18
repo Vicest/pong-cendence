@@ -108,7 +108,7 @@ export class UsersController {
 		)
 		file: Express.Multer.File
 	) {
-		console.log(user,req.user.login)
+		console.log(user)
 		//TODO: validar imagen como multipart/form-data y no como json
 
 		//Crear imagen y guardarla en el servidor
@@ -143,7 +143,7 @@ export class UsersController {
 			user.avatar = `${databaseUri}:${databasePort}/users/${imageName}/img`;
 		}
 		if(await this.userService.findOne(user.nickname))
-			res.sendStatus(500);
+			res.status(200).send("Nickname Already Choosen");
 		else
 			res.send(this.userService.updateById(req.user.id, user));
 	}

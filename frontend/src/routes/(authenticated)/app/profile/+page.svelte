@@ -36,25 +36,27 @@
 		if($currentUser.nickname != currentUserCopy.nickname)
 			updateinfo.nickname = currentUserCopy.nickname;
 
-
-		try {
-			// TODO: multiparted image
-			const res = await Api.put('/users', updateinfo)	
-			// const res = await Api.request({
-			// 	url: '/users',
-			// 	method: 'PUT',
-			// 	headers: {
-			// 		'Content-Type': 'multipart/form-data'
-			// 	},
-			// 	data: {
-			// 		...updateinfo,
-			// 	}
-			// });
-			if (res.status === 200) {
-				editMode = false;
+		if (Object.keys(updateinfo).length > 0)
+		{
+			try {
+				// TODO: multiparted image
+				const res = await Api.put('/users', updateinfo)	
+				// const res = await Api.request({
+				// 	url: '/users',
+				// 	method: 'PUT',
+				// 	headers: {
+				// 		'Content-Type': 'multipart/form-data'
+				// 	},
+				// 	data: {
+				// 		...updateinfo,
+				// 	}
+				// });
+				if (res.status === 200) {
+					editMode = false;
+				}
+			} catch (error) {
+				console.error('An error occurred:', error);
 			}
-		} catch (error) {
-			console.error('An error occurred:', error);
 		}
 	}
 </script>
@@ -78,9 +80,9 @@
 		{#if !editMode}
 			<div class="flex gap-5 justify-center items-center mt-4 relative">
 				<span class="text-2xl font-bold">{$currentUser.nickname}</span>
-				<div class="ml-2 cursor-pointer" on:click={() => (editMode = !editMode)}>
+				<button class="ml-2 cursor-pointer" on:click={() => (editMode = !editMode)}>
 					<Fa icon={faEdit} class="text-2xl" />
-				</div>
+				</button>
 			</div>
 		{/if}
 		<input
@@ -90,6 +92,7 @@
 			accept=".png, .jpeg, .jpg"
 			on:change={handleFileChange}
 		/>
+		
 		{#if editMode}
 			<div class="flex flex-col justify-center items-cvariant-filledenter mt-4">
 				<label class="label">
@@ -128,16 +131,9 @@
 		border-radius: 50%;
 		
 	}
-
 	.profile-avatar-label:hover {
 		background: rgba(255, 255, 255, 0.7);
 		cursor: pointer;
 	}
 
-	.profile-avatar-edit {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		z-index: 10000;
-	}
 </style>

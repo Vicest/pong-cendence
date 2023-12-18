@@ -56,7 +56,7 @@ export class UsersService {
 	}
 
 	public async findNickname(nickname: string): Promise<User | null> {
-		return this.userRepository.findOneBy({ nickname: nickname });
+		return this.userRepository.findOneBy({ nickname: nickname });	
 	}
 
 
