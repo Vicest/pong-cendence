@@ -28,11 +28,10 @@ import { GamesService } from 'src/games/games.service';
 
 @Controller('users')
 @UseGuards(JwtGuard)
-
 export class UsersController {
 	constructor(
 		private readonly userService: UsersService,
-		private readonly configService: ConfigService,
+		private readonly configService: ConfigService
 	) {}
 
 	@Get(':login/img')
@@ -149,9 +148,6 @@ export class UsersController {
 			const databaseUri = this.configService.get<string>('BACKEND_BASE');
 			user.avatar = `${databaseUri}:${databasePort}/users/${imageName}/img`;
 		}
-		if(await this.userService.findOne(user.nickname))
-			res.status(200).send("Nickname Already Choosen");
-		else
-			res.send(this.userService.updateById(req.user.id, user));
+		res.send(this.userService.updateById(req.user.id, user));
 	}
 }

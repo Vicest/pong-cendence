@@ -18,7 +18,9 @@ export class JwtGuard extends AuthGuard('jwt') {
 			if (err && err.message === '2FA not validated') {
 				throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
 			}
-			throw err || new HttpException(info.message, HttpStatus.UNAUTHORIZED);
+			throw (
+				err || new HttpException(info?.message || '', HttpStatus.UNAUTHORIZED)
+			);
 		}
 		return user;
 	}
