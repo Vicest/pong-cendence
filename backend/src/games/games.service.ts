@@ -52,6 +52,15 @@ export class GamesService {
 		});
 	}
 
+	public async findGamesOf(playerId: number) {
+		return await this.matchRepository
+			.createQueryBuilder('match')
+			.innerJoinAndSelect('match.players', 'player')
+			.where('player.id = :id', { id: playerId })
+			.andWhere("match.status = 'finished'")
+			.getMany();
+	}
+
 	public async getActiveMatches() {
 		return this.matchRepository.find({
 			where: { status: Not('finished') },

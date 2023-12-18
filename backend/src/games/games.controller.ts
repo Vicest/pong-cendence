@@ -5,9 +5,7 @@ import { GamesService } from './games.service';
 @Controller('games')
 @UseGuards(JwtGuard)
 export class GamesController {
-	constructor(
-		private readonly gameService: GamesService
-	) {}
+	constructor(private readonly gameService: GamesService) {}
 
 	@Get('/')
 	getAll() {
