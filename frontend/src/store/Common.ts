@@ -5,3 +5,6 @@ import type { Game } from '$lib/types';
 export const ApiUrl = readable(`${PUBLIC_BACKEND_BASE}:${PUBLIC_BACKEND_PORT}`);
 
 export const selectedGame = writable<Game | null>(null);
+
+export const lastError = writable<string | null>(null);
+

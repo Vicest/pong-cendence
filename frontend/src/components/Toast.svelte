@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { MatchMakingSocket } from '$services/socket';
 	import { Toast, getToastStore } from '@skeletonlabs/skeleton';
+	import { lastError } from '../store/Common';
 	import { matchMakingChallenges } from '../store/Matchmaking';
 	import { userList } from '../store/User';
 	import { gameList } from '../store/Game';
