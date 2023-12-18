@@ -13,11 +13,15 @@ import { Observable } from 'rxjs';
 import { User } from './entities/user.entity';
 import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
+import { GamesService } from 'src/games/games.service';
 
 @Controller('users')
 @UseGuards(JwtGuard)
 export class UsersController {
-	constructor(private readonly userService: UsersService) {}
+	constructor(
+		private readonly userService: UsersService,
+		private readonly gameService: GamesService
+	) {}
 
 	/* ----------------------------- CHAT ------------------------------ */
 
@@ -51,6 +55,13 @@ export class UsersController {
 	getOneUsers(@Param('id') id: number): Promise<User | null> {
 		console.log('PEDIMOS EL USUARIO X');
 		return this.userService.find(id);
+	}
+
+	@Get(':id/rank')
+	async getRank(@Param('id') id: number) {
+		const matchesPlayed = await this.gameService.findGamesOf(id);
+		//TODO Use the matches played to calculate rank
+		return matchesPlayed;
 	}
 
 	// POST /users/:id

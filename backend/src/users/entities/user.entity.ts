@@ -64,7 +64,7 @@ export class User {
 	two_factor_auth_enabled: boolean;
 
 	@Column({
-		enum: ['online', 'offline', 'away', 'busy', 'invisible'],
+		enum: ['online', 'offline', 'in_game', 'away', 'busy', 'invisible'],
 		default: 'offline'
 	})
 	status: string;
