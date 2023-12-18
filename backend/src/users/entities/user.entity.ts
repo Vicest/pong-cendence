@@ -10,9 +10,7 @@ import { Channel } from '../../chat/entities/channel.entity';
 import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
 import { UserRelation } from './userRelations.entity';
-import { IsString, IsOptional, IsBase64, Validate, ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface, length, MaxLength, IsMimeType } from 'class-validator';
-import { IsImageFile } from 'src/app.service';
-import { SqlInMemory } from 'typeorm/driver/SqlInMemory';
+import { IsOptional, IsBase64, MaxLength } from 'class-validator';
 
 @Entity({
 	name: 'Users'

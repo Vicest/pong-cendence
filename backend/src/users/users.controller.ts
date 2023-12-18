@@ -21,10 +21,8 @@ import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import * as fs from 'fs';
 import { ConfigService } from '@nestjs/config';
-import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
-import { IsImageFile } from 'src/app.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Multer } from 'multer'
+import { Multer } from 'multer';
 
 
 @Controller('users')
@@ -34,8 +32,7 @@ export class UsersController {
 	constructor(
 		private readonly userService: UsersService,
 		private readonly configService: ConfigService,
-	) {  }
-
+	) {}
 
 	@Get(':login/img')
 	getUserImg(@Param('login') login: string, @Res() res) {
@@ -44,9 +41,7 @@ export class UsersController {
 			const fileContent = fs.readFileSync(imagePath);
 			res.setHeader('Content-Type', 'image/png');
 			res.send(fileContent);
-		}
-		else
-			res.sendStatus(404)
+		} else res.sendStatus(404);
 	}
 
 	/* ----------------------------- CHAT ------------------------------ */
@@ -72,21 +67,14 @@ export class UsersController {
 	// Get /users
 	@Get('/')
 	getAll(@Res() res) {
-		let users = this.userService.findAll();
-		res.send(users)
+		const users = this.userService.findAll();
+		res.send(users);
 	}
 
-	// GET /users/:login
-	@Get(':id')
-	getOneUsers(@Param('id') id: number): Promise<User | null> {
-		console.log('PEDIMOS EL USUARIO X');
-		return this.userService.find(id);
-	}
-
-	// GET /users/:login
-	@Get('user/:login')
-	async getUserByLogin(@Param('login') login: string,@Res() res) {
-		let user = await this.userService.findOne(login)
+	// GET /users/user/:login
+	@Get(':login')
+	async getUserByLogin(@Param('login') login: string, @Res() res) {
+		const user = await this.userService.findOne(login);
 		res.send(user);
 	}
 
@@ -101,29 +89,30 @@ export class UsersController {
 	createUsers(@Body() user: User): Observable<User> {
 		return this.userService.createUser(user);
 	}
-	
+
 	// PUT /
 	@Put('/')
 	@UseInterceptors(FileInterceptor('file'))
-		updateCurrentUser(@Req() req,
-	    @Res() res,
-	    @Body() user: User,
-	    @UploadedFile(
-	      new ParseFilePipe({
-			fileIsRequired: false,
-	        validators: [
-	          new MaxFileSizeValidator({ maxSize: 1000000 }),
-	          new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
-	        ],
-	      }),
-	    ) file: Express.Multer.File,
-	  ) {
+	async updateCurrentUser(
+		@Req() req,
+		@Res() res,
+		@Body() user: User,
+		@UploadedFile(
+			new ParseFilePipe({
+				fileIsRequired: false,
+				validators: [
+					new MaxFileSizeValidator({ maxSize: 2000000 }),
+					new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' })
+				]
+			})
+		)
+		file: Express.Multer.File
+	) {
 		//TODO: validar imagen como multipart/form-data y no como json
-		
+
 		//Crear imagen y guardarla en el servidor
-		if(user.avatar)
-		{
-			let imageName = req.user.login + Date.now().toString();
+		if (user.avatar) {
+			const imageName = req.user.login + Date.now().toString();
 			try {
 				if (!fs.existsSync('usersdata')) fs.mkdirSync('usersdata');
 				fs.writeFile(
@@ -134,29 +123,26 @@ export class UsersController {
 						console.log(err);
 					}
 				);
-				
 			} catch (e) {
 				console.log(e);
-				res.sendStatus(500)
+				res.sendStatus(500);
 			}
-			try{
+			try {
 				this.userService.findOne(req.user.login).then((res) => {
-					let pathFile = "usersdata/"+res.avatar.split("/")[4] + ".png"
-					if (fs.existsSync(pathFile))
-						fs.unlinkSync(pathFile);
-				})
+					const pathFile = 'usersdata/' + res.avatar.split('/')[4] + '.png';
+					if (fs.existsSync(pathFile)) fs.unlinkSync(pathFile);
+				});
 			} catch (e) {
-				console.log(e)
+				console.log(e);
 			}
-
 
 			// Especificar la url de la imagen del usuario
 			const databasePort = this.configService.get<number>('BACKEND_PORT');
 			const databaseUri = this.configService.get<string>('BACKEND_BASE');
 			user.avatar = `${databaseUri}:${databasePort}/users/${imageName}/img`;
 		}
-
-		res.send(this.userService.updateById(req.user.id, user));
-
+		if ((await this.userService.findOne(req.user.login)) && req.user.login)
+			res.sendStatus(400);
+		else res.send(this.userService.updateById(req.user.id, user));
 	}
 }
