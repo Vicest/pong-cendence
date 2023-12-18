@@ -22,6 +22,7 @@ export class PongGame extends GameEngine {
 
 	private gameState: {
 		status: 'paused' | 'running' | 'finished' | 'waiting';
+		countdown: number;
 		players: {
 			x: number;
 			y: number;
@@ -48,6 +49,7 @@ export class PongGame extends GameEngine {
 		super('Pong', game, '16/9', players, userId, [UP_ARROW, DOWN_ARROW, W, S, ESC]);
 		this.gameState = {
 			status: game.status,
+			countdown: 0,
 			players: [],
 			ball: {
 				x: this.p.width / 2,
@@ -114,6 +116,8 @@ export class PongGame extends GameEngine {
 		this.drawBall();
 		if (this.gameState.status === 'paused') {
 			this.pauseScene();
+		} else if (this.gameState.status === 'waiting') {
+			this.waitingScene();
 		}
 	}
 
@@ -229,6 +233,13 @@ export class PongGame extends GameEngine {
 			this.p.text('Player 1: W and S', this.p.width / 2, this.p.height / 2 + 50);
 			this.p.text('Player 2: UP and DOWN', this.p.width / 2, this.p.height / 2 + 75);
 		}
+	}
+
+	public waitingScene() {
+		this.p.textSize(32);
+		this.p.textAlign(this.p.CENTER, this.p.CENTER);
+		this.p.fill(255, 255, 255);
+		this.p.text(`Game starting in ${Math.ceil(this.gameState.countdown / 1000)}.`, this.p.width / 2, this.p.height / 2 - 50);
 	}
 
 	public destroy() {
