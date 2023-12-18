@@ -54,26 +54,39 @@ export class AuthService {
 		this.log.debug(`Token granted for ${user.login}`, this.constructor.name);
 		return { token, refreshToken };
 	}
-
+    
+    public async twofachangestatus(user: User, token: string)
+    {
+        if (await this.check2FAToken(user, token) == true)
+        {
+            if (user.two_factor_auth_enabled == true)
+            {
+                user.two_factor_auth_enabled = false;
+                user.two_factor_auth_secret = null;
+            }
+            else
+            {
+                user.two_factor_auth_enabled = true;
+            }
+            await this.usersService.updateUser(user.id, user)
+        }
+    }
 	public async generateTwoFactorAuthenticationSecret(user: User) {
-		const secret = authenticator.generateSecret();
-		const otpauthUrl = authenticator.keyuri(
-			user.nickname,
-			'Pongscendence',
-			secret
-		);
-		let iv = randomBytes(16);
-		console.log('User: ', user);
-		if (user.IV == null) {
-			user.IV = iv;
-		} else {
-			iv = user.IV;
-		}
-		user.two_factor_auth_secret = await this.encryptstring(secret, iv);
-		user.two_factor_auth_enabled = true;
-		await this.usersService.updateUser(user.id, user);
-		return toDataURL(otpauthUrl);
-	}
+        const secret = authenticator.generateSecret();
+        const otpauthUrl = authenticator.keyuri(user.nickname, 'Pongscendence', secret);
+        let iv = randomBytes(16);
+        if (user.IV == null)
+        {
+            user.IV = iv;
+        }
+        else
+        {
+            iv = user.IV;
+        }
+        user.two_factor_auth_secret = await this.encryptstring(secret, iv)
+        await this.usersService.updateUser(user.id, user)
+        return toDataURL(otpauthUrl);
+    }
 
 	public async check2FAToken(user: User, token: string) {
 		return authenticator.verify({
