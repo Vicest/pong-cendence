@@ -10,7 +10,7 @@ import { Channel } from '../../chat/entities/channel.entity';
 import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
 import { UserRelation } from './userRelations.entity';
-import { IsOptional, IsBase64, MaxLength } from 'class-validator';
+import { IsOptional, IsBase64, MaxLength, MinLength } from 'class-validator';
 
 @Entity({
 	name: 'Users'
@@ -29,6 +29,7 @@ export class User {
 		unique: true,
 		length: 20
 	})
+	@MinLength(4)
 	@MaxLength(20)
 	nickname: string;
 	@Column({

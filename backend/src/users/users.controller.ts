@@ -66,16 +66,16 @@ export class UsersController {
 	/* ----------------------------- USERS ------------------------------ */
 	// Get /users
 	@Get('/')
-	getAll(@Res() res) {
-		const users = this.userService.findAll();
-		res.send(users);
+	getAll() {
+		let users = this.userService.findAll();
+		return users;
 	}
 
-	// GET /users/user/:login
-	@Get(':login')
-	async getUserByLogin(@Param('login') login: string, @Res() res) {
-		const user = await this.userService.findOne(login);
-		res.send(user);
+	// GET /users/:login
+	@Get(':id')
+	getOneUsers(@Param('id') id: number): Promise<User | null> {
+		console.log('PEDIMOS EL USUARIO X');
+		return this.userService.find(id);
 	}
 
 	// POST /users/:id
@@ -108,7 +108,6 @@ export class UsersController {
 		)
 		file: Express.Multer.File
 	) {
-		console.log(user)
 		//TODO: validar imagen como multipart/form-data y no como json
 
 		//Crear imagen y guardarla en el servidor

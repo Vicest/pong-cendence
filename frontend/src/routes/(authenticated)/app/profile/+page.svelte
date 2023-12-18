@@ -68,7 +68,7 @@
 			<div class="relative">
 
 				<Avatar
-					src={encodedImg ?? currentUserCopy.avatar}
+					src={encodedImg || currentUserCopy.avatar}
 					width="w-40"
 					class="border-4 border-white rounded-full opacity-50"
 				/>
