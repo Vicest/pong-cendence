@@ -16,6 +16,7 @@ import { JwtRefreshGuard } from './guards/jwtRefresh.guard';
 import { Response } from 'express';
 import jwtConfiguration from 'config/jwt';
 import frontendConfiguration from 'config/frontend';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -68,7 +69,7 @@ export class AuthController {
 			.sendStatus(200);
 	}
 
-	@UseGuards(IntraAuthGuard)
+	@UseGuards(ThrottlerGuard, IntraAuthGuard)
 	@Get('login')
 	async login() {}
 
