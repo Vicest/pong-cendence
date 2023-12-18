@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Game } from './entities/game.entity';
 import { Match } from './entities/match.entity';
 
@@ -16,22 +15,23 @@ export class GamesService {
 		this.log = new Logger();
 	}
 
-	public async create(data): Promise<Game | null> {
-		console.log('Creating game', data.login);
-		return null;
-	}
-
-	public async find(id: number): Promise<Game | null> {
-		console.log('Finding game', id);
-		return null;
+	public async createMatch(data: Partial<Match>): Promise<Match | null> {
+		console.log('Creating match', data);
+		let newMatch = await this.matchRepository.save(data);
+		console.log('Created match', newMatch);
+		return newMatch;
 	}
 
 	public async findAll(): Promise<Game[]> {
 		return this.gameRepository.find();
 	}
 
-	public async findOne(id: number): Promise<Game | null> {
+	public async findGame(id: number): Promise<Game | null> {
 		return this.gameRepository.findOneBy({ id: id });
+	}
+
+	public async findGameById(name: string): Promise<Game | null> {
+		return this.gameRepository.findOneBy({ name: name });
 	}
 
 	public async findAllMatches() {
@@ -40,6 +40,7 @@ export class GamesService {
 			select: {
 				id: true,
 				created_at: true,
+				status: true,
 				game: {
 					id: true
 				},
@@ -49,6 +50,26 @@ export class GamesService {
 				events: true
 			}
 		});
+	}
+
+	public async findGamesOf(playerId: number) {
+		return await this.matchRepository
+			.createQueryBuilder('match')
+			.innerJoinAndSelect('match.players', 'player')
+			.where('player.id = :id', { id: playerId })
+			.andWhere("match.status = 'finished'")
+			.getMany();
+	}
+
+	public async getActiveMatches() {
+		return this.matchRepository.find({
+			where: { status: Not('finished') },
+			relations: ['game', 'players', 'events']
+		});
+	}
+
+	public async updateMatchStatus(matchId: number, status: string) {
+		return this.matchRepository.update(matchId, { id: matchId, status });
 	}
 
 	private log: Logger;

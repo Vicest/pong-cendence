@@ -1,42 +1,56 @@
 <script lang="ts">
-	export let id: number | string;
-
-	import { beforeNavigate, goto } from '$app/navigation';
-	import { gameInstances } from '../../store/Game';
-	import type { GameInstance, Person } from '$lib/types';
-	import { userList } from '../../store/User';
 	import { PongGame } from '$lib/GameEngine/Games/Pong';
-	import { onMount } from 'svelte';
+	import { userList } from '../../store/User';
+	import { gameInstances } from '../../store/Game';
+	import { get } from 'svelte/store';
+	import { currentUser } from '../../store/Auth';
+	import { onDestroy, tick } from 'svelte';
+	import { beforeNavigate } from '$app/navigation';
 
-	let gameInstance: GameInstance;
-	gameInstances.subscribe((instances) => {
-		console.log(instances);
-		gameInstance = instances.find((instance) => instance.id.toString() === id) as GameInstance;
-	});
+	export let id: number | string;
+	let game: PongGame;
+	let loading = true;
 
-	let players: Person[] = [];
-	userList.subscribe((users) => {
-		players = gameInstance.players.map((player) => {
-			return users.find((user) => user.id === player) as Person;
-		});
-	});
+	$: updateGame(id);
 
-	/*beforeNavigate(({ cancel }) => {
+	async function updateGame(id: number | string) {
+		if (typeof game !== 'undefined') {
+			loading = true;
+			game.destroy();
+		}
+		let gameInstance = get(gameInstances).find((instance) => instance.id === id);
+		if (typeof gameInstance !== 'undefined') {
+			let players = get(userList).filter((user) => gameInstance?.players.includes(user.id));
+			loading = false;
+			await tick();
+			game = new PongGame(gameInstance, players, get(currentUser).id);
+		}
+	}
+
+	beforeNavigate(({ cancel }) => {
 		if (
-			gameInstance.players.indexOf($currentUser.id) !== -1 &&
+			game.playable &&
 			!confirm('Are you sure you want to leave this page? All the progress will be lost.')
 		) {
 			cancel();
+			game.destroy();
 		}
-	});*/
+	});
 
-	onMount(() => {
-		let game = new PongGame(gameInstance.id);
+	onDestroy(() => {
+		game.destroy();
 	});
 </script>
 
 <div class="card p-4 h-full">
-	<div id="game-{gameInstance.id}" class="game-wrapper flex justify-center items-center h-full" />
+	{#if loading}
+		<div class="flex justify-center items-center h-screen animate-pulse">
+			<a href="/" aria-label="Home">
+				<img src="/images/logo.png" alt="logo" class="h-20" />
+			</a>
+		</div>
+	{/if}
+	<div id="game-{id}" class="game-wrapper flex justify-center items-center h-full" />
 </div>
 
 <style lang="postcss">

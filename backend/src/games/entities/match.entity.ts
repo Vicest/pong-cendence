@@ -4,11 +4,9 @@ import {
 	PrimaryGeneratedColumn,
 	OneToMany,
 	ManyToMany,
-	OneToOne,
-	PrimaryColumn,
 	JoinTable,
 	JoinColumn,
-	Unique
+	ManyToOne
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Game } from './game.entity';
@@ -21,11 +19,18 @@ export class Match {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@OneToOne(() => Game, (game) => game.id)
+	@ManyToOne(() => Game, (game) => game.id, { nullable: false })
 	@JoinColumn({
 		name: 'game_id'
 	})
 	game: Game;
+
+	@Column({
+		type: 'enum',
+		enum: ['paused', 'waiting', 'running', 'finished'],
+		default: 'waiting'
+	})
+	status: string;
 
 	@ManyToMany(() => User, (user) => user.id)
 	@JoinTable({

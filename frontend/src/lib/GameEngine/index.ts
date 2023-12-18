@@ -1,56 +1,112 @@
-import { browser } from '$app/environment';
+import type { GameInstance, Person } from '$lib/types';
+import { GamesSocket } from '$services/socket';
 import p5 from 'p5';
+import type { Socket } from 'socket.io-client';
 
 export default class GameEngine {
-	private name: string;
+	public name: string;
+	public gameInstance: GameInstance;
 	public p: p5;
 	private gameId: number;
-	private aspectRatio: string = '16 / 9';
+	private aspectRatio: string;
+	public players: Person[];
+	public playable: boolean = false;
+	protected userId: number;
+	protected keyInputHandlers: number[] = [];
+	protected socket: Socket;
 
-	constructor(name: string, gameId: number, aspectRatio?: string) {
+	protected keyInput: [number, boolean][];
+
+	constructor(
+		name: string,
+		gameInstance: GameInstance,
+		aspectRatio: string,
+		players: Person[],
+		userId: number,
+		keyInputHandlers: number[]
+	) {
+		this.gameInstance = gameInstance;
 		this.name = name;
-		this.gameId = gameId;
-		if (aspectRatio) this.aspectRatio = aspectRatio;
+		this.gameId = gameInstance.id;
+		this.players = players;
+		this.playable = this.players?.some((player) => player.id === userId);
+		this.userId = userId;
+		this.keyInputHandlers = keyInputHandlers;
+		this.keyInput = this.keyInputHandlers.map((key) => {
+			return [key, false];
+		});
+		if (aspectRatio) {
+			if (!/^\d+\/\d+$/.test(aspectRatio)) {
+				throw new Error('Invalid aspect ratio');
+			}
+			this.aspectRatio = aspectRatio;
+		}
+		GamesSocket.emit('join', this.gameId, (data) => {
+			console.log(data);
+		});
 		this.p = new p5(this.init.bind(this));
+		this.p.frameRate(60);
 		this.start();
 	}
 
 	private init(p: p5) {
-		let canvas: p5.Renderer;
-
 		p.setup = () => {
-			let parentElement = document.getElementById(`game-${this.gameId}`);
-			if (!parentElement) {
-				throw new Error(`Game with id ${this.gameId} does not exist`);
-			}
-			canvas = p.createCanvas(1024, 600);
-			canvas.parent(`#game-${this.gameId}`);
-
-			let _canvas = parentElement.querySelector('canvas');
-			_canvas.style.aspectRatio = this.aspectRatio;
-			_canvas.style.width = `min(100%,100vh * ${this.aspectRatio.split('/')[0]} / ${
-				this.aspectRatio.split('/')[1]
-			})`;
-			_canvas.style.height = '';
+			this.p = p;
+			this.SetupCanvas();
 		};
 
-		p.windowResized = () => {
-			/*let parentElement = document.getElementById(`game-${this.gameId}`);
-			let canvasElement = document.querySelector(`#game-${this.gameId} canvas`);
-			if (!parentElement || !canvasElement) {
-				throw new Error(`Game with id ${this.gameId} does not exist`);
-			}
-			canvasElement.style.display = 'none';
-			let canvasElementWidth = canvasElement.width;
-			let calculatedDimensions = this.fitRectIntoContainer(
-				Number(this.aspectRatio.split('/')[0]),
-				Number(this.aspectRatio.split('/')[1]),
-				parentElement.clientWidth,
-				parentElement.clientHeight
-			);
-			canvasElement.style.display = 'block';
-			canvasElement.style.scale = `calc(${calculatedDimensions.width / calculatedDimensions.height}`;*/
+		p.draw = () => {
+			this.drawMap();
+			if (this.playable) this.handleInput();
 		};
+
+		p.windowResized = () => {};
+
+		GamesSocket.on('tick', (data) => {
+			if (data.gameId !== this.gameId) return;
+			this.updateState(data.state);
+		});
+	}
+
+	protected drawMap() {}
+
+	protected handleInput() {
+		if (!this.playable) return;
+		let newKeyInput = this.keyInputHandlers.map((key) => {
+			return [key, this.p.keyIsDown(key)];
+		});
+		if (JSON.stringify(newKeyInput) === JSON.stringify(this.keyInput)) return;
+		this.keyInput = newKeyInput;
+		GamesSocket.emit('input', {
+			gameId: this.gameId,
+			data: this.keyInputHandlers.map((key) => {
+				return { [key]: this.p.keyIsDown(key) };
+			})
+		});
+	}
+
+	protected updateState(state: any) {}
+
+	protected SetupCanvas() {
+		const parentElement = document.getElementById(`game-${this.gameId}`);
+		if (!parentElement) {
+			throw new Error(`Game with id ${this.gameId} does not exist`);
+		}
+		const canvas = this.p.createCanvas(1024, 600);
+		canvas.parent(`#game-${this.gameId}`);
+		const _canvas = parentElement.querySelector('canvas');
+		if (!_canvas) {
+			throw new Error(`Canvas for game with id ${this.gameId} does not exist`);
+		}
+		_canvas.style.aspectRatio = this.aspectRatio;
+		_canvas.style.width = `min(100%,100vh * ${this.aspectRatio.split('/')[0]} / ${
+			this.aspectRatio.split('/')[1]
+		})`;
+		_canvas.style.height = '';
+	}
+
+	protected resetGame() {
+		GamesSocket.emit('reset', this.gameId);
 	}
 
 	protected getGame() {
@@ -60,22 +116,4 @@ export default class GameEngine {
 	protected start() {
 		// Additional initialization or starting game logic
 	}
-
-	private fitRectIntoContainer = (
-		rectWidth: number,
-		rectHeight: number,
-		containerWidth: number,
-		containerHeight: number
-	) => {
-		const widthRatio = containerWidth / rectWidth; // ratio container width to rect width
-		const heightRatio = containerHeight / rectHeight; // ratio container height to rect height
-
-		const ratio = Math.min(widthRatio, heightRatio); // take the smaller ratio
-
-		// new rect width and height, scaled by the same ratio
-		return {
-			width: rectWidth * ratio,
-			height: rectHeight * ratio
-		};
-	};
 }

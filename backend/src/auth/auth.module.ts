@@ -13,6 +13,8 @@ import { JwtRefreshGuard } from './guards/jwtRefresh.guard';
 import { JwtRefreshStrategy } from './strategies/jwtRefresh.strategy';
 import { AdminGuard } from './guards/admin.guard';
 import { AdminStrategy } from './strategies/admin.strategy';
+import { Jwt2faStrategy } from './strategies/jwt-2fa.strategy';
+import { Jwt2faAuthGuard } from './guards/jwt-2fa-auth.guard';
 
 @Module({
 	imports: [
@@ -39,8 +41,10 @@ import { AdminStrategy } from './strategies/admin.strategy';
 		JwtGuard,
 		JwtRefreshStrategy,
 		JwtRefreshGuard,
+		Jwt2faStrategy,
+		Jwt2faAuthGuard,
 		AuthService
 	],
-	exports: [IntraAuthGuard]
+	exports: [IntraAuthGuard, AuthService]
 })
 export class AuthModule {}

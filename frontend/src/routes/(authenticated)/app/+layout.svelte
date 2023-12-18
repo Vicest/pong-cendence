@@ -2,6 +2,7 @@
 	import '../../../app.postcss';
 	import { AppShell, initializeStores } from '@skeletonlabs/skeleton';
 	import Sidebar from '../../../components/Sidebar.svelte';
+	import Toast from '../../../components/Toast.svelte';
 	import Header from '../../../components/Header.svelte';
 	import Footer from '../../../components/Footer.svelte';
 	import Drawer from '../../../components/Drawer.svelte';
@@ -9,14 +10,30 @@
 	import { loading, init as AuthInit } from '../../../store/Auth';
 	import { init as UsersInit } from '../../../store/User';
 	import { init as GameInstancesInit } from '../../../store/Game';
-	import { init as ChatInit } from '../../../store/Chat';
+	import { init as MatchmakingInstancesInit } from '../../../store/Matchmaking';
+	import { init as ChatInstancesInit } from '../../../store/Chat';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 
 	initializeStores();
 	onMount(() => {
-		Promise.allSettled([AuthInit(), UsersInit(), GameInstancesInit(), ChatInit()]).then(() => {
-			console.log('Stores initialized');
-		});
+		AuthInit()
+			.then(() => {
+				console.log('Auth initialized');
+				Promise.all([
+					UsersInit(),
+					GameInstancesInit(),
+					MatchmakingInstancesInit(),
+					ChatInstancesInit()
+				]);
+			})
+			.catch((err) => {
+				if (err.statusCode === 403 || err.statusCode === 401) {
+					goto('/login');
+				} else if (err.statusCode === 400 && err.message === '2FA not validated') {
+					goto('/login/2fa');
+				}
+			});
 	});
 </script>
 
@@ -27,14 +44,9 @@
 			<img src="/images/logo.png" alt="logo" class="h-20" />
 		</a>
 	</div>
-{:else if $loading}
-	<div class="flex justify-center items-center h-screen animate-pulse">
-		<a href="/" aria-label="Home">
-			<img src="/images/logo.png" alt="logo" class="h-10" />
-		</a>
-	</div>
 {:else}
 	<Drawer />
+	<Toast />
 	<Modal />
 	<AppShell>
 		<svelte:fragment slot="header">

@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 
 import { UsersModule } from './users/users.module';
 import { GamesModule } from './games/games.module';
@@ -13,17 +11,18 @@ import { ChatModule } from './chat/chat.module';
 import databaseConfig from 'config/database';
 import jwtConfig from 'config/jwt';
 import frontendConfig from 'config/frontend';
+import { ScheduleModule } from '@nestjs/schedule';
+import { MatchMakingModule } from './matchmaking/matchmaking.module';
 
 @Module({
 	imports: [
-		//TODO Guarded endpoints fot the IntraAPI limiting, 2/s is what the intra allows for, we would need to adjust values here
+		ScheduleModule.forRoot(),
 		ThrottlerModule.forRoot([
 			{
-				ttl: 2000,
+				ttl: 1000,
 				limit: 1
 			}
 		]),
-		//
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule],
 			useFactory: (env: ConfigService) => ({
@@ -45,9 +44,8 @@ import frontendConfig from 'config/frontend';
 		UsersModule,
 		GamesModule,
 		AuthModule,
-		ChatModule
-	],
-	controllers: [AppController],
-	providers: [AppService]
+		ChatModule,
+		MatchMakingModule
+	]
 })
 export class AppModule {}

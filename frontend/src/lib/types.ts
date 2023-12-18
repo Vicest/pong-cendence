@@ -44,8 +44,8 @@ export interface Channel {
 type GameType = 'pong' | 'tetris';
 
 export interface Game {
-	id: GameType;
-	name: string;
+	id: number;
+	name: GameType;
 	image: string;
 	title: string;
 	description: string;
@@ -60,4 +60,5 @@ export interface GameInstance {
 	game: GameType;
 	players: number[];
 	created_at: Date;
+	status: 'waiting' | 'running' | 'finished' | 'paused';
 }

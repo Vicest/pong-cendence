@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -12,13 +12,16 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 		private authService: AuthService
 	) {
 		super({
-			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+			jwtFromRequest: (req) => req?.cookies?.token || null,
 			ignoreExpiration: false,
 			secretOrKey: env.get<string>('JWT_SECRET')
 		});
 	}
 
 	async validate(payload: JwtUser) {
-		return await this.authService.validateUser(payload);
+		let user = await this.authService.validateUser(payload);
+		if (!payload.twofavalidated && payload.twofaenabled)
+			throw new Error('2FA not validated');
+		return user;
 	}
 }

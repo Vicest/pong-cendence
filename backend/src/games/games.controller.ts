@@ -1,6 +1,5 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
-import { UsersService } from 'src/users/users.service';
 import { GamesService } from './games.service';
 
 @Controller('games')
@@ -23,7 +22,7 @@ export class GamesController {
 
 	@Get('/:id')
 	getOne(@Param('id') id: number) {
-		let game = this.gameService.findOne(id);
+		let game = this.gameService.findGame(id);
 		return game;
 	}
 }

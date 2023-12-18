@@ -18,7 +18,13 @@ import { ChannelMembersSubscriber } from './subcribers/channelmembers.subscriber
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([User, Channel, ChannelMessages, UserMessages , ChannelMembers]),
+		TypeOrmModule.forFeature([
+			User,
+			Channel,
+			ChannelMessages,
+			UserMessages,
+			ChannelMembers
+		]),
 		UsersModule,
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
@@ -29,7 +35,14 @@ import { ChannelMembersSubscriber } from './subcribers/channelmembers.subscriber
 		})
 	],
 
-	providers: [ChatService, UserMessagesSubscriber, ChatMessagesSubscriber, ChatSubscriber, ChannelMembersSubscriber, ChatGateway],
+	providers: [
+		ChatService,
+		UserMessagesSubscriber,
+		ChatMessagesSubscriber,
+		ChatSubscriber,
+		ChannelMembersSubscriber,
+		ChatGateway
+	],
 	controllers: [ChatController],
 	exports: [ChatGateway]
 })

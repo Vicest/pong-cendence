@@ -12,9 +12,11 @@ import { UsersGateway } from './users.gateway';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChannelMembers } from 'src/chat/entities/channelmembers.entity';
+import { GamesModule } from 'src/games/games.module';
 
 @Module({
 	imports: [
+		GamesModule,
 		TypeOrmModule.forFeature([
 			User,
 			UserRelation,

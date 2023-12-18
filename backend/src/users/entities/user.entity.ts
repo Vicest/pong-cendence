@@ -11,14 +11,13 @@ import { ChannelMembers } from 'src/chat/entities/channelmembers.entity';
 import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
 import { UserRelation } from './userRelations.entity';
-import { fileURLToPath } from 'url';
 
 enum MemberType {
 	INVITED = 'Invited',
 	BANNED = 'Banned',
 	MEMBER = 'Member',
-    ADMIN = 'Admin',
-    OWNER = 'Owner'
+	ADMIN = 'Admin',
+	OWNER = 'Owner'
 }
 
 @Entity({
@@ -50,7 +49,7 @@ export class User {
 		default: false
 	})
 	isAdmin: boolean;
-	
+
 	@Column({
 		type: 'text',
 		nullable: true,
@@ -58,19 +57,26 @@ export class User {
 	})
 	avatar: string;
 	@Column({
-		type: 'text',
+		type: 'bytea',
 		nullable: true,
 		default: null,
 		select: false
 	})
-	two_factor_auth_secret: string;
+	two_factor_auth_secret: Buffer;
+
 	@Column({
 		default: false
 	})
 	two_factor_auth_enabled: boolean;
 
 	@Column({
-		enum: ['online', 'offline', 'away', 'busy', 'invisible'],
+		type: 'bytea',
+		default: null
+	})
+	IV: Buffer;
+
+	@Column({
+		enum: ['online', 'offline', 'in_game', 'away', 'busy', 'invisible'],
 		default: 'offline'
 	})
 	status: string;
@@ -81,17 +87,11 @@ export class User {
 	})
 	created_at: Date;
 
-	
-
 	// @ManyToMany(() => Channel, (channel) => channel.members)
 	// channels: Channel[];
 
 	@OneToMany(() => ChannelMessages, (message) => message.sender)
 	channel_messages: ChannelMessages[];
-
-	// message.sender || message.receiver 
-	// @OneToMany(() => UserMessages, (message => message.sender || message.receiver ))
-	// messages_privatosos: UserMessages[];
 
 	@OneToMany(() => UserMessages, (message) => message.sender)
 	sent_messages: UserMessages[];
@@ -135,20 +135,21 @@ export class User {
 	}
 	friends: User[];
 
-
 	@OneToMany(() => ChannelMembers, (channelmembers) => channelmembers.user)
-    channels_relation: ChannelMembers[];
+	channels_relation: ChannelMembers[];
 
 	async loadChannels(): Promise<void> {
 		if (!this.channels_relation) {
 			return; // Retorna si channels_relation es undefined o null
 		}
-	
-		const filteredChannels = this.channels_relation.filter(channels_relation => {
-			return channels_relation.status !== MemberType.INVITED;
-		});
-	
-		this.channels = filteredChannels.map(channel => channel.channel);
+
+		const filteredChannels = this.channels_relation.filter(
+			(channels_relation) => {
+				return channels_relation.status !== MemberType.INVITED;
+			}
+		);
+
+		this.channels = filteredChannels.map((channel) => channel.channel);
 
 		this.channels.forEach((channel) => {
 			channel.loadMembers();
@@ -160,10 +161,12 @@ export class User {
 		if (!this.channels_relation) {
 			return;
 		}
-		const filteredChannels = this.channels_relation.filter(channels_relation => {
-			return  channels_relation.status === MemberType.INVITED;
-		});
-		this.channels = filteredChannels.map(channel => channel.channel);
+		const filteredChannels = this.channels_relation.filter(
+			(channels_relation) => {
+				return channels_relation.status === MemberType.INVITED;
+			}
+		);
+		this.channels = filteredChannels.map((channel) => channel.channel);
 		this.channels.forEach((channel) => {
 			channel.loadMembers();
 		});
