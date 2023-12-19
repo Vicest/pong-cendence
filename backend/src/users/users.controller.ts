@@ -31,6 +31,7 @@ import { GamesService } from 'src/games/games.service';
 export class UsersController {
 	constructor(
 		private readonly userService: UsersService,
+		private readonly gameService: GamesService,
 		private readonly configService: ConfigService
 	) {}
 
@@ -78,12 +79,17 @@ export class UsersController {
 		return this.userService.find(id);
 	}
 
-	// @Get(':id/rank')
-	// async getRank(@Param('id') id: number) {
-	// 	const matchesPlayed = await this.gameService.findGamesOf(id);
-	// 	//TODO Use the matches played to calculate rank
-	// 	return matchesPlayed;
-	// }
+	@Get(':id/rank')
+	async getRank(@Param('id') id: number) {
+		const matchesPlayed = await this.gameService.findGamesOf(id);
+		const rankedMatches = matchesPlayed.filter( (m) => m.rankShift !== 0 );
+		let totalRankShift: number = 0;
+		for(const match of rankedMatches) {
+			totalRankShift += match.winner.id === id ? match.rankShift : -match.rankShift;
+		}
+		//No ranked matches means you are 'Unranked'
+		return matchesPlayed.length > 0 ? 1500 + totalRankShift : -1;
+	}
 
 	// POST /users/:id
 	@Post(':id')
