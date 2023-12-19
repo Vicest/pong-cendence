@@ -81,7 +81,8 @@ export class UsersService {
 	}
 
 	public async exists(id: number): Promise<boolean> {
-		return (await this.userRepository.findOne({ where: { id: id } })) !== undefined;
+		const user = await this.userRepository.findOne({ where: { id: id } });
+		return user !== null;
 	}
 
 	private log: Logger;

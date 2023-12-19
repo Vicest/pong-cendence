@@ -3,10 +3,13 @@ import { Interval } from '@nestjs/schedule';
 import { QueuePlayer } from './queue-player';
 import { UsersService } from '../users/users.service';
 import { User } from 'src/users/entities/user.entity';
+import { GamesService } from 'src/games/games.service';
 
 @Injectable()
 export class MatchMakingService {
-	constructor(private userService: UsersService) {
+	constructor(
+		private userService: UsersService,
+		private gameService: GamesService) {
 		this.log = new Logger();
 		this.queuedPlayers_ = [];
 	}
@@ -14,7 +17,7 @@ export class MatchMakingService {
 	public async joinQueue(user: User): Promise<boolean> {
 		this.log.verbose(`ID: ${user.id} joins queue.`);
 
-		const joiningPlayer = await this.userService.find(user.id);
+		const joiningPlayer: User | null = await this.userService.find(user.id);
 		if (joiningPlayer === null) {
 			this.log.warn(
 				`ID: ${user.id} requested joining queue but not found in DB.`
@@ -24,9 +27,9 @@ export class MatchMakingService {
 
 		const queuedPlayer = new QueuePlayer(
 			user,
-			123 /*TODO joiningPlayer.Rating*/
+			await this.userService.getUserRank(joiningPlayer.id)
 		);
-		console.log('The qp: ', queuedPlayer);
+		this.log.verbose('The queued player: ', queuedPlayer);
 		if (
 			this.queuedPlayers_.find((player: QueuePlayer): boolean => {
 				return player.id == queuedPlayer.id;
@@ -49,7 +52,6 @@ export class MatchMakingService {
 		};
 		const index = this.queuedPlayers_.findIndex(leavingPlayer);
 		if (index == -1) {
-			//TODO use a LOGGER
 			return this.log.warn(`Player not in queue: ${id}`);
 		}
 		this.queuedPlayers_.splice(index, 1);
@@ -59,7 +61,7 @@ export class MatchMakingService {
 	private queuedPlayers_: QueuePlayer[];
 
 	@Interval(1000) //TODO tick_rate in env
-	private matchMakingTick(): void {
+	private async matchMakingTick(): Promise<void> {
 		//this.log.debug(JSON.stringify(this.queuedPlayers_))
 		const checkDate: number = Date.now();
 		const compareMax: number = this.queuedPlayers_.length - 1;
@@ -95,12 +97,21 @@ export class MatchMakingService {
 
 			lhs.matchedWith = candidates[0].id;
 			candidates[0].matchedWith = lhs.id;
-			//TODO use a LOGGER
 			this.log.verbose(`Match found: ${lhs.id} vs ${candidates[0].id}`);
-			// TODO this.gamesService.createMatch(...);
-			//vvv afterInsert vvv
+
+			const p1 = await this.userService.find(lhs.id);
+			const p2 = await this.userService.find(candidates[0].id);
+			//TODO This assumes mmq for classic pong only
+			const gameId = await this.gameService.findGameByName('pong');
+			const match = await this.gameService.createMatch({
+				game: gameId,
+				players: [p1, p2],
+				rankShift: QueuePlayer.ratingIncrease(lhs.rating, candidates[0].rating),
+				status: 'waiting'
+			});
 			this.leaveQueue(lhs.id);
 			this.leaveQueue(candidates[0].id);
+			//vvv afterInsert vvv
 			//TODO ^^ also change user status as busy. A nivel de match listener^^
 		}
 	}
