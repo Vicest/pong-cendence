@@ -32,6 +32,18 @@ export class Match {
 	})
 	status: string;
 
+	@Column({
+		type: 'int'
+	})
+	rankShift: number;
+
+	//TODO this should possible be null
+	@ManyToOne(() => User, (user) => user.id, { nullable: true })
+	@JoinColumn({
+		name: 'winner'
+	})
+	winner: User;
+
 	@ManyToMany(() => User, (user) => user.id)
 	@JoinTable({
 		name: 'MatchPlayers',
