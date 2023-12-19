@@ -417,7 +417,7 @@ COPY public."Channels" (id, nickname, description, password, created_at) FROM st
 --
 
 COPY public."Games" (id, name, title, image, creator, launched_at, description, enabled, created_at) FROM stdin;
-1	pong	pong		patata	2023-12-18 18:39:43.034497	patata	t	2023-12-18 18:39:43.034497
+1	pong	pong		patata	2023-12-19 16:49:09.107465	patata	t	2023-12-19 16:49:09.107465
 \.
 
 
@@ -466,6 +466,7 @@ COPY public."UserRelations" (sender_id, receptor_id, status) FROM stdin;
 --
 
 COPY public."Users" (id, login, nickname, "isRegistered", "isAdmin", avatar, two_factor_auth_secret, two_factor_auth_enabled, "IV", status, created_at) FROM stdin;
+1	josuna-t	josuna-t	f	f	https://cdn.intra.42.fr/users/2bff0a2073c645e5cf98731ae76fe446/josuna-t.jpg	\N	f	\N	online	2023-12-19 16:47:32.338085
 \.
 
 
@@ -515,7 +516,7 @@ SELECT pg_catalog.setval('public."UserMessages_id_seq"', 1, false);
 -- Name: Users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public."Users_id_seq"', 1, false);
+SELECT pg_catalog.setval('public."Users_id_seq"', 1, true);
 
 
 --
