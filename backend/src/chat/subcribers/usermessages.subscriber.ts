@@ -3,16 +3,18 @@ import {
 	EntitySubscriberInterface,
 	EventSubscriber,
 	InsertEvent,
-	UpdateEvent,
+	UpdateEvent
 } from 'typeorm';
 import { UserMessages } from '../entities/message/user.entity';
 import { ChatGateway } from '../gateways/chat.gateway';
 
 @EventSubscriber()
-export class UserMessagesSubscriber implements EntitySubscriberInterface<UserMessages> {
+export class UserMessagesSubscriber
+	implements EntitySubscriberInterface<UserMessages>
+{
 	constructor(
 		dataSource: DataSource,
-		private readonly chatGateway: ChatGateway,
+		private readonly chatGateway: ChatGateway
 	) {
 		dataSource.subscribers.push(this);
 	}
@@ -27,8 +29,16 @@ export class UserMessagesSubscriber implements EntitySubscriberInterface<UserMes
 	}
 
 	afterInsert(event: InsertEvent<UserMessages>) {
-		this.chatGateway.server.emit('priv_msg:created', event.entity);
+		// this.chatGateway.server.emit('priv_msg:created', event.entity);
+		// this.chatGateway;
+
+		this.chatGateway.server
+			.to(event.entity.sender.id.toString())
+			.emit('priv_msg:created', event.entity);
+		this.chatGateway.server
+			.to(event.entity.receiver.id.toString())
+			.emit('priv_msg:created', event.entity);
+		// this.chatGateway.server.
 		console.log(`BEFORE USER INSERT: `, event.entity);
 	}
 }
-

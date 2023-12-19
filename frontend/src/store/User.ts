@@ -72,6 +72,7 @@ export const init = () => {
 
 			UsersSocket.on('user:created', (createdUser) => {
 				userList.update((users) => {
+					console.log('user:created -> ', createdUser);
 					return [...users, createdUser];
 				});
 			});

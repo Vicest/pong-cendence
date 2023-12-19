@@ -15,7 +15,9 @@
 	let currentMessage = '';
 
 	// Inicializar la conexión de socket.io
-	onMount(async () => {});
+	onMount(async () => {
+		console.log('Seleccionado ', $receptor);
+	});
 
 	function scrollChatBottom(behavior?: ScrollBehavior): void {
 		elemChat.scrollTo({ top: elemChat.scrollHeight, behavior });
@@ -77,11 +79,11 @@
 
 	<div bind:this={elemChat} class="chat_area p-4 overflow-y-auto space-y-4">
 		{#each $priv_chat_history as $bubble}
-			{#if $bubble.sender.nickname === $currentUser.nickname}
+			{#if $bubble.sender.id === $currentUser.id}
 				<div class="grid grid-cols-[1fr_auto] gap-2">
 					<div class="card p-4 rounded-tr-none space-y-2 variant-soft-primary">
 						<div class="flex justify-between items-center">
-							<p class="font-bold">{$bubble.sender.nickname}</p>
+							<p class="font-bold">{$currentUser.nickname}</p>
 							<small class="opacity-50">{$bubble.created_at}</small>
 						</div>
 						<p>{$bubble.content}</p>

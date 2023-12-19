@@ -20,6 +20,8 @@ export class ChatGateway
 	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
 	private log: Logger;
+	// private login: string;
+
 	constructor(
 		private jwtService: JwtService,
 		private chatService: ChatService,
@@ -51,7 +53,12 @@ export class ChatGateway
 			setTimeout(() => {
 				this.usersService.updateStatusById(client.data.user.id, 'online');
 			}, 500);
-			this.log.debug(`${decoded.login} connected`, this.constructor.name);
+			this.log.debug(
+				`${decoded.login} connected on chatgateway`,
+				this.constructor.name
+			);
+			client.join(decoded.id.toString());
+			// this.login = decoded.login;
 		} catch (error) {
 			this.log.error(error, this.constructor.name);
 			client.disconnect();
@@ -64,5 +71,6 @@ export class ChatGateway
 			`${client.data.user.login} disconnected`,
 			this.constructor.name
 		);
+		client.leave();
 	}
 }

@@ -32,7 +32,7 @@ export class UsersSubscriber implements EntitySubscriberInterface<User> {
 	afterInsert(event: InsertEvent<User>) {
 		this.usersGateway.server.emit(
 			'user:created',
-			event.entity.id,
+			// event.entity.id,
 			event.entity
 		);
 	}
