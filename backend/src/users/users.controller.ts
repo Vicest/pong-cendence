@@ -94,7 +94,7 @@ export class UsersController {
 
 	@Get(':id/rank')
 	async getRank(@Param('id') id: number) {
-		if (!this.userService.exists(id))
+		if (!(await this.userService.exists(id)))
 			throw new NotFoundException();
 		const userRank:number = await this.userService.getUserRank(id);
 		return userRank;

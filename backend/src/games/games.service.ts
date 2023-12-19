@@ -30,7 +30,7 @@ export class GamesService {
 		return this.gameRepository.findOneBy({ id: id });
 	}
 
-	public async findGameById(name: string): Promise<Game | null> {
+	public async findGameByName(name: string): Promise<Game | null> {
 		return this.gameRepository.findOneBy({ name: name });
 	}
 
