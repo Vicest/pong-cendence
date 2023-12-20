@@ -50,7 +50,7 @@ export class AuthController {
 	@UseGuards(JwtGuard)
 	@Post('logout')
 	async logout(@Req() req, @Res() res: Response) {
-		return res.clearCookie('token').clearCookie('refreshToken').sendStatus(200);
+		res.clearCookie('token').clearCookie('refreshToken').sendStatus(200);
 	}
 
 	@UseGuards(JwtRefreshGuard)
