@@ -25,3 +25,9 @@ export const MatchMakingSocket = io(`${PUBLIC_BACKEND_BASE}:${PUBLIC_BACKEND_POR
 	transports: ['websocket'],
 	autoConnect: false
 });
+
+export const ChatSocket = io(`${PUBLIC_BACKEND_BASE}:${PUBLIC_BACKEND_PORT}/chats`, {
+	withCredentials: true,
+	transports: ['websocket'],
+	autoConnect: false
+});

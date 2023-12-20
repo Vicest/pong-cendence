@@ -7,6 +7,26 @@ export interface Person {
 	status: 'online' | 'offline' | 'away' | 'busy' | 'invisible';
 	// feed: MessageFeed[];
 }
+
+export interface MessageFeed {
+	id: number;
+	content: string;
+	created_at: Date;
+	sender: Person;
+}
+
+export interface ChannelsChat {
+	id: number;
+	name: string;
+	description: string;
+	messages: MessageFeed[];
+	created_at: Date;
+	type: 'Channel' | 'Direct';
+	users: Person[];
+	user: Person;
+	index: number;
+}
+
 export interface PrivateMessageFeed {
 	created_at: any;
 	content: any;

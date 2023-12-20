@@ -3,13 +3,19 @@ import {
 	Column,
 	PrimaryGeneratedColumn,
 	OneToMany,
+	Unique,
 	ManyToMany,
+	JoinTable,
 	OneToOne,
-	PrimaryColumn,
-	JoinTable
+	ManyToOne
 } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
-import { ChannelMessages } from './message/channel.entity';
+import { ChannelMessages } from './channel.message.entity';
+import { User } from 'src/users/entities/user.entity';
+
+export enum MessageType {
+	DIRECT = 'Direct',
+	CHANNEL = 'Channel'
+}
 
 @Entity({
 	name: 'Channels'
@@ -18,13 +24,22 @@ export class Channel {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column()
-	nickname: string;
+	@Column({
+		type: 'varchar',
+		unique: true,
+		length: 20,
+		nullable: false
+	})
+	name: string;
 
-	@Column()
+	@Column({
+		nullable: true
+	})
 	description: string;
 
-	@Column()
+	@Column({
+		nullable: true
+	})
 	password: string;
 
 	@Column({
@@ -33,18 +48,83 @@ export class Channel {
 	})
 	created_at: Date;
 
-	@ManyToMany(() => User, (user) => user.channels)
+	@OneToMany(() => ChannelMessages, (message) => message.channel)
 	@JoinTable({
-		name: 'ChannelMembers',
+		name: 'ChannelMessages',
 		joinColumn: {
-			name: 'channel_id'
+			name: 'channel',
+			referencedColumnName: 'id'
 		},
 		inverseJoinColumn: {
-			name: 'user_id'
+			name: 'message',
+			referencedColumnName: 'id'
 		}
 	})
-	members: User[];
-
-	@OneToMany(() => ChannelMessages, (message) => message.receiver)
 	messages: ChannelMessages[];
+
+	@ManyToOne(() => User, (user) => user.channels)
+	owner: User;
+
+	@ManyToMany(() => User, (user) => user.channels, { cascade: true })
+	@JoinTable({
+		name: 'ChannelUsers',
+		joinColumn: {
+			name: 'channel',
+			referencedColumnName: 'id'
+		},
+		inverseJoinColumn: {
+			name: 'user',
+			referencedColumnName: 'id'
+		}
+	})
+	users: User[];
+
+	@ManyToMany(() => User)
+	@JoinTable({
+		name: 'ChannelAdmins',
+		joinColumn: {
+			name: 'channel',
+			referencedColumnName: 'id'
+		},
+		inverseJoinColumn: {
+			name: 'user',
+			referencedColumnName: 'id'
+		}
+	})
+	admins: User[];
+
+	@ManyToMany(() => User)
+	@JoinTable({
+		name: 'ChannelBanned',
+		joinColumn: {
+			name: 'channel',
+			referencedColumnName: 'id'
+		},
+		inverseJoinColumn: {
+			name: 'user',
+			referencedColumnName: 'id'
+		}
+	})
+	banned: User[];
+
+	@ManyToMany(() => User)
+	@JoinTable({
+		name: 'ChannelMuted',
+		joinColumn: {
+			name: 'channel',
+			referencedColumnName: 'id'
+		},
+		inverseJoinColumn: {
+			name: 'user',
+			referencedColumnName: 'id'
+		}
+	})
+	muted: User[];
+
+	@Column({
+		type: 'enum',
+		enum: MessageType,
+		default: MessageType.CHANNEL
+	})
+	type: MessageType;
 }

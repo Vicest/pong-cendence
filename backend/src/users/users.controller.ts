@@ -17,7 +17,6 @@ import {
 import { UsersService } from './users.service';
 import { Observable } from 'rxjs';
 import { User } from './entities/user.entity';
-import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import * as fs from 'fs';
 import { ConfigService } from '@nestjs/config';
@@ -25,6 +24,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 
 import { GamesService } from 'src/games/games.service';
+import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 
 @Controller('users')
 @UseGuards(JwtGuard)
@@ -47,19 +47,19 @@ export class UsersController {
 	/* ----------------------------- CHAT ------------------------------ */
 
 	// GET /users/messages/:id
-	@Get('messages/:login/:login2')
+	/*@Get('messages/:login/:login2')
 	getMessages(
 		@Param('login') login: string,
 		@Param('login2') login2: string
-	): Promise<UserMessages[] | null> {
-		return this.userService.findUserMessages(login, login2);
-	}
+	): Promise<ChannelMessages[] | null> {
+		//return this.userService.findMessages(login, login2);
+	} */
 
 	// POST /users/priv_messages
 	@Post('priv_messages')
 	createPrivateMessages(
-		@Body() msg: UserMessages
-	): Observable<UserMessages | null> {
+		@Body() msg: ChannelMessages
+	): Observable<ChannelMessages | null> {
 		return this.userService.createUserMessage(msg);
 	}
 
@@ -69,6 +69,18 @@ export class UsersController {
 	getAll() {
 		let users = this.userService.findAll();
 		return users;
+	}
+
+	// GET /friends
+	@Get('/friends')
+	getFriends(@Req() req) {
+		return this.userService.findFriends(req.user.id);
+	}
+
+	// GET /friends/:id
+	@Post('/friends/:id')
+	addFriend(@Req() req, @Param('id') id: number) {
+		return this.userService.addFriend(req.user.id, id);
 	}
 
 	// GET /users/:login

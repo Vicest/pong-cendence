@@ -8,7 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { UsersService } from './users.service';
 
 @WebSocketGateway({
@@ -24,7 +24,7 @@ export class UsersGateway
 	private log: Logger;
 	constructor(
 		private jwtService: JwtService,
-		private usersService: UsersService
+		@Inject(forwardRef(() => UsersService)) private usersService: UsersService
 	) {
 		this.log = new Logger();
 	}
@@ -52,6 +52,7 @@ export class UsersGateway
 			setTimeout(() => {
 				this.usersService.updateStatusById(client.data.user.id, 'online');
 			}, 500);
+			client.join('user_' + decoded.id);
 			this.log.debug(`${decoded.login} connected`, this.constructor.name);
 		} catch (error) {
 			this.log.error(error, this.constructor.name);
