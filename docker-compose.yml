@@ -11,7 +11,6 @@ services:
     networks:
       - pong-network
     volumes:
-      - ./db.sql:/docker-entrypoint-initdb.d/db.sql
       - ./postgres-data:/var/lib/postgresql/data
     restart: always
 

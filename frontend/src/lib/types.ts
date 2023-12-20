@@ -23,6 +23,8 @@ export interface ChannelsChat {
 	created_at: Date;
 	type: 'Channel' | 'Direct';
 	users: Person[];
+	user: Person;
+	index: number;
 }
 
 export interface PrivateMessageFeed {

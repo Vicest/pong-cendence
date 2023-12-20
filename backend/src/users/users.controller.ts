@@ -71,6 +71,18 @@ export class UsersController {
 		return users;
 	}
 
+	// GET /friends
+	@Get('/friends')
+	getFriends(@Req() req) {
+		return this.userService.findFriends(req.user.id);
+	}
+
+	// GET /friends/:id
+	@Post('/friends/:id')
+	addFriend(@Req() req, @Param('id') id: number) {
+		return this.userService.addFriend(req.user.id, id);
+	}
+
 	// GET /users/:login
 	@Get(':id')
 	getOneUsers(@Param('id') id: number): Promise<User | null> {

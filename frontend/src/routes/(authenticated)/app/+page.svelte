@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { fetchUser } from "../../../components/data/fetchUser.svelte"
+	import { onMount } from 'svelte';
+	import { fetchUser } from '../../../components/data/fetchUser.svelte';
 	import { AppRail, AppRailAnchor, AppRailTile, Avatar } from '@skeletonlabs/skeleton';
-	import type { PageData } from './$types'
+	import type { PageData } from './$types';
 	import { currentUser } from '../../../store/Auth';
+	import Chat from '../../../components/chat/Chat.svelte';
 </script>
 
 <div class="container h-full mx-auto flex justify-center items-center">
@@ -23,15 +24,11 @@
 				/>
 			</svg>
 		</figure>
+
 		<!-- / -->
 		<div class="flex justify-center space-x-2">
-			<a
-				class="btn variant-filled"
-				href="https://skeleton.dev/"
-				target="_blank"
-				rel="noreferrer"
-			>
-				{ $currentUser.nickname }
+			<a class="btn variant-filled" href="https://skeleton.dev/" target="_blank" rel="noreferrer">
+				{$currentUser.nickname}
 			</a>
 		</div>
 		<div class="space-y-2">
@@ -41,6 +38,7 @@
 		</div>
 	</div>
 </div>
+
 <style lang="postcss">
 	figure {
 		@apply flex relative flex-col;
@@ -51,8 +49,7 @@
 	}
 	.img-bg {
 		@apply absolute z-[-1] rounded-full blur-[50px] transition-all;
-		animation: pulse 5s cubic-bezier(0, 0, 0, 0.5) infinite,
-			glow 5s linear infinite;
+		animation: pulse 5s cubic-bezier(0, 0, 0, 0.5) infinite, glow 5s linear infinite;
 	}
 	@keyframes glow {
 		0% {

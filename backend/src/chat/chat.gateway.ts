@@ -10,14 +10,13 @@ import {
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Channel } from './entities/channel.entity';
-import { UserRelation } from 'src/users/entities/userRelations.entity';
 
 @WebSocketGateway({
 	cors: true,
@@ -33,7 +32,7 @@ export class ChatGateway
 		@InjectRepository(Channel)
 		private readonly channelRepository: Repository<Channel>,
 		private jwtService: JwtService,
-		private usersService: UsersService
+		@Inject(forwardRef(() => UsersService)) private usersService: UsersService
 	) {
 		this.log = new Logger();
 	}
@@ -65,8 +64,25 @@ export class ChatGateway
 				.leftJoinAndSelect('Channel.users', 'channels_relation')
 				.leftJoinAndSelect('Channel.messages', 'messages')
 				.leftJoinAndSelect('messages.sender', 'sender')
-				.orderBy('messages.created_at', 'ASC');
-			return channels.getMany();
+				.orderBy('messages.created_at', 'ASC')
+				.getMany();
+			let notJoinedChannels = channels.filter((channel) => {
+				return (
+					channel.type == 'Channel' &&
+					!channel.users.some((user) => {
+						return user.id == jwtUser.id;
+					})
+				);
+			});
+			let joinedChannels = channels.filter((channel) => {
+				return channel.users.some((user) => {
+					return user.id == jwtUser.id;
+				});
+			});
+			return {
+				joinedChannels,
+				notJoinedChannels
+			};
 		} catch (error) {
 			console.log(error);
 		}
@@ -128,7 +144,7 @@ export class ChatGateway
 			const decoded = this.jwtService.verify(this.getAuthCookie(client));
 			client.data.user = decoded;
 			const chatRooms = await this.getChatRooms(client.data.user);
-			for (const room of chatRooms) {
+			for (const room of chatRooms.joinedChannels) {
 				client.join('channel_' + room.id);
 			}
 			client.emit('rooms', chatRooms);

@@ -12,7 +12,7 @@ import {
 import { ChannelMessages } from './channel.message.entity';
 import { User } from 'src/users/entities/user.entity';
 
-enum MessageType {
+export enum MessageType {
 	DIRECT = 'Direct',
 	CHANNEL = 'Channel'
 }
@@ -27,14 +27,19 @@ export class Channel {
 	@Column({
 		type: 'varchar',
 		unique: true,
-		length: 20
+		length: 20,
+		nullable: false
 	})
 	name: string;
 
-	@Column()
+	@Column({
+		nullable: true
+	})
 	description: string;
 
-	@Column()
+	@Column({
+		nullable: true
+	})
 	password: string;
 
 	@Column({
@@ -60,7 +65,7 @@ export class Channel {
 	@ManyToOne(() => User, (user) => user.channels)
 	owner: User;
 
-	@ManyToMany(() => User)
+	@ManyToMany(() => User, (user) => user.channels, { cascade: true })
 	@JoinTable({
 		name: 'ChannelUsers',
 		joinColumn: {

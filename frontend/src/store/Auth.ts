@@ -7,6 +7,8 @@ loading.set(true);
 
 export const currentUser = writable<Person>();
 
+export const currentUserFriends = writable<Person[]>();
+
 export const init = async () => {
 	try {
 		let res = await Api.get('/auth/me');
@@ -14,6 +16,8 @@ export const init = async () => {
 		setTimeout(() => {
 			loading.set(false);
 		}, 1000);
+		res = await Api.get('/users/friends');
+		currentUserFriends.set(res.data);
 		return res.data;
 	} catch (error) {
 		throw error;

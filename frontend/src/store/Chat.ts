@@ -5,17 +5,28 @@ import { get, writable } from 'svelte/store';
 import { userList } from './User';
 import { currentUser } from './Auth';
 
-export const channelsChat = writable<ChannelsChat[]>();
+export const joinedChannelsChat = writable<ChannelsChat[]>();
+export const notJoinedChannelChat = writable<ChannelsChat[]>();
 
 export const init = () => {
 	ChatSocket.connect();
 
-	ChatSocket.on('rooms', (rooms) => {
-		channelsChat.set(rooms);
-	});
+	ChatSocket.on(
+		'rooms',
+		({
+			joinedChannels,
+			notJoinedChannels
+		}: {
+			joinedChannels: ChannelsChat[];
+			notJoinedChannels: ChannelsChat[];
+		}) => {
+			joinedChannelsChat.set(joinedChannels);
+			notJoinedChannelChat.set(notJoinedChannels);
+		}
+	);
 
 	ChatSocket.on('channel_message', (data: { channel: number; message: string; sender: number }) => {
-		channelsChat.update((channels) => {
+		joinedChannelsChat.update((channels) => {
 			return channels.map((channel) => {
 				if (channel.id === data.channel) {
 					console.log(data);
@@ -28,6 +39,12 @@ export const init = () => {
 				}
 				return channel;
 			});
+		});
+	});
+
+	ChatSocket.on('channel:created', (channel: ChannelsChat) => {
+		joinedChannelsChat.update((channels) => {
+			return [...channels, channel];
 		});
 	});
 };

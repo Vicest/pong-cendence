@@ -4,8 +4,9 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult, DeleteResult } from 'typeorm';
 import { Observable, from } from 'rxjs';
-import { UserRelation } from './entities/userRelations.entity';
-import { Channel } from 'src/chat/entities/channel.entity';
+import { Channel, MessageType } from 'src/chat/entities/channel.entity';
+import { UsersGateway } from './users.gateway';
+import { ChatGateway } from 'src/chat/chat.gateway';
 import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 
 @Injectable()
@@ -13,10 +14,12 @@ export class UsersService {
 	constructor(
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
-		@InjectRepository(UserRelation)
-		private readonly userRelationRepository: Repository<UserRelation>,
 		@InjectRepository(ChannelMessages)
-		private readonly messageRepository: Repository<ChannelMessages>
+		private readonly messageRepository: Repository<ChannelMessages>,
+		@InjectRepository(Channel)
+		private readonly channelRepository: Repository<Channel>,
+		private readonly usersGateway: UsersGateway,
+		private readonly chatGateway: ChatGateway
 	) {
 		this.log = new Logger();
 	}
@@ -88,6 +91,52 @@ export class UsersService {
 				id
 			}
 		);
+	}
+
+	async addFriend(id: number, friend: number): Promise<User> {
+		let user = await this.userRepository.findOne({
+			where: { id },
+			relations: ['friends']
+		});
+		let friendUser = await this.userRepository.findOne({
+			where: { id: friend }
+		});
+		user.friends.push(friendUser);
+
+		let channel = new Channel();
+		channel.name = user.nickname + '_' + friendUser.nickname;
+		channel.type = MessageType.DIRECT;
+		channel.users = [user, friendUser];
+		channel.owner = user;
+		channel.messages = [];
+		channel.description =
+			'Chat privado entre ' + user.nickname + ' y ' + friendUser.nickname;
+		channel = await this.channelRepository.save(channel);
+		console.log(channel);
+		this.usersGateway.server.to('user_' + id).emit('friend', friendUser);
+		this.usersGateway.server.to('user_' + friend).emit('friend', user);
+		this.chatGateway.server.fetchSockets().then((sockets) => {
+			sockets.forEach((socket) => {
+				console.log(socket.data.user.id, id, friend, socket.data.user);
+				if (socket.data.user.id == id || socket.data.user.id == friend) {
+					socket.join('channel_' + channel.id);
+				}
+			});
+			this.chatGateway.server
+				.to('channel_' + channel.id)
+				.emit('channel:created', channel);
+		});
+
+		return await this.userRepository.save(user);
+	}
+
+	async findFriends(id: number): Promise<User[]> {
+		return (
+			await this.userRepository.findOne({
+				where: { id },
+				relations: ['friends']
+			})
+		).friends;
 	}
 
 	createUser(user: User): Observable<User> {
