@@ -2,10 +2,9 @@ import {
 	Entity,
 	Column,
 	ManyToOne,
-	OneToOne,
 	PrimaryColumn,
-	PrimaryGeneratedColumn,
-	JoinColumn
+	JoinColumn,
+	OneToMany
 } from 'typeorm';
 import { User } from './user.entity';
 
@@ -20,12 +19,24 @@ export class UserRelation {
 	@JoinColumn({ name: 'sender_id' })
 	sender: User;
 
+	@Column({
+		type: 'boolean',
+		default: false
+	})
+	sender_block_status: boolean;
+
 	@PrimaryColumn()
 	receptor_id: number;
 
 	@ManyToOne(() => User)
 	@JoinColumn({ name: 'receptor_id' })
 	receptor: User;
+
+	@Column({
+		type: 'boolean',
+		default: false
+	})
+	receiver_block_status: boolean;
 
 	@Column({
 		default: 0

@@ -2,16 +2,11 @@ import {
 	Entity,
 	Column,
 	PrimaryGeneratedColumn,
-	OneToMany,
-	ManyToMany,
-	OneToOne,
-	PrimaryColumn,
-	JoinTable,
 	ManyToOne,
 	JoinColumn
 } from 'typeorm';
-import { User } from '../../../users/entities/user.entity';
-import { Channel } from '../channel.entity';
+import { User } from '../../users/entities/user.entity';
+import { Channel } from './channel.entity';
 
 @Entity({
 	name: 'ChannelMessages'
@@ -33,7 +28,7 @@ export class ChannelMessages {
 	@JoinColumn({
 		name: 'channel_id'
 	})
-	receiver: Channel;
+	channel: Channel;
 
 	@Column({
 		type: 'timestamp',

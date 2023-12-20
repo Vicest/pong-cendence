@@ -5,9 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, UpdateResult, DeleteResult } from 'typeorm';
 import { Observable, from } from 'rxjs';
 import { UserRelation } from './entities/userRelations.entity';
-import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
-import { UserMessages } from 'src/chat/entities/message/user.entity';
 import { Channel } from 'src/chat/entities/channel.entity';
+import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 
 @Injectable()
 export class UsersService {
@@ -17,9 +16,7 @@ export class UsersService {
 		@InjectRepository(UserRelation)
 		private readonly userRelationRepository: Repository<UserRelation>,
 		@InjectRepository(ChannelMessages)
-		private readonly channelmessagesRepository: Repository<ChannelMessages>,
-		@InjectRepository(UserMessages)
-		private readonly usermessagesRepository: Repository<UserMessages>
+		private readonly messageRepository: Repository<ChannelMessages>
 	) {
 		this.log = new Logger();
 	}
@@ -93,22 +90,6 @@ export class UsersService {
 		);
 	}
 
-	/*Con Dios me disculpo por esta aberracion de función ...
-        pero situaciones drasticas requieren medidas drasticas*/
-	async findUserMessages(
-		login: string,
-		login2: string
-	): Promise<UserMessages[] | undefined> {
-		let contents = await this.usermessagesRepository.find({
-			where: [
-				{ sender: { login }, receiver: { login: login2 } },
-				{ sender: { login: login2 }, receiver: { login } }
-			],
-			relations: ['sender', 'receiver']
-		});
-		return contents;
-	}
-
 	createUser(user: User): Observable<User> {
 		return from(this.userRepository.save(user));
 	}
@@ -124,18 +105,36 @@ export class UsersService {
 
 	//Funciones para el chat
 	//Mensajes privados
-	createUserMessage(priv_message: UserMessages): Observable<UserMessages> {
-		return from(this.usermessagesRepository.save(priv_message));
+	createUserMessage(
+		priv_message: ChannelMessages
+	): Observable<ChannelMessages> {
+		return from(this.messageRepository.save(priv_message));
 	}
 	//Mensajes Canales
 	createChatMessage(chan_msg: ChannelMessages): Observable<ChannelMessages> {
-		return from(this.channelmessagesRepository.save(chan_msg));
+		return from(this.messageRepository.save(chan_msg));
+	}
+
+	sendPrivateMessage(sender: User, receptor: User, message: string) {
+		return this.messageRepository.save({
+			sender,
+			receiver: receptor,
+			content: message
+		});
+	}
+
+	sendChannelMessage(sender: User, channel: Channel, message: string) {
+		return this.messageRepository.save({
+			sender,
+			channel,
+			content: message
+		});
 	}
 }
 
 // /*Con Dios me disculpo por esta aberracion de función ...
 //     pero situaciones drasticas requieren medidas drasticas*/
-// 	async findUserMessages(nickname: string): Promise<User | undefined> {
+// 	async findMessages(nickname: string): Promise<User | undefined> {
 // 		let contents = await this.userRepository.findOne({
 // 			where: { nickname },
 // 			relations: [

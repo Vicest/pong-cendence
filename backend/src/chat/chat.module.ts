@@ -3,13 +3,18 @@ import { ChatService } from './chat.service';
 import { ChatController } from './chat.controller';
 import { UsersModule } from '../users/users.module';
 import { ChatGateway } from './chat.gateway';
-import { UsersService } from 'src/users/users.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { User } from 'src/users/entities/user.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Channel } from './entities/channel.entity';
+import { UserRelation } from 'src/users/entities/userRelations.entity';
+import { ChannelMessages } from './entities/channel.message.entity';
 
 @Module({
 	imports: [
 		UsersModule,
+		TypeOrmModule.forFeature([User, Channel, UserRelation, ChannelMessages]),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
 			useFactory: (env: ConfigService) => ({
