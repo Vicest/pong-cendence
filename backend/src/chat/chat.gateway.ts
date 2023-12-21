@@ -113,6 +113,27 @@ export class ChatGateway
 		}
 	}
 
+	public channelCreated(channel: Channel) {
+		this.server.sockets.forEach((socket) => {
+			if (socket.data.user.id == channel.owner.id) {
+				socket.join('channel_' + channel.id);
+			}
+		});
+		this.server.to('channel_' + channel.id).emit('channel:created', channel);
+	}
+
+	public userJoinedChannel(userId: number, channel: Channel) {
+		this.server.sockets.forEach((socket) => {
+			if (socket.data.user?.id === userId) {
+				socket.join('channel_' + channel.id);
+			}
+		});
+		this.server.to('channel_' + channel.id).emit('channel:joined', {
+			userId: userId,
+			channel
+		});
+	}
+
 	@SubscribeMessage('channel_message')
 	async handleChannelMessage(
 		@ConnectedSocket() client: Socket,

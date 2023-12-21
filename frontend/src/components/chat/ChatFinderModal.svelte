@@ -8,14 +8,14 @@
 		Toast,
 		getToastStore
 	} from '@skeletonlabs/skeleton';
-	import { notJoinedChannelChat } from '../../store/Chat';
+	import { joinChannel, notJoinedChannelChat } from '../../store/Chat';
 
 	import type { ChannelsChat, Person } from '$lib/types';
-	import { currentUser, currentUserFriends } from '../../store/Auth';
+	import { currentUser } from '../../store/Auth';
 	import type { SvelteComponent } from 'svelte';
 	import ChatAvatar from './ChatAvatar.svelte';
 	import { Api } from '$services/api';
-	import { userList } from '../../store/User';
+	import { currentUserFriends, sendFriendRequest, userList } from '../../store/User';
 
 	function addRelation({
 		type,
@@ -24,15 +24,10 @@
 		type: 'Direct' | 'Channel';
 		selected: ChannelsChat | Person;
 	}) {
-		console.log('addRelation', type, selected);
 		if (type === 'Direct') {
-			Api.post('/users/friends/' + selected.id)
-				.then((res) => {
-					console.log(res);
-				})
-				.catch((err) => {
-					console.log(err);
-				});
+			sendFriendRequest(selected.id);
+		} else {
+			joinChannel(selected.id);
 		}
 	}
 
@@ -55,7 +50,12 @@
 	$: filteredUsers = $userList
 		.filter((user) => {
 			return (
-				$currentUserFriends.map((u) => u.id).indexOf(user.id) === -1 && user.id !== $currentUser.id
+				$currentUserFriends.map((u) => u.id).indexOf(user.id) === -1 &&
+				user.id !== $currentUser.id &&
+				$userList
+					.find((u) => u.id === $currentUser.id)
+					?.invitations.map((u) => u.id)
+					.indexOf(user.id) === -1
 			);
 		})
 		.filter((user) => {
@@ -94,6 +94,11 @@
 				</div>
 			</ListBoxItem>
 		{/each}
+		{#if filteredUsers.length === 0}
+			<div class="flex justify-center items-center">
+				<span class="text-gray-400">No results found</span>
+			</div>
+		{/if}
 	</ListBox>
 	<p class="text-sm">Channels</p>
 	<ListBox

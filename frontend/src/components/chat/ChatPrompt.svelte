@@ -3,6 +3,8 @@
 	import { ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
 	import ChatAvatar from './ChatAvatar.svelte';
 	import { ChatSocket } from '$services/socket';
+	import { currentUserFriends, userList } from '../../store/User';
+	import { currentUser } from '../../store/Auth';
 
 	export let channel: ChannelsChat;
 	export let currentMessage: string = '';
@@ -29,6 +31,32 @@
 			}, 50);
 		}
 	}
+
+	let blockedByMe: (id: number) => boolean;
+	let blockedMe: (id: number) => boolean;
+	let areFriends: (id: number) => boolean;
+
+	$: {
+		blockedByMe = (id: number) => {
+			return (
+				$userList
+					.find((user) => user.id === $currentUser.id)
+					?.blocked.some((user) => user.id === id) ?? false
+			);
+		};
+
+		blockedMe = (id: number) => {
+			return (
+				$userList
+					.find((user) => user.id === id)
+					?.blocked.some((user) => user.id === $currentUser.id) ?? false
+			);
+		};
+
+		areFriends = (id: number) => {
+			return channel.type === 'Channel' || $currentUserFriends.map((u) => u.id).indexOf(id) !== -1;
+		};
+	}
 </script>
 
 <!-- Prompt -->
@@ -42,6 +70,9 @@
 			id="prompt"
 			placeholder="Write a message..."
 			rows="1"
+			disabled={blockedMe(channel.user.id) ||
+				blockedByMe(channel.user.id) ||
+				!areFriends(channel.user.id)}
 			on:keydown={onPromptKeydown}
 		/>
 		<button

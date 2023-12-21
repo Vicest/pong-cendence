@@ -12,7 +12,8 @@ import {
 	ParseFilePipe,
 	UploadedFile,
 	UseInterceptors,
-	FileTypeValidator
+	FileTypeValidator,
+	Delete
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Observable } from 'rxjs';
@@ -67,9 +68,11 @@ export class UsersController {
 	// Get /users
 	@Get('/')
 	getAll() {
-		let users = this.userService.findAll();
+		const users = this.userService.findAll();
 		return users;
 	}
+
+	/* ----------------------------- USERS ------------------------------ */
 
 	// GET /friends
 	@Get('/friends')
@@ -81,6 +84,12 @@ export class UsersController {
 	@Post('/friends/:id')
 	addFriend(@Req() req, @Param('id') id: number) {
 		return this.userService.addFriend(req.user.id, id);
+	}
+
+	// Delte /friends/:id
+	@Delete('/friends/:id')
+	removeFriend(@Req() req, @Param('id') id: number) {
+		return this.userService.removeFriend(req.user.id, id);
 	}
 
 	// GET /users/:login
@@ -101,6 +110,30 @@ export class UsersController {
 	@Post(':id')
 	updateUser(@Param('id') id: number, @Body() body) {
 		this.userService.updateById(id, body.data);
+	}
+
+	// POST /users/:id
+	@Post(':id/block')
+	blockUser(@Req() req, @Param('id') id: number) {
+		this.userService.blockUser(req.user.id, id);
+	}
+
+	// POST /users/:id
+	@Delete(':id/block')
+	unblockUser(@Req() req, @Param('id') id: number) {
+		this.userService.unblockUser(req.user.id, id);
+	}
+
+	// Post /friends/:id
+	@Post('/:id/friend')
+	sendFriendRequest(@Req() req, @Param('id') id: number) {
+		return this.userService.sendFriendRequest(req.user.id, id);
+	}
+
+	// Delete /friends/:id
+	@Delete('/:id/friend')
+	cancelFriendRequest(@Req() req, @Param('id') id: number) {
+		return this.userService.cancelFriendRequest(req.user.id, id);
 	}
 
 	// POST /users

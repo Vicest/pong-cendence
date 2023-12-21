@@ -24,7 +24,9 @@ export class ChannelMessages {
 	})
 	sender: User;
 
-	@ManyToOne(() => Channel, (channel) => channel.id)
+	@ManyToOne(() => Channel, (channel) => channel.id, {
+		onDelete: 'CASCADE'
+	})
 	@JoinColumn({
 		name: 'channel_id'
 	})

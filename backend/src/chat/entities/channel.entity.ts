@@ -48,7 +48,9 @@ export class Channel {
 	})
 	created_at: Date;
 
-	@OneToMany(() => ChannelMessages, (message) => message.channel)
+	@OneToMany(() => ChannelMessages, (message) => message.channel, {
+		onDelete: 'CASCADE'
+	})
 	@JoinTable({
 		name: 'ChannelMessages',
 		joinColumn: {

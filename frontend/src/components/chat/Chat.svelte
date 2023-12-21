@@ -14,6 +14,7 @@
 	import { currentUser } from '../../store/Auth';
 
 	export let id = -1;
+	export let showAllContacts = false;
 	export let showSidebar = true;
 	export let showHeader = true;
 	export let showConversation = true;
@@ -55,7 +56,7 @@
 
 	$: channels = $joinedChannelsChat
 		.filter((channel) => {
-			return id === -1 ? true : channel.id === id;
+			return (id === -1 ? true : channel.id === id) || showAllContacts;
 		})
 		.map((channel, index) => {
 			return channel.type === 'Direct'
@@ -73,22 +74,19 @@
 		});
 
 	onMount(() => {
-		selectedChatIndex = id !== -1 ? channels.findIndex((channel) => channel.id === id) || 0 : 0;
+		if (id !== -1) {
+			selectedChatIndex = channels.findIndex((channel) => channel.id === id) || 0;
+		}
 		console.log('selectedChatIndex', selectedChatIndex, channels);
-		setTimeout(() => {
-			scrollChatBottom('instant');
-		}, 1);
 	});
 </script>
 
-{#if showSidebar}{/if}
-
 <section class="card w-full h-full">
-	{#if channels[selectedChatIndex]}
-		{#if showSidebar}
-			<div class="chat w-full h-full grid grid-cols-1 lg:grid-cols-[30%_1fr]">
-				<ChatSidebar bind:channels bind:selectedChatIndex />
-				<div class="h-full grid grid-rows-[auto_1fr_auto]">
+	{#if showSidebar}
+		<div class="chat w-full h-full grid grid-cols-1 lg:grid-cols-[30%_1fr]">
+			<ChatSidebar bind:channels bind:selectedChatIndex />
+			{#if channels[selectedChatIndex]}
+				<div class="relative h-full grid grid-rows-[auto_1fr_auto]">
 					{#if showHeader}
 						<ChatHeader channel={channels[selectedChatIndex]} />
 					{/if}
@@ -99,19 +97,29 @@
 						<ChatPrompt bind:elemChat channel={channels[selectedChatIndex]} />
 					{/if}
 				</div>
-			</div>
-		{:else}
-			<div class="h-full grid grid-rows-[auto_1fr_auto]">
+			{:else}
+				<div class="flex items-center justify-center h-full">
+					<span class="text-2xl">Please select a chat</span>
+				</div>
+			{/if}
+		</div>
+	{:else}
+		<div class="relative h-full grid grid-rows-[auto_1fr_auto]">
+			{#if channels[selectedChatIndex]}
 				{#if showHeader}
 					<ChatHeader channel={channels[selectedChatIndex]} />
 				{/if}
 				{#if showConversation}
-					<ChatConversation bind:elemChat bind:channel={channels[selectedChatIndex]} />
+					<ChatConversation bind:elemChat channel={channels[selectedChatIndex]} />
 				{/if}
 				{#if showPrompt}
-					<ChatPrompt bind:elemChat bind:channel={channels[selectedChatIndex]} />
+					<ChatPrompt bind:elemChat channel={channels[selectedChatIndex]} />
 				{/if}
-			</div>
-		{/if}
+			{:else}
+				<div class="flex items-center justify-center h-full">
+					<span class="text-2xl text-surface-500">Select a chat</span>
+				</div>
+			{/if}
+		</div>
 	{/if}
 </section>

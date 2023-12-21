@@ -3,6 +3,7 @@
 	import { ListBox, ListBoxItem, getModalStore, type ModalSettings } from '@skeletonlabs/skeleton';
 	import ChatAvatar from './ChatAvatar.svelte';
 	import { userList } from '../../store/User';
+	import { goto } from '$app/navigation';
 	const modalStore = getModalStore();
 	let chatFinderModal: ModalSettings = {
 		type: 'component',
@@ -48,6 +49,9 @@
 					name="people"
 					value={channel}
 					class={selectedChatIndex === channel.index ? 'variant-filled-primary' : ''}
+					on:click={() => {
+						goto(`/app/chat/${channel.id}`);
+					}}
 				>
 					<svelte:fragment slot="lead">
 						<ChatAvatar user={findUser(channel.user.id)} width="w-8" showStatus={false} />
@@ -68,6 +72,9 @@
 					name="people"
 					value={channel}
 					class={selectedChatIndex === channel.index ? 'variant-filled-primary' : ''}
+					on:click={() => {
+						goto(`/app/chat/${channel.id}`);
+					}}
 				>
 					{channel.name}
 				</ListBoxItem>

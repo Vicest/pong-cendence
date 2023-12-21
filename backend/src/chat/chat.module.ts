@@ -24,6 +24,6 @@ import { ChannelMessages } from './entities/channel.message.entity';
 	],
 	providers: [ChatService, ChatGateway],
 	controllers: [ChatController],
-	exports: [ChatGateway]
+	exports: [ChatGateway, ChatService]
 })
 export class ChatModule {}

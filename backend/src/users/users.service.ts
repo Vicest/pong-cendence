@@ -56,7 +56,8 @@ export class UsersService {
 		return this.userRepository.find({
 			order: {
 				id: 'ASC'
-			}
+			},
+			relations: ['blocked', 'invitations', 'friends']
 		});
 	}
 
@@ -66,6 +67,152 @@ export class UsersService {
 
 	public async findNickname(nickname: string): Promise<User | null> {
 		return this.userRepository.findOneBy({ nickname: nickname });
+	}
+
+	public async removeFriend(id: number, friend: number): Promise<User> {
+		const user = await this.userRepository.findOne({
+			where: { id },
+			relations: ['friends', 'channels', 'invitations']
+		});
+		const friendUser = await this.userRepository.findOne({
+			where: { id: friend }
+		});
+		/*
+		const channelsToDelete = await this.channelRepository.findOne({
+			where: [
+				{
+					name: user.nickname + '_' + friendUser.nickname,
+					type: MessageType.DIRECT
+				},
+				{
+					name: friendUser.nickname + '_' + user.nickname,
+					type: MessageType.DIRECT
+				}
+			]
+		});
+		this.channelRepository.remove(channelsToDelete);
+		user.friends = user.friends.filter((user) => user.id !== friendUser.id);
+		this.usersGateway.server
+			.to(['user_' + id, 'user_' + friend])
+			.emit('user:friend_removed', {
+				from: user,
+				to: friendUser
+			});
+		this.chatGateway.server
+			.to('channel_' + channelsToDelete.id)
+			.emit('channel:deleted', channelsToDelete);
+		*/
+		user.invitations = user.invitations.filter(
+			(user) => user.id !== friendUser.id
+		);
+		user.friends = user.friends.filter((user) => user.id !== friendUser.id);
+		this.usersGateway.server
+			.to(['user_' + id, 'user_' + friend])
+			.emit('user:friend_removed', {
+				from: user,
+				to: friendUser
+			});
+		return this.userRepository.save(user);
+	}
+
+	public async sendFriendRequest(id: number, target: number): Promise<User> {
+		const user = await this.userRepository.findOne({
+			where: { id },
+			relations: ['invitations']
+		});
+		const targetUser = await this.userRepository.findOne({
+			where: { id: target }
+		});
+		user.invitations.push(targetUser);
+
+		let checkChannel = await this.channelRepository.findOne({
+			where: [
+				{
+					name: user.id + '_' + targetUser.id,
+					type: MessageType.DIRECT
+				},
+				{
+					name: targetUser.id + '_' + user.id,
+					type: MessageType.DIRECT
+				}
+			]
+		});
+		if (!checkChannel) {
+			let channel = new Channel();
+			channel.name = user.id + '_' + targetUser.id;
+			channel.type = MessageType.DIRECT;
+			channel.users = [user, targetUser];
+			channel.owner = user;
+			channel.messages = [];
+			channel.description =
+				'Chat privado entre ' + user.nickname + ' y ' + targetUser.nickname;
+			channel = await this.channelRepository.save(channel);
+			this.chatGateway.channelCreated(channel);
+		}
+
+		this.usersGateway.server
+			.to(['user_' + id, 'user_' + target])
+			.emit('user:friend_request', {
+				from: user,
+				to: targetUser
+			});
+		return this.userRepository.save(user);
+	}
+
+	public async cancelFriendRequest(id: number, target: number): Promise<User> {
+		const user = await this.userRepository.findOne({
+			where: { id },
+			relations: ['invitations']
+		});
+		const targetUser = await this.userRepository.findOne({
+			where: { id: target }
+		});
+		user.invitations = user.invitations.filter(
+			(user) => user.id !== targetUser.id
+		);
+		this.usersGateway.server
+			.to(['user_' + id, 'user_' + target])
+			.emit('user:friend_request_cancelled', {
+				from: user,
+				to: targetUser
+			});
+		return this.userRepository.save(user);
+	}
+
+	public async unblockUser(id: number, target: number): Promise<User> {
+		const user = await this.userRepository.findOne({
+			where: { id },
+			relations: ['blocked']
+		});
+		const targetUser = await this.userRepository.findOne({
+			where: { id: target }
+		});
+		user.blocked = user.blocked.filter((user) => user.id !== targetUser.id);
+		this.usersGateway.server
+			.to(['user_' + id, 'user_' + target])
+			.emit('user:unblocked', {
+				from: user,
+				to: targetUser
+			});
+		return this.userRepository.save(user);
+	}
+
+	public async blockUser(id: number, target: number): Promise<User> {
+		const user = await this.userRepository.findOne({
+			where: { id },
+			relations: ['blocked']
+		});
+		const targetUser = await this.userRepository.findOne({
+			where: { id: target }
+		});
+		user.blocked.push(targetUser);
+		this.usersGateway.server
+			.to(['user_' + id, 'user_' + target])
+			.emit('user:blocked', {
+				from: user,
+				to: targetUser
+			});
+		return this.userRepository.save(user);
 	}
 
 	private log: Logger;
@@ -103,29 +250,8 @@ export class UsersService {
 		});
 		user.friends.push(friendUser);
 
-		let channel = new Channel();
-		channel.name = user.nickname + '_' + friendUser.nickname;
-		channel.type = MessageType.DIRECT;
-		channel.users = [user, friendUser];
-		channel.owner = user;
-		channel.messages = [];
-		channel.description =
-			'Chat privado entre ' + user.nickname + ' y ' + friendUser.nickname;
-		channel = await this.channelRepository.save(channel);
-		console.log(channel);
 		this.usersGateway.server.to('user_' + id).emit('friend', friendUser);
 		this.usersGateway.server.to('user_' + friend).emit('friend', user);
-		this.chatGateway.server.fetchSockets().then((sockets) => {
-			sockets.forEach((socket) => {
-				console.log(socket.data.user.id, id, friend, socket.data.user);
-				if (socket.data.user.id == id || socket.data.user.id == friend) {
-					socket.join('channel_' + channel.id);
-				}
-			});
-			this.chatGateway.server
-				.to('channel_' + channel.id)
-				.emit('channel:created', channel);
-		});
 
 		return await this.userRepository.save(user);
 	}
