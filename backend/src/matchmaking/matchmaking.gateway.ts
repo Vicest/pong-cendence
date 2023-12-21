@@ -54,7 +54,7 @@ export class MatchMakingGateway
 
 	@Interval(1000 / 60)
 	inputEngine() {
-		Object.keys(this.UserIoInstances).forEach((game_id) => {
+		(Object.keys(this.UserIoInstances) || []).forEach((game_id) => {
 			let game = this.UserIoInstances[game_id];
 			this.server.emit('IoEvent', {
 				game: parseInt(game_id),

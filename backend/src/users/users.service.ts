@@ -70,12 +70,13 @@ export class UsersService {
 	}
 
 	public async removeFriend(id: number, friend: number): Promise<User> {
-		const user = await this.userRepository.findOne({
+		let user = await this.userRepository.findOne({
 			where: { id },
 			relations: ['friends', 'channels', 'invitations']
 		});
 		const friendUser = await this.userRepository.findOne({
-			where: { id: friend }
+			where: { id: friend },
+			relations: ['friends', 'invitations']
 		});
 		/*
 		const channelsToDelete = await this.channelRepository.findOne({
@@ -106,6 +107,17 @@ export class UsersService {
 			(user) => user.id !== friendUser.id
 		);
 		user.friends = user.friends.filter((user) => user.id !== friendUser.id);
+		this.userRepository.save(user);
+
+		user = await this.userRepository.findOne({
+			where: { id }
+		});
+		friendUser.friends = friendUser.friends.filter(
+			(_user) => _user.id !== user.id
+		);
+		friendUser.invitations = friendUser.invitations.filter(
+			(_user) => _user.id !== user.id
+		);
 		this.usersGateway.server
 			.to(['user_' + id, 'user_' + friend])
 			.emit('user:friend_removed', {
@@ -157,6 +169,34 @@ export class UsersService {
 				to: targetUser
 			});
 		return this.userRepository.save(user);
+	}
+
+	public async acceptFriendRequest(id: number, target: number): Promise<User> {
+		const user = await this.userRepository.findOne({
+			where: { id },
+			relations: ['invitations', 'friends']
+		});
+		let targetUser = await this.userRepository.findOne({
+			where: { id: target },
+			relations: ['friends']
+		});
+		user.invitations = user.invitations.filter(
+			(user) => user.id !== targetUser.id
+		);
+
+		targetUser.friends.push(user);
+		await this.userRepository.save(targetUser);
+		targetUser = await this.userRepository.findOne({
+			where: { id: target }
+		});
+		user.friends.push(targetUser);
+		this.usersGateway.server
+			.to(['user_' + id, 'user_' + target])
+			.emit('user:friend_request_accepted', {
+				from: user,
+				to: targetUser
+			});
+		return await this.userRepository.save(user);
 	}
 
 	public async cancelFriendRequest(id: number, target: number): Promise<User> {
@@ -257,6 +297,13 @@ export class UsersService {
 	}
 
 	async findFriends(id: number): Promise<User[]> {
+		console.log(
+			await this.userRepository
+				.createQueryBuilder('user')
+				.where('user.id = :id', { id })
+				.leftJoinAndSelect('user.friends', 'friends')
+				.getMany()
+		);
 		return (
 			await this.userRepository.findOne({
 				where: { id },

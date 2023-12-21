@@ -60,7 +60,11 @@
 		};
 
 		areFriends = (id: number) => {
-			return $currentUserFriends.map((u) => u.id).indexOf(id) !== -1;
+			return (
+				$userList
+					.find((user) => user.id === $currentUser.id)
+					?.friends.some((user) => user.id === id) ?? false
+			);
 		};
 	}
 
@@ -117,8 +121,8 @@
 						type="button"
 						class="btn variant-filled-primary"
 						on:click={() => {
-							rejectUser(channel.user.id);
-						}}>Reject</button
+							acceptUser(channel.user.id);
+						}}>Accept</button
 					>
 				{:else if !invitedByMe(channel.user.id) && !areFriends(channel.user.id)}
 					<button

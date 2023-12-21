@@ -3,7 +3,7 @@ import { PUBLIC_BACKEND_PORT, PUBLIC_BACKEND_BASE } from '$env/static/public';
 import { Socket } from './socket';
 import { lastError } from '../store/Common';
 
-axios.defaults.timeout = 5000;
+//axios.defaults.timeout = 5000;
 
 export const Api = axios.create({
 	baseURL: `${PUBLIC_BACKEND_BASE}:${PUBLIC_BACKEND_PORT}`,

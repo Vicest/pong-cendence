@@ -33,14 +33,6 @@ export const isBlocked = (id: number) => {
 	return blockedMe(id) || blockedByMe(id);
 };
 
-export const acceptUser = (id: number) => {
-	return Api.post(`/users/${id}/accept`);
-};
-
-export const rejectUser = (id: number) => {
-	return Api.delete(`/users/${id}/accept`);
-};
-
 export const sendFriendRequest = (id: number) => {
 	return Api.post(`/users/${id}/friend`);
 };
@@ -59,6 +51,14 @@ export const blockUser = (id: number) => {
 
 export const unblockUser = (id: number) => {
 	return Api.delete(`/users/${id}/block`);
+};
+
+export const acceptUser = (id: number) => {
+	return Api.post(`/users/${id}/accept`);
+};
+
+export const rejectUser = (id: number) => {
+	return Api.delete(`/users/${id}/accept`);
 };
 
 export const init = () => {
@@ -102,9 +102,12 @@ export const init = () => {
 			UsersSocket.on('user:friend_removed', ({ from, to }: { from: Person; to: Person }) => {
 				userList.update((users) => {
 					return users.map((u) => {
-						if (u.id === (from.id === get(currentUser).id ? from : to).id) {
+						if (u.id === from.id) {
 							u.friends = u.friends.filter((u) => u.id !== to.id);
 							u.invitations = u.invitations.filter((u) => u.id !== to.id);
+						} else if (u.id === to.id) {
+							u.friends = u.friends.filter((u) => u.id !== from.id);
+							u.invitations = u.invitations.filter((u) => u.id !== from.id);
 						}
 						return u;
 					});
@@ -113,14 +116,20 @@ export const init = () => {
 					currentUserFriends.update((users) => {
 						return users.filter((u) => u.id !== to.id);
 					});
+				} else if (to.id === get(currentUser).id) {
+					currentUserFriends.update((users) => {
+						return users.filter((u) => u.id !== from.id);
+					});
 				}
 			});
 
 			UsersSocket.on('user:blocked', ({ from, to }: { from: Person; to: Person }) => {
 				userList.update((users) => {
 					return users.map((u) => {
-						if (u.id === (from.id === get(currentUser).id ? from : to).id) {
+						if (u.id === from.id) {
 							u.blocked = [...u.blocked, to];
+						} else if (u.id === to.id) {
+							u.blocked = [...u.blocked, from];
 						}
 						return u;
 					});
@@ -130,19 +139,8 @@ export const init = () => {
 			UsersSocket.on('user:unblocked', ({ from, to }: { from: Person; to: Person }) => {
 				userList.update((users) => {
 					return users.map((u) => {
-						if (u.id === (from.id === get(currentUser).id ? from : to).id) {
-							u.blocked = u.blocked.filter((u) => u.id !== to.id);
-						}
-						return u;
-					});
-				});
-			});
-
-			UsersSocket.on('user:unblocked', ({ from, to }: { from: Person; to: Person }) => {
-				userList.update((users) => {
-					return users.map((u) => {
-						if (u.id === (from.id === get(currentUser).id ? from : to).id) {
-							u.blocked = u.blocked.filter((u) => u.id !== from.id);
+						if (u.id === from.id) {
+							u.blocked = u.friends.filter((u) => u.id !== to.id);
 						}
 						return u;
 					});
@@ -150,25 +148,51 @@ export const init = () => {
 			});
 
 			UsersSocket.on('user:friend_request', ({ from, to }: { from: Person; to: Person }) => {
+				console.log('friend_request', from, to, get(userList));
 				userList.update((users) => {
 					return users.map((u) => {
-						if (u.id === (from.id === get(currentUser).id ? from : to).id) {
-							u.invitations = [...u.invitations, to];
-							console.log(u);
-						}
+						if (u.id === from.id) u.invitations = [...u.invitations, to];
 						return u;
 					});
 				});
 			});
 
 			UsersSocket.on(
+				'user:friend_request_accepted',
+				({ from, to }: { from: Person; to: Person }) => {
+					userList.update((users) => {
+						let a = users.map((u) => {
+							if (from.id === u.id) {
+								console.log('from', from);
+								u.friends = [...u.friends, to];
+								u.invitations = u.invitations.filter((u) => u.id !== to.id);
+							} else if (to.id === u.id) {
+								u.friends = [...u.friends, from];
+								u.invitations = u.invitations.filter((u) => u.id !== from.id);
+							}
+							return u;
+						});
+						console.log(a);
+						return a;
+					});
+					if (from.id === get(currentUser).id) {
+						currentUserFriends.update((users) => {
+							return [...users, to];
+						});
+					} else if (to.id === get(currentUser).id) {
+						currentUserFriends.update((users) => {
+							return [...users, from];
+						});
+					}
+				}
+			);
+
+			UsersSocket.on(
 				'user:friend_request_cancelled',
 				({ from, to }: { from: Person; to: Person }) => {
 					userList.update((users) => {
 						return users.map((u) => {
-							if (u.id === (from.id === get(currentUser).id ? from : to).id) {
-								u.invitations = u.invitations.filter((u) => u.id !== to.id);
-							}
+							u.invitations = u.invitations.filter((u) => u.id !== to.id);
 							return u;
 						});
 					});

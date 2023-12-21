@@ -80,7 +80,9 @@ export class User {
 	})
 	created_at: Date;
 
-	@ManyToMany(() => User)
+	@ManyToMany(() => User, (user) => user.friends, {
+		cascade: ['insert']
+	})
 	@JoinTable({
 		name: 'UserFriends',
 		joinColumn: {
@@ -108,7 +110,9 @@ export class User {
 	})
 	blocked: User[];
 
-	@ManyToMany(() => User)
+	@ManyToMany(() => User, (user) => user.invitations, {
+		cascade: ['insert']
+	})
 	@JoinTable({
 		name: 'UserInvitations',
 		joinColumn: {

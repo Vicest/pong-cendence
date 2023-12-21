@@ -136,6 +136,11 @@ export class UsersController {
 		return this.userService.cancelFriendRequest(req.user.id, id);
 	}
 
+	@Post(':id/accept')
+	acceptFriendRequest(@Req() req, @Param('id') id: number) {
+		return this.userService.acceptFriendRequest(req.user.id, id);
+	}
+
 	// POST /users
 	@Post('/')
 	createUsers(@Body() user: User): Observable<User> {
