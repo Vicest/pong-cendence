@@ -35,7 +35,11 @@ const errorHandler = (error: AxiosError) => {
 	const resError: AxiosResponse<any> | undefined = error.response;
 	const originalRequest: any = error.config;
 	if (resError?.status === 400) {
-		resError.data.message.forEach((message) => {
+		let messages =
+			typeof resError?.data.message === 'string'
+				? [resError?.data.message]
+				: resError?.data.message;
+		messages.forEach((message) => {
 			lastError.set(message);
 		});
 	} else if (resError?.status === 401) {

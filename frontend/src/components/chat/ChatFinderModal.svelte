@@ -1,21 +1,13 @@
 <script lang="ts">
-	import {
-		Avatar,
-		ListBox,
-		ListBoxItem,
-		SlideToggle,
-		getDrawerStore,
-		Toast,
-		getToastStore
-	} from '@skeletonlabs/skeleton';
-	import { joinChannel, notJoinedChannelChat } from '../../store/Chat';
+	import { ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
+	import { channelList, joinChannel } from '../../store/Chat';
 
 	import type { ChannelsChat, Person } from '$lib/types';
 	import { currentUser } from '../../store/Auth';
 	import type { SvelteComponent } from 'svelte';
 	import ChatAvatar from './ChatAvatar.svelte';
 	import { Api } from '$services/api';
-	import { currentUserFriends, sendFriendRequest, userList } from '../../store/User';
+	import { sendFriendRequest, userList } from '../../store/User';
 
 	function addRelation({
 		type,
@@ -33,36 +25,15 @@
 
 	export let parent: SvelteComponent;
 	let keyword: string = '';
-	$: filteredChannels = $notJoinedChannelChat
-		.map((channel, index) => {
-			return {
-				index,
-				...channel,
-				user: $currentUser
-			};
-		})
-		.filter((channel) => {
-			return (
-				(channel.type !== 'Direct' && channel.name.toLowerCase().includes(keyword.toLowerCase())) ||
-				channel.description.toLowerCase().includes(keyword.toLowerCase())
-			);
-		});
-	$: filteredUsers = $userList
-		.filter((user) => {
-			return (
-				$currentUserFriends.map((u) => u.id).indexOf(user.id) === -1 &&
-				user.id !== $currentUser.id &&
-				$userList
-					.find((u) => u.id === $currentUser.id)
-					?.invitations.map((u) => u.id)
-					.indexOf(user.id) === -1
-			);
-		})
-		.filter((user) => {
-			return user.nickname.toLowerCase().includes(keyword.toLowerCase());
-		});
-	let selectedChannel: ChannelsChat;
-	let selectedUser: Person;
+	$: filteredChannels = channelList.chatSearchList().filter((channel) => {
+		return (
+			channel.name.toLowerCase().includes(keyword.toLowerCase()) ||
+			channel.description.toLowerCase().includes(keyword.toLowerCase())
+		);
+	});
+	$: filteredUsers = channelList.friendSearchList().filter((user) => {
+		return user.nickname.toLowerCase().includes(keyword.toLowerCase());
+	});
 	let selected: ChannelsChat | Person;
 </script>
 
@@ -106,7 +77,7 @@
 		multiple{false}
 		active="variant-filled-primary"
 	>
-		{#each filteredChannels.filter((channel) => channel.type === 'Channel') as channel}
+		{#each filteredChannels as channel}
 			<ListBoxItem
 				group={selected}
 				on:click={() => {

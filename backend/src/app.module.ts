@@ -13,23 +13,16 @@ import jwtConfig from 'config/jwt';
 import frontendConfig from 'config/frontend';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MatchMakingModule } from './matchmaking/matchmaking.module';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, HttpAdapterHost } from '@nestjs/core';
 
+import {
+	ArgumentsHost,
+	Catch,
+	ExceptionFilter,
+	HttpException,
+	HttpStatus
+} from '@nestjs/common';
 
-
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
-
-@Catch(HttpException)
-export class RateLimitFilter implements ExceptionFilter {
-  catch(exception: HttpException, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse();
-    const request = ctx.getRequest();
-
-	return response.redirect(process.env.BACKEND_BASE+ ":"+process.env.FRONTEND_PORT + '/login');
-
-  }
-}
 @Module({
 	imports: [
 		ScheduleModule.forRoot(),
@@ -39,7 +32,7 @@ export class RateLimitFilter implements ExceptionFilter {
 				limit: 1
 			}
 		]),
-		
+
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule],
 			useFactory: (env: ConfigService) => ({
@@ -63,12 +56,6 @@ export class RateLimitFilter implements ExceptionFilter {
 		AuthModule,
 		ChatModule,
 		MatchMakingModule
-	],
-	providers: [
-		{
-		  provide: APP_FILTER,
-		  useClass: RateLimitFilter,
-		},
-	  ],
+	]
 })
 export class AppModule {}

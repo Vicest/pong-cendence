@@ -7,7 +7,13 @@ import {
 	Inject,
 	Post,
 	UnauthorizedException,
-	Body
+	Body,
+	UseFilters,
+	Catch,
+	ArgumentsHost,
+	HttpException,
+	HttpStatus,
+	ExceptionFilter
 } from '@nestjs/common';
 
 import { ConfigService, ConfigType } from '@nestjs/config';
@@ -22,6 +28,34 @@ import { Response } from 'express';
 import jwtConfiguration from 'config/jwt';
 import frontendConfiguration from 'config/frontend';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { HttpAdapterHost } from '@nestjs/core';
+
+@Catch()
+export class AllExceptionsFilter implements ExceptionFilter {
+	constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+
+	catch(exception: unknown, host: ArgumentsHost): void {
+		// In certain situations `httpAdapter` might not be available in the
+		// constructor method, thus we should resolve it here.
+		const { httpAdapter } = this.httpAdapterHost;
+
+		const ctx = host.switchToHttp();
+
+		const httpStatus =
+			exception instanceof HttpException
+				? exception.getStatus()
+				: HttpStatus.INTERNAL_SERVER_ERROR;
+
+		const responseBody = {
+			statusCode: httpStatus,
+			timestamp: new Date().toISOString(),
+			path: httpAdapter.getRequestUrl(ctx.getRequest()),
+			error: exception
+		};
+
+		httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
+	}
+}
 
 @Controller('auth')
 export class AuthController {
@@ -77,6 +111,7 @@ export class AuthController {
 	}
 
 	@UseGuards(ThrottlerGuard, IntraAuthGuard)
+	@UseFilters(AllExceptionsFilter)
 	@Throttle({
 		default: {
 			ttl: 1000,
@@ -110,20 +145,17 @@ export class AuthController {
 	}
 	@UseGuards(JwtGuard)
 	@Post('2FA')
-	async post2fa(@Req() req)
-	{
-		if (req.user.two_factor_auth_enabled == false)
-		{
-			const usr = await this.userservice.findOne(req.user.login)
-			return (this.authService.generateTwoFactorAuthenticationSecret(usr))
+	async post2fa(@Req() req) {
+		if (req.user.two_factor_auth_enabled == false) {
+			const usr = await this.userservice.findOne(req.user.login);
+			return this.authService.generateTwoFactorAuthenticationSecret(usr);
 		}
 	}
 	@UseGuards(JwtGuard)
 	@Post('2FAchange')
-	async post2fachange(@Body() body, @Req() req)
-	{
+	async post2fachange(@Body() body, @Req() req) {
 		console.log(req.user);
-		const usr = await this.userservice.findOne(req.user.login)
+		const usr = await this.userservice.findOne(req.user.login);
 		this.authService.twofachangestatus(usr, body.token);
 	}
 	@UseGuards(JwtGuard)

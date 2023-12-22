@@ -9,6 +9,7 @@ import { User } from 'src/users/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Channel } from './entities/channel.entity';
 import { ChannelMessages } from './entities/channel.message.entity';
+import { ChatSubscriber } from './chat.subscriber';
 
 @Module({
 	imports: [
@@ -22,7 +23,7 @@ import { ChannelMessages } from './entities/channel.message.entity';
 			inject: [ConfigService]
 		})
 	],
-	providers: [ChatService, ChatGateway],
+	providers: [ChatService, ChatGateway, ChatSubscriber],
 	controllers: [ChatController],
 	exports: [ChatGateway, ChatService]
 })

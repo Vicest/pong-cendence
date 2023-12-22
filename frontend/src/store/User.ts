@@ -4,34 +4,69 @@ import { UsersSocket } from '$services/socket';
 import { currentUser } from './Auth';
 import type { Person } from '$lib/types';
 
+function createUserListStore() {
+	const { set, subscribe } = writable<Person[]>();
+	let state: Person[] = [];
+	subscribe((v) => (state = v));
+	return {
+		subscribe,
+		set,
+		update: (fn: (users: Person[]) => Person[]) => {
+			set(fn(state));
+		},
+		get: () => state,
+		find: (id: number) => {
+			return state.find((u) => u.id === id);
+		},
+		findByNickname: (name: string) => {
+			return state.find((u) => u.nickname === name);
+		},
+		invitedByMe: (id: number) => {
+			return (
+				state
+					.find((user) => user.id === get(currentUser).id)
+					?.invitations.some((user) => user.id === id) ?? false
+			);
+		},
+		invitedMe: (id: number) => {
+			return (
+				state
+					.find((user) => user.id === id)
+					?.invitations.some((user) => user.id === get(currentUser).id) ?? false
+			);
+		},
+		blockedByMe: (id: number) => {
+			return (
+				state
+					.find((user) => user.id === get(currentUser).id)
+					?.blocked.some((user) => user.id === id) ?? false
+			);
+		},
+		blockedMe: (id: number) => {
+			return (
+				state
+					.find((user) => user.id === id)
+					?.blocked.some((user) => user.id === get(currentUser).id) ?? false
+			);
+		},
+		areFriends: (id: number) => {
+			return (
+				state
+					.find((user) => user.id === get(currentUser).id)
+					?.friends.some((user) => user.id === id) ?? false
+			);
+		},
+		getMyFriends: () => {
+			const me = state.find((user) => user.id === get(currentUser).id) as Person;
+			return state.filter((user) => user.friends.some((u) => u.id === me.id));
+		}
+	};
+}
+
+export const userList = createUserListStore();
+
 export const loading = writable<boolean>(true);
 loading.set(true);
-
-export const userList = writable<Person[]>();
-
-export const currentUserFriends = writable<Person[]>();
-
-export const blockedMe = (id: number) => {
-	const meId = get(currentUser).id;
-	return (
-		get(userList)
-			.find((user) => user.id === id)
-			?.blocked.some((user) => user.id === meId) ?? false
-	);
-};
-
-export const blockedByMe = (id: number) => {
-	const meId = get(currentUser).id;
-	return (
-		get(userList)
-			.find((user) => user.id === meId)
-			?.blocked.some((user) => user.id === id) ?? false
-	);
-};
-
-export const isBlocked = (id: number) => {
-	return blockedMe(id) || blockedByMe(id);
-};
 
 export const sendFriendRequest = (id: number) => {
 	return Api.post(`/users/${id}/friend`);
@@ -69,10 +104,6 @@ export const init = () => {
 			setTimeout(() => {
 				loading.set(false);
 			}, 1000);
-
-			Api.get('/users/friends').then(({ data }) => {
-				currentUserFriends.set(data);
-			});
 
 			UsersSocket.on('user:updated', (id, updatedMetadata) => {
 				userList.update((users) => {
@@ -112,15 +143,6 @@ export const init = () => {
 						return u;
 					});
 				});
-				if (from.id === get(currentUser).id) {
-					currentUserFriends.update((users) => {
-						return users.filter((u) => u.id !== to.id);
-					});
-				} else if (to.id === get(currentUser).id) {
-					currentUserFriends.update((users) => {
-						return users.filter((u) => u.id !== from.id);
-					});
-				}
 			});
 
 			UsersSocket.on('user:blocked', ({ from, to }: { from: Person; to: Person }) => {
@@ -141,6 +163,8 @@ export const init = () => {
 					return users.map((u) => {
 						if (u.id === from.id) {
 							u.blocked = u.friends.filter((u) => u.id !== to.id);
+						} else if (u.id === to.id) {
+							u.blocked = u.friends.filter((u) => u.id !== from.id);
 						}
 						return u;
 					});
@@ -175,15 +199,6 @@ export const init = () => {
 						console.log(a);
 						return a;
 					});
-					if (from.id === get(currentUser).id) {
-						currentUserFriends.update((users) => {
-							return [...users, to];
-						});
-					} else if (to.id === get(currentUser).id) {
-						currentUserFriends.update((users) => {
-							return [...users, from];
-						});
-					}
 				}
 			);
 

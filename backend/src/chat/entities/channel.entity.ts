@@ -7,10 +7,16 @@ import {
 	ManyToMany,
 	JoinTable,
 	OneToOne,
-	ManyToOne
+	ManyToOne,
+	VirtualColumn,
+	AfterLoad,
+	BeforeInsert,
+	BeforeUpdate
 } from 'typeorm';
 import { ChannelMessages } from './channel.message.entity';
 import { User } from 'src/users/entities/user.entity';
+import { MaxLength, MinLength } from 'class-validator';
+import { Optional } from '@nestjs/common';
 
 export enum MessageType {
 	DIRECT = 'Direct',
@@ -30,6 +36,8 @@ export class Channel {
 		length: 20,
 		nullable: false
 	})
+	@MinLength(4)
+	@MaxLength(20)
 	name: string;
 
 	@Column({
@@ -38,8 +46,10 @@ export class Channel {
 	description: string;
 
 	@Column({
-		nullable: true
+		nullable: true,
+		select: false
 	})
+	@Optional()
 	password: string;
 
 	@Column({
@@ -129,4 +139,10 @@ export class Channel {
 		default: MessageType.CHANNEL
 	})
 	type: MessageType;
+
+	@Column({
+		type: 'boolean',
+		default: false
+	})
+	hasPassword: boolean;
 }

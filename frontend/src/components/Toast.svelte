@@ -63,4 +63,4 @@
 	});*/
 </script>
 
-<Toast />
+<Toast zIndex="z-50" />

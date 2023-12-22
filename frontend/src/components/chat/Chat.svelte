@@ -1,17 +1,18 @@
 <script lang="ts">
 	import { Avatar, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
-	import { joinedChannelsChat } from '../../store/Chat';
+	import { channelList, joinedChannelsChat } from '../../store/Chat';
 	import { userList } from '../../store/User';
 	import { get } from 'svelte/store';
 	import type { ChannelsChat, MessageFeed, Person } from '$lib/types';
 	import ChatAvatar from './ChatAvatar.svelte';
 	import { ChatSocket } from '$services/socket';
-	import { onMount } from 'svelte';
+	import { beforeUpdate, onMount } from 'svelte';
 	import ChatSidebar from './ChatSidebar.svelte';
 	import ChatHeader from './ChatHeader.svelte';
 	import ChatConversation from './ChatConversation.svelte';
 	import ChatPrompt from './ChatPrompt.svelte';
 	import { currentUser } from '../../store/Auth';
+	import { beforeNavigate } from '$app/navigation';
 
 	export let id = -1;
 	export let showAllContacts = false;
@@ -25,10 +26,9 @@
 	let currentMessage = '';
 
 	function addMessage() {
-		console.log('addMessage', $joinedChannelsChat);
 		ChatSocket.emit('channel_message', {
 			message: currentMessage,
-			channel: $joinedChannelsChat[selectedChatIndex].id
+			channel: $channelList[selectedChatIndex].id
 		});
 		currentMessage = '';
 	}
@@ -54,7 +54,8 @@
 	}
 	let channels: ChannelsChat[];
 
-	$: channels = $joinedChannelsChat
+	$: channels = $channelList
+		.filter((channel) => channel.joined)
 		.filter((channel) => {
 			return (id === -1 ? true : channel.id === id) || showAllContacts;
 		})
@@ -64,25 +65,64 @@
 						index,
 						...channel,
 						type: 'Direct',
-						user: channel.users.find((user) => user.id != $currentUser.id) as Person
+						user: channel.users.filter((user) => user.id !== $currentUser.id)[0],
+						users: channel.users.map((user) => {
+							return $userList.find((u) => u.id === user.id) as Person;
+						}),
+						messages:
+							channel.messages?.map((message) => {
+								return {
+									...message,
+									sender: $userList.find((user) => user.id === message.sender.id) as Person
+								};
+							}) || []
 				  }
 				: {
 						index,
 						...channel,
-						user: $currentUser
+						user: $currentUser,
+						users: channel.users.map((user) => {
+							return $userList.find((u) => u.id === user.id) as Person;
+						}),
+						messages:
+							channel.messages?.map((message) => {
+								return {
+									...message,
+									sender: $userList.find((user) => user.id === message.sender.id) as Person
+								};
+							}) || []
 				  };
 		});
 
+	beforeUpdate(() => {
+		if (id !== -1) {
+			selectedChatIndex = channels.findIndex((channel) => channel.id === id);
+		} else if (id === -1) {
+			selectedChatIndex = 0;
+		}
+	});
+
 	onMount(() => {
 		if (id !== -1) {
-			selectedChatIndex = channels.findIndex((channel) => channel.id === id) || 0;
+			selectedChatIndex = channels.findIndex((channel) => channel.id === id);
+		} else if (id === -1) {
+			selectedChatIndex = 0;
 		}
 		console.log('selectedChatIndex', selectedChatIndex, channels);
 	});
 </script>
 
 <section class="card w-full h-full">
-	{#if showSidebar}
+	{#if selectedChatIndex === -1}
+		<div class="chat w-full h-full grid grid-cols-1 lg:grid-cols-[30%_1fr]">
+			{#if showSidebar}
+				<ChatSidebar bind:channels bind:selectedChatIndex />
+			{/if}
+			<div class="flex items-center justify-center h-full">
+				<span class="text-2xl">Chat not found</span>
+			</div>
+		</div>
+	{:else if showSidebar}
 		<div class="chat w-full h-full grid grid-cols-1 lg:grid-cols-[30%_1fr]">
 			<ChatSidebar bind:channels bind:selectedChatIndex />
 			{#if channels[selectedChatIndex]}

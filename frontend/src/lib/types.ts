@@ -26,8 +26,14 @@ export interface ChannelsChat {
 	created_at: Date;
 	type: 'Channel' | 'Direct';
 	users: Person[];
+	admins: Person[];
+	banned: Person[];
+	muted: Person[];
 	user: Person;
 	index: number;
+	owner: Person;
+	joined: boolean;
+	hasPassword: boolean;
 }
 
 export interface PrivateMessageFeed {

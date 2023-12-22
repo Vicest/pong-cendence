@@ -62,27 +62,45 @@ export class ChatGateway
 			const channels = await this.channelRepository
 				.createQueryBuilder('Channel')
 				.leftJoinAndSelect('Channel.users', 'channels_relation')
+				.leftJoinAndSelect('Channel.owner', 'owner')
+				.leftJoinAndSelect('Channel.admins', 'admins')
 				.leftJoinAndSelect('Channel.messages', 'messages')
 				.leftJoinAndSelect('messages.sender', 'sender')
 				.orderBy('messages.created_at', 'ASC')
 				.getMany();
-			let notJoinedChannels = channels.filter((channel) => {
-				return (
-					channel.type == 'Channel' &&
-					!channel.users.some((user) => {
-						return user.id == jwtUser.id;
-					})
-				);
-			});
-			let joinedChannels = channels.filter((channel) => {
-				return channel.users.some((user) => {
-					return user.id == jwtUser.id;
+			let notJoinedChannels = channels
+				.filter((channel) => {
+					return (
+						channel.type == 'Channel' &&
+						!channel.users.some((user) => {
+							return user.id == jwtUser.id;
+						})
+					);
+				})
+				.map((channel) => {
+					return {
+						...channel,
+						user: channel.users.find((user) => user.id === jwtUser.id),
+						joined: false
+					};
 				});
-			});
-			return {
-				joinedChannels,
-				notJoinedChannels
-			};
+			let joinedChannels = channels
+				.filter((channel) => {
+					return channel.users.some((user) => {
+						return user.id == jwtUser.id;
+					});
+				})
+				.map((channel) => {
+					return {
+						...channel,
+						joined: true,
+						user:
+							channel.type === 'Direct'
+								? channel.users.find((user) => user.id !== jwtUser.id)
+								: channel.users.find((user) => user.id === jwtUser.id)
+					};
+				});
+			return joinedChannels.concat(notJoinedChannels);
 		} catch (error) {
 			console.log(error);
 		}
@@ -113,6 +131,17 @@ export class ChatGateway
 		}
 	}
 
+	public channelDeleted(channel: Channel) {
+		this.server.to('channel_' + channel.id).emit('channel:deleted', channel);
+		this.server.sockets.forEach((socket) => {
+			socket.leave('channel_' + channel.id);
+		});
+	}
+
+	public channelUpdated(channel: Channel) {
+		this.server.to('channel_' + channel.id).emit('channel:updated', channel);
+	}
+
 	public channelCreated(channel: Channel) {
 		this.server.sockets.forEach((socket) => {
 			channel.users.forEach((user) => {
@@ -122,6 +151,18 @@ export class ChatGateway
 			});
 		});
 		this.server.to('channel_' + channel.id).emit('channel:created', channel);
+	}
+
+	public userLeftChannel(userId: number, channel: Channel) {
+		this.server.to('channel_' + channel.id).emit('channel:left', {
+			userId: userId,
+			channel
+		});
+		this.server.sockets.forEach((socket) => {
+			if (socket.data.user?.id === userId) {
+				socket.leave('channel_' + channel.id);
+			}
+		});
 	}
 
 	public userJoinedChannel(userId: number, channel: Channel) {
@@ -167,7 +208,7 @@ export class ChatGateway
 			const decoded = this.jwtService.verify(this.getAuthCookie(client));
 			client.data.user = decoded;
 			const chatRooms = await this.getChatRooms(client.data.user);
-			for (const room of chatRooms.joinedChannels) {
+			for (const room of chatRooms.filter((room) => room.joined)) {
 				client.join('channel_' + room.id);
 			}
 			client.emit('rooms', chatRooms);

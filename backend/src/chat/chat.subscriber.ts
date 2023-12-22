@@ -6,12 +6,11 @@ import {
 	UpdateEvent
 } from 'typeorm';
 import { ChatGateway } from './chat.gateway';
-import { ChannelMessages } from './entities/channel.message.entity';
+import { Channel } from './entities/channel.entity';
+import { channel } from 'diagnostics_channel';
 
 @EventSubscriber()
-export class ChatSubscriber
-	implements EntitySubscriberInterface<ChannelMessages>
-{
+export class ChatSubscriber implements EntitySubscriberInterface<Channel> {
 	constructor(
 		dataSource: DataSource,
 		private readonly chatGateway: ChatGateway
@@ -20,14 +19,6 @@ export class ChatSubscriber
 	}
 
 	listenTo() {
-		return ChannelMessages;
-	}
-
-	afterUpdate(event: UpdateEvent<ChannelMessages>) {
-		console.log(`UserSubscriber: ${event.entity.id} was updated`);
-	}
-
-	afterInsert(event: InsertEvent<ChannelMessages>) {
-		console.log(`BEFORE USER INSERT: `, event.entity);
+		return Channel;
 	}
 }

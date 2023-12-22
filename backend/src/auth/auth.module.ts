@@ -41,8 +41,8 @@ import { Jwt2faAuthGuard } from './guards/jwt-2fa-auth.guard';
 		JwtGuard,
 		JwtRefreshStrategy,
 		JwtRefreshGuard,
-		Jwt2faStrategy, 
-		Jwt2faAuthGuard, 
+		Jwt2faStrategy,
+		Jwt2faAuthGuard,
 		AuthService
 	],
 	exports: [IntraAuthGuard, AuthService]
