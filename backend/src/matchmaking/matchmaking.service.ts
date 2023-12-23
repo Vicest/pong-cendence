@@ -4,19 +4,19 @@ import { QueuePlayer } from './queue-player';
 import { UsersService } from '../users/users.service';
 import { User } from 'src/users/entities/user.entity';
 import { GamesService } from 'src/games/games.service';
+import { MatchMakingGateway } from './matchmaking.gateway';
 
 @Injectable()
 export class MatchMakingService {
 	constructor(
 		private userService: UsersService,
-		private gameService: GamesService) {
+		private gameService: GamesService,
+		private matchMakingGateway: MatchMakingGateway) {
 		this.log = new Logger();
 		this.queuedPlayers_ = [];
 	}
 
 	public async joinQueue(user: User): Promise<boolean> {
-		this.log.verbose(`ID: ${user.id} joins queue.`);
-
 		const joiningPlayer: User | null = await this.userService.find(user.id);
 		if (joiningPlayer === null) {
 			this.log.warn(
@@ -25,11 +25,14 @@ export class MatchMakingService {
 			return false;
 		}
 
+		let rank = await this.userService.getUserRank(joiningPlayer.id);
+		this.log.verbose(`ID: ${user.id}, ranked ${rank} joins queue.`);
+		rank = rank !== -1 ? rank : 1500;
 		const queuedPlayer = new QueuePlayer(
 			user,
-			await this.userService.getUserRank(joiningPlayer.id)
+			rank
 		);
-		this.log.verbose('The queued player: ', queuedPlayer);
+		this.log.verbose(`The queued player: ${JSON.stringify(queuedPlayer)}`);
 		if (
 			this.queuedPlayers_.find((player: QueuePlayer): boolean => {
 				return player.id == queuedPlayer.id;
@@ -60,9 +63,8 @@ export class MatchMakingService {
 	private log: Logger;
 	private queuedPlayers_: QueuePlayer[];
 
-	@Interval(1000) //TODO tick_rate in env
+	@Interval(1000)
 	private async matchMakingTick(): Promise<void> {
-		//this.log.debug(JSON.stringify(this.queuedPlayers_))
 		const checkDate: number = Date.now();
 		const compareMax: number = this.queuedPlayers_.length - 1;
 		for (let iPlayer: number = 0; iPlayer < compareMax; iPlayer++) {
@@ -100,18 +102,19 @@ export class MatchMakingService {
 			this.log.verbose(`Match found: ${lhs.id} vs ${candidates[0].id}`);
 
 			const p1 = await this.userService.find(lhs.id);
+			const rankShiftP1Wins = QueuePlayer.ratingIncrease(lhs.rating, candidates[0].rating);
 			const p2 = await this.userService.find(candidates[0].id);
-			//TODO This assumes mmq for classic pong only
+			const rankShiftP2Wins = QueuePlayer.ratingIncrease(candidates[0].rating, lhs.rating);
+
 			const gameId = await this.gameService.findGameByName('pong');
 			const match = await this.gameService.createMatch({
 				game: gameId,
-				players: [p1, p2],
-				rankShift: QueuePlayer.ratingIncrease(lhs.rating, candidates[0].rating),
 				status: 'waiting'
-			});
+			}, {p1, rankShift: rankShiftP1Wins}, {p2, rankShift: rankShiftP2Wins});
+			this.matchMakingGateway.sendMatchCreated(lhs.id, candidates[0].id, match.id);
 			this.leaveQueue(lhs.id);
 			this.leaveQueue(candidates[0].id);
-			//vvv afterInsert vvv
+			//vvv afterInsert? vvv
 			//TODO ^^ also change user status as busy. A nivel de match listener^^
 		}
 	}

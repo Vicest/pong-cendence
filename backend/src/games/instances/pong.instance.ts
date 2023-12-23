@@ -8,8 +8,10 @@ type PongInstanceInput = {
 
 type State = {
 	status: 'paused' | 'running' | 'finished' | 'waiting';
+	winnerId: number;
 	countdown: number;
 	players: {
+		id: number;
 		x: number;
 		y: number;
 		score: number;
@@ -42,31 +44,48 @@ export class PongInstance extends EventEmitter {
 	private static readonly waitingTime = 5000;
 
 	private log: Logger;
-	private players: Match['players'];
+	private players: Match['players'];//[number]['user'][];
 	private events: Match['events'];
 	private state: State;
 	private match: Match;
 
 	constructor(match: Match) {
 		super();
+		console.log("Hopefully before crash: ", match)
 		this.log = new Logger();
 		this.match = match;
 		this.players = match.players;
 		this.events = match.events;
 		this.state = {
 			status: 'waiting',
+			winnerId: -1,
 			countdown: PongInstance.waitingTime,
-			players: this.players.map(() => ({
-				x: 0,
-				y: PongInstance.canvasHeight / 2 - PongInstance.paddlesHeight / 2,
-				score: 0,
-				input: [],
-				paddle: {
-					width: PongInstance.paddlesWidth,
-					height: PongInstance.paddlesHeight
+			players: [
+				{
+					id: this.players[0].user.id,
+					x: 0,
+					y: PongInstance.canvasHeight / 2 - PongInstance.paddlesHeight / 2,
+					score: 0,
+					input: [],
+					paddle: {
+						width: PongInstance.paddlesWidth,
+						height: PongInstance.paddlesHeight
+					},
+					ping: 0
 				},
-				ping: 0
-			})),
+				{
+					id: this.players[1].user.id,
+					x: PongInstance.canvasWidth,
+					y: PongInstance.canvasHeight / 2 - PongInstance.paddlesHeight / 2,
+					score: 0,
+					input: [],
+					paddle: {
+						width: PongInstance.paddlesWidth,
+						height: PongInstance.paddlesHeight
+					},
+					ping: 0
+				}
+			],
 			ball: {
 				x: PongInstance.canvasWidth / 2,
 				y: PongInstance.canvasHeight / 2,
@@ -75,7 +94,6 @@ export class PongInstance extends EventEmitter {
 				radius: PongInstance.ballRadius
 			}
 		};
-		this.state.players[1].x = PongInstance.canvasWidth;
 		this.log.debug('Pong instance created', this.constructor.name);
 	}
 
@@ -162,9 +180,13 @@ export class PongInstance extends EventEmitter {
 	}
 
 	private checkScore() {
-		this.players.forEach((player, index) => {
-			if (this.state.players[index].score > PongInstance.scoreToWin) {
+		console.log('Players in game: ', this.state.players);
+		console.log('State of game: ', this.state);
+		this.state.players.forEach((player, index) => {
+			console.log('Player of game: ', player);
+			if (player.score >= PongInstance.scoreToWin) {
 				this.state.status = 'finished';
+				this.state.winnerId = player.id;
 			}
 		});
 	}
@@ -183,31 +205,6 @@ export class PongInstance extends EventEmitter {
 		this.movePaddles();
 		this.moveBall();
 		this.checkScore();
-	}
-
-	public reset() {
-		this.state = {
-			status: 'running',
-			countdown: PongInstance.waitingTime,
-			players: this.players.map(() => ({
-				x: 0,
-				y: PongInstance.canvasHeight / 2 - PongInstance.paddlesHeight / 2,
-				score: 0,
-				input: [],
-				paddle: {
-					width: PongInstance.paddlesWidth,
-					height: PongInstance.paddlesHeight
-				},
-				ping: 0
-			})),
-			ball: {
-				x: PongInstance.canvasWidth / 2,
-				y: PongInstance.canvasHeight / 2,
-				speedX: PongInstance.ballSpeed,
-				speedY: PongInstance.ballSpeed,
-				radius: PongInstance.ballRadius
-			}
-		};
 	}
 
 	public getState() {

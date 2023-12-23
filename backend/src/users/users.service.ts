@@ -7,12 +7,10 @@ import { Observable, from } from 'rxjs';
 import { UserRelation } from './entities/userRelations.entity';
 import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
 import { UserMessages } from 'src/chat/entities/message/user.entity';
-import { GamesService } from 'src/games/games.service';
 
 @Injectable()
 export class UsersService {
 	constructor(
-		private readonly gameService: GamesService,
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
 		@InjectRepository(UserRelation)
@@ -24,9 +22,9 @@ export class UsersService {
 	) {
 		this.log = new Logger();
 	}
-	//TODO I suspect that create simply returns User or some sort of error.
+
 	public async create(data): Promise<User | null> {
-		console.log('Creating user', data.login);
+		console.log('Creating user', data);
 		try {
 			let fields = JSON.parse(data._raw);
 			const newUser: User | null = await this.userRepository.create({
@@ -44,6 +42,9 @@ export class UsersService {
 		}
 	}
 
+	public async save(user: User) {
+		return await this.userRepository.save(user);
+	}
 	public async updateUser(id: number, user: Partial<User>): Promise<User> {
 		await this.userRepository.update(id, user);
 		return this.userRepository.findOne({ where: { id } });
@@ -53,12 +54,20 @@ export class UsersService {
 		return this.userRepository.findOneBy({ id: id });
 	}
 
-	public async findAll(): Promise<User[]> {
-		return this.userRepository.find({
+	public async findAll() {
+		const allUsers = await this.userRepository.find({
 			order: {
 				id: 'ASC'
 			}
 		});
+		const rankedUsers = await Promise.all(allUsers.map( async (user) => {
+			return {
+				...user,
+				rank: await this.getUserRank(user.id)
+			}
+		}));
+		//console.log(`All users: ${JSON.stringify(rankedUsers)}`)
+		return rankedUsers;
 	}
 
 	public async findOne(login: string): Promise<User | null> {
@@ -68,18 +77,27 @@ export class UsersService {
 	public async findNickname(nickname: string): Promise<User | null> {
 		return this.userRepository.findOneBy({ nickname: nickname });
 	}
+
+	public async getUserMatches(userId: number) {
+		const query = this.userRepository
+			.createQueryBuilder('user')
+			.leftJoinAndSelect('user.matches', 'matchPlayer')
+			.where('user.id = :userId', { userId });
+		const user = await query.getOne();
+		return user.matches;
+	}
 		
 	public async getUserRank(id: number) {
-		const matchesPlayed = await this.gameService.findGamesOf(id);
-		const rankedMatches = matchesPlayed.filter( (m) => m.rankShift !== 0 );
+		const matchesPlayed = await this.getUserMatches(id);
+		const rankedMatches = matchesPlayed.filter((userPlayer) =>  userPlayer.rankShift !== 0);
 		let totalRankShift: number = 0;
-		for(const match of rankedMatches) {
-			totalRankShift += match.winner.id === id ? match.rankShift : -match.rankShift;
+		for(const userPlayer of rankedMatches) {
+			totalRankShift += userPlayer.isWinner ? userPlayer.rankShift : -userPlayer.rankShift;
 		}
-		//No ranked matches means you are 'Unranked'
+		////No ranked matches means you are 'Unranked'
 		return matchesPlayed.length > 0 ? 1500 + totalRankShift : -1;
 	}
-
+ 
 	public async exists(id: number): Promise<boolean> {
 		const user = await this.userRepository.findOne({ where: { id: id } });
 		return user !== null;
@@ -149,48 +167,3 @@ export class UsersService {
 		return from(this.channelmessagesRepository.save(chan_msg));
 	}
 }
-
-// /*Con Dios me disculpo por esta aberracion de función ...
-//     pero situaciones drasticas requieren medidas drasticas*/
-// 	async findUserMessages(nickname: string): Promise<User | undefined> {
-// 		let contents = await this.userRepository.findOne({
-// 			where: { nickname },
-// 			relations: [
-// 				'relationshared',
-// 				'relationshared.sender',
-// 				'relationshared.receptor',
-// 				'relationsharedAsReceiver',
-// 				'relationsharedAsReceiver.sender',
-// 				'relationsharedAsReceiver.receptor', //I hate it
-// 				'channels',
-// 				'channels.messages',
-// 				'channels.messages.sender',
-// 				'channels.members',
-// 				'sent_messages',
-// 				'sent_messages.sender',
-// 				'sent_messages.receiver',
-// 				'received_messages',
-// 				'received_messages.sender',
-// 				'received_messages.receiver',
-// 			], //Puta mierda esta bro :v
-// 		});
-
-// 		if (contents) {
-// 			await contents.loadPrivateMessages();
-// 			await contents.loadrelationsList();
-// 			contents.friends = contents.relationsList
-// 				.filter((relation) => relation.status === 1)
-// 				.map((relation) =>
-// 					relation.sender_id === contents.id
-// 						? relation.receptor
-// 						: relation.sender,
-// 				);
-// 		}
-// 		delete contents._relationList;
-// 		delete contents.sent_messages;
-// 		delete contents.received_messages;
-// 		delete contents.relationshared;
-// 		delete contents.relationsharedAsReceiver;
-// 		// console.log(contents);
-// 		return contents;
-// 	}

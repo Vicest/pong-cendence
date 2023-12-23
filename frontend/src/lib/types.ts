@@ -5,6 +5,7 @@ export interface Person {
 	avatar: string;
 	two_factor_auth_enabled: boolean;
 	status: 'online' | 'offline' | 'away' | 'busy' | 'invisible';
+	rank: number;
 	// feed: MessageFeed[];
 }
 export interface PrivateMessageFeed {

@@ -1,14 +1,10 @@
 import {
 	Controller,
-	Get,
 	Post,
 	Delete,
-	Headers,
-	Param,
 	UseGuards,
 	Req
 } from '@nestjs/common';
-import { Interval } from '@nestjs/schedule';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { MatchMakingService } from './matchmaking.service';
 import { AuthService } from 'src/auth/auth.service';

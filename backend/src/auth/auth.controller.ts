@@ -7,7 +7,8 @@ import {
 	Inject,
 	Post,
 	UnauthorizedException,
-	Body
+	Body,
+	Param
 } from '@nestjs/common';
 
 import { ConfigService, ConfigType } from '@nestjs/config';
@@ -34,6 +35,32 @@ export class AuthController {
 		private frontendConfig: ConfigType<typeof frontendConfiguration>,
 		private userservice: UsersService
 	) {}
+
+	@Get('/fake/:login')
+	async testUser(@Param('login') login: string, @Req() req, @Res() res) {
+		console.log('You need a create an endpoint to bypass the authentication system you just implemented: Roll for Sanity');
+		const user = await this.userservice.findOne(login);
+
+		console.log(`Test User: ${JSON.stringify(user)}`)
+		const { token, refreshToken } = await this.authService.grantTokenPair(
+			user,
+			false
+		);
+		return res
+			.cookie('token', token, {
+				httpOnly: true,
+				sameSite: 'strict',
+				secure: this.env.get('NODE_ENV') === 'production' ? true : false,
+				maxAge: this.jwtConfig.expiresIn * 1000
+			})
+			.cookie('refreshToken', refreshToken, {
+				httpOnly: true,
+				sameSite: 'strict',
+				secure: this.env.get('NODE_ENV') === 'production' ? true : false,
+				maxAge: this.jwtConfig.refreshExpiresIn * 1000
+			})
+			.redirect(this.frontendConfig.baseUrl.concat('/app'));
+	}
 
 	@UseGuards(AdminGuard)
 	@Get('admin')

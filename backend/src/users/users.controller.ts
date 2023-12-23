@@ -25,14 +25,11 @@ import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 
-import { GamesService } from 'src/games/games.service';
-
 @Controller('users')
 @UseGuards(JwtGuard)
 export class UsersController {
 	constructor(
 		private readonly userService: UsersService,
-		private readonly gameService: GamesService,
 		private readonly configService: ConfigService
 	) {}
 

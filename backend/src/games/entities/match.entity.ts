@@ -3,7 +3,6 @@ import {
 	Column,
 	PrimaryGeneratedColumn,
 	OneToMany,
-	ManyToMany,
 	JoinTable,
 	JoinColumn,
 	ManyToOne
@@ -11,6 +10,7 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { Game } from './game.entity';
 import { MatchEvent } from './events.entity';
+import { MatchPlayer } from './matchPlayer.entity';
 
 @Entity({
 	name: 'Matches'
@@ -32,29 +32,10 @@ export class Match {
 	})
 	status: string;
 
-	@Column({
-		type: 'int',
-		default: 0
+	@OneToMany(() => MatchPlayer, (matchPlayer) => matchPlayer.match, {
+		cascade: ['insert']
 	})
-	rankShift: number;
-
-	@ManyToOne(() => User, (user) => user.id, { nullable: true })
-	@JoinColumn({
-		name: 'winner'
-	})
-	winner: User;
-
-	@ManyToMany(() => User, (user) => user.id)
-	@JoinTable({
-		name: 'MatchPlayers',
-		joinColumn: {
-			name: 'match_id'
-		},
-		inverseJoinColumn: {
-			name: 'user_id'
-		}
-	})
-	players: User[];
+	players: MatchPlayer[];
 
 	@OneToMany(() => MatchEvent, (event) => event.match)
 	@JoinTable({
