@@ -1,4 +1,4 @@
-import { get, readable, writable, derived } from 'svelte/store';
+import { readable, writable } from 'svelte/store';
 import type { Game, GameInstance } from '$lib/types';
 import type { DrawerSettings } from '@skeletonlabs/skeleton';
 import { userList } from './User';
@@ -7,7 +7,6 @@ import { GamesSocket } from '$services/socket';
 
 export const gameListDrawerSettings = readable<DrawerSettings>({
 	id: 'battle-zone',
-	// Provide your property overrides:
 	bgDrawer: 'text-white',
 	width: 'w-[280px] md:w-[480px]',
 	padding: 'p-4',
@@ -38,10 +37,9 @@ export const init = () => {
 				return {
 					id: match.id,
 					game: match.game.id,
-					players: match.players.map((player) => player.id),
+					players: match.players.map((matchPlayer) => matchPlayer.user.id),
 					created_at: new Date(match.created_at),
 					status: match.status
-					//events: match.events
 				};
 			})
 		);
@@ -64,7 +62,7 @@ export const init = () => {
 		gameInstances.update((matches) => {
 			return matches.concat({
 				...game,
-				players: game.players.map((player) => player.id)
+				players: game.players.map((matchPlayer) => matchPlayer.user.id)
 			});
 		});
 	});

@@ -1,6 +1,6 @@
 import { get, writable } from 'svelte/store';
 import { Api } from '$services/api';
-import { UsersSocket } from '$services/socket';
+import { GamesSocket, UsersSocket } from '$services/socket';
 import { currentUser } from './Auth';
 import type { Person } from '$lib/types';
 import { priv_chat_history } from './Chat';
@@ -66,6 +66,14 @@ export const init = () => {
 				userList.update((users) => {
 					return [...users, createdUser];
 				});
+			});
+
+			GamesSocket.on('match:updated', (matchId: number, match) => {
+				console.log('I listened')
+				//TODO if match is finished update ranking???
+				if (match.status !== 'finished')
+					return ;
+				console.log(`Id: ${matchId}\nMatch: ${JSON.stringify(match)}`)
 			});
 		})
 		.catch((err) => {

@@ -4,7 +4,7 @@ export interface Person {
 	nickname: string;
 	avatar: string;
 	two_factor_auth_enabled: boolean;
-	status: 'online' | 'offline' | 'away' | 'busy' | 'invisible';
+	status: 'online' | 'offline' | 'busy';
 	rank: number;
 	// feed: MessageFeed[];
 }

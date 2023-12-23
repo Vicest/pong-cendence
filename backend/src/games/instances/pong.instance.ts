@@ -40,22 +40,19 @@ export class PongInstance extends EventEmitter {
 	private static readonly paddlesHeight = 100;
 	private static readonly ballRadius = 5;
 	private static readonly ballSpeed = 4;
-	private static readonly scoreToWin = 1;
+	private static readonly scoreToWin = 10;
 	private static readonly waitingTime = 5000;
 
 	private log: Logger;
-	private players: Match['players'];//[number]['user'][];
-	private events: Match['events'];
+	private players: Match['players'];
 	private state: State;
 	private match: Match;
 
 	constructor(match: Match) {
 		super();
-		console.log("Hopefully before crash: ", match)
 		this.log = new Logger();
 		this.match = match;
 		this.players = match.players;
-		this.events = match.events;
 		this.state = {
 			status: 'waiting',
 			winnerId: -1,
@@ -98,7 +95,7 @@ export class PongInstance extends EventEmitter {
 	}
 
 	private movePaddles() {
-		this.players.forEach((player, index) => {
+		this.players.forEach((matchPlayer, index) => {
 			let isUp = this.state.players[index].input.some((input) => input[87]);
 			let isDown = this.state.players[index].input.some((input) => input[83]);
 			if (this.state.players[index].y <= 0) {
@@ -119,7 +116,7 @@ export class PongInstance extends EventEmitter {
 	}
 
 	public handleInput(userId: number, data: PongInstanceInput[]) {
-		const index = this.players.findIndex((player) => player.id === userId);
+		const index = this.players.findIndex((matchPlayer) => matchPlayer.user.id === userId);
 		this.state.players[index].input = data;
 		if (data.some((input) => input[27])) {
 			if (this.state.status === 'paused')
@@ -180,10 +177,7 @@ export class PongInstance extends EventEmitter {
 	}
 
 	private checkScore() {
-		console.log('Players in game: ', this.state.players);
-		console.log('State of game: ', this.state);
 		this.state.players.forEach((player, index) => {
-			console.log('Player of game: ', player);
 			if (player.score >= PongInstance.scoreToWin) {
 				this.state.status = 'finished';
 				this.state.winnerId = player.id;
