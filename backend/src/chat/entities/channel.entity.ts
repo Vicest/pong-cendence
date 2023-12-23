@@ -3,15 +3,9 @@ import {
 	Column,
 	PrimaryGeneratedColumn,
 	OneToMany,
-	Unique,
 	ManyToMany,
 	JoinTable,
-	OneToOne,
 	ManyToOne,
-	VirtualColumn,
-	AfterLoad,
-	BeforeInsert,
-	BeforeUpdate
 } from 'typeorm';
 import { ChannelMessages } from './channel.message.entity';
 import { User } from 'src/users/entities/user.entity';

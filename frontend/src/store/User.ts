@@ -213,6 +213,7 @@ export const init = () => {
 					});
 				}
 			);
+
 			GamesSocket.on('match:updated', (matchId: number, match) => {
 				console.log('I listened')
 				//TODO if match is finished update ranking???

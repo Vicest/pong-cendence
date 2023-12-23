@@ -93,6 +93,7 @@ export class User {
 	@OneToMany(() => MatchPlayer, (match) => match.user)
 	matches: MatchPlayer[];
 
+	//@ManyToMany(() => Channel, (channel) => channel.members)
 	@JoinTable({
 		name: 'UserFriends',
 		joinColumn: {
