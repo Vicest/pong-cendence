@@ -2,12 +2,6 @@
 	import { beforeNavigate, goto } from '$app/navigation';
 	import { selectedGame } from '../../../../store/Common';
 
-	let dirty = false;
-	beforeNavigate(({ cancel }) => {
-		if (!confirm('Are you sure you want to leave this page? All the progress will be lost.')) {
-			cancel();
-		}
-	});
 	if ($selectedGame === null) {
 		goto('/app');
 	}

@@ -6,7 +6,6 @@
 	import { Avatar } from '@skeletonlabs/skeleton';
 
 	let gameInstance: GameInstance;
-	let game: number;
 	gameInstances.subscribe((instances) => {
 		gameInstance = instances.find((instance) => {
 			return instance.id == id;

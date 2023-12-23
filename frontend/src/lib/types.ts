@@ -4,15 +4,11 @@ export interface Person {
 	nickname: string;
 	avatar: string;
 	two_factor_auth_enabled: boolean;
-	status: 'online' | 'offline' | 'away' | 'busy' | 'invisible';
-<<<<<<< HEAD
+	status: 'online' | 'offline' | 'busy';
 	blocked: Person[];
 	invitations: Person[];
 	friends: Person[];
-=======
 	rank: number;
->>>>>>> Ranking system hopefully workinf correcty, a major DB reestructuring happened, leaderboard works
-	// feed: MessageFeed[];
 }
 
 export interface MessageFeed {
@@ -59,7 +55,6 @@ export interface Group {
 	password: string;
 	created_at: Date;
 	members: Person[];
-	// feed: MessageFeed[];
 }
 
 type GameType = 'pong' | 'tetris';

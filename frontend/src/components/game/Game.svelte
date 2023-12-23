@@ -5,7 +5,6 @@
 	import { get } from 'svelte/store';
 	import { currentUser } from '../../store/Auth';
 	import { onDestroy, tick } from 'svelte';
-	import { beforeNavigate } from '$app/navigation';
 
 	export let id: number | string;
 	let game: PongGame;
@@ -34,16 +33,6 @@
 			game = new PongGame(gameInstance, players, get(currentUser).id);
 		}
 	}
-
-	/*beforeNavigate(({ cancel }) => {
-		if (
-			game.playable &&
-			!confirm('Are you sure you want to leave this page? All the progress will be lost.')
-		) {
-			cancel();
-			game.destroy();
-		}
-	});*/
 
 	onDestroy(() => {
 		game.destroy();
