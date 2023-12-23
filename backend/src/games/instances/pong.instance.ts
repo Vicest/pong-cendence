@@ -60,7 +60,7 @@ export class PongInstance extends EventEmitter {
 			players: [
 				{
 					id: this.players[0].user.id,
-					x: 0,
+					x: 0 + PongInstance.paddlesWidth,
 					y: PongInstance.canvasHeight / 2 - PongInstance.paddlesHeight / 2,
 					score: 0,
 					input: [],
@@ -72,7 +72,7 @@ export class PongInstance extends EventEmitter {
 				},
 				{
 					id: this.players[1].user.id,
-					x: PongInstance.canvasWidth,
+					x: PongInstance.canvasWidth - PongInstance.paddlesWidth,
 					y: PongInstance.canvasHeight / 2 - PongInstance.paddlesHeight / 2,
 					score: 0,
 					input: [],
@@ -150,22 +150,22 @@ export class PongInstance extends EventEmitter {
 			newY = -newY;
 			this.state.ball.speedY *= -1;
 		} else if (newY > PongInstance.canvasHeight) {
-			newY = PongInstance.canvasHeight - (newY - PongInstance.canvasHeight)
+			newY = PongInstance.canvasHeight - (newY - PongInstance.canvasHeight);
 			this.state.ball.speedY *= -1;
 		}
 
 		//Paddle collision
-		if (newX < 0) {
+		if (newX < this.state.players[0].x) {
 			if (this.hitsPaddle(this.state.players[0])) {
-				newX = -newX;
+				newX = this.state.players[0].x + (this.state.players[0].x -newX);
 				this.state.ball.speedX *= -1;
 			} else {
 				this.score(this.state.players[1]);
 				return ;
 			}
-		} else if (newX > PongInstance.canvasWidth) {
+		} else if (newX > this.state.players[1].x) {
 			if (this.hitsPaddle(this.state.players[1])) {
-				newX = PongInstance.canvasWidth - (newX - PongInstance.canvasWidth)
+				newX = this.state.players[1].x - (newX - this.state.players[1].x);
 				this.state.ball.speedX *= -1;
 			} else {
 				this.score(this.state.players[0]);
