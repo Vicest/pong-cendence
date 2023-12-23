@@ -54,17 +54,28 @@ export class UsersGateway
 			}, 500);
 			client.join('user_' + decoded.id);
 			this.log.debug(`${decoded.login} connected`, this.constructor.name);
+			client.join(decoded.id.toString());
 		} catch (error) {
 			this.log.error(error, this.constructor.name);
 			client.disconnect();
 		}
 	}
 
-	handleDisconnect(client) {
-		this.usersService.updateStatusById(client.data.user.id, 'offline');
+	async handleDisconnect(@ConnectedSocket() client: Socket,) {
+		const id: number = client.data.user.id;
+		client.leave(id.toString());
 		this.log.debug(
-			`${client.data.user.login} disconnected`,
+			`${client.data.user.login} disconnected an instance`,
 			this.constructor.name
 		);
+
+		const clientInstances = await this.server.in(id.toString()).fetchSockets();
+		if (clientInstances.length == 0) {
+			this.usersService.updateStatusById(client.data.user.id, 'offline');
+			this.log.debug(
+				`${client.data.user.login} disconnected all instances`,
+				this.constructor.name
+			);
+		}
 	}
 }

@@ -8,15 +8,16 @@ import { UsersSubscriber } from './users.subscriber';
 import { UsersGateway } from './users.gateway';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { GamesModule } from 'src/games/games.module';
 import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
-import { ChatGateway } from 'src/chat/chat.gateway';
 import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
 	imports: [
-		GamesModule,
-		TypeOrmModule.forFeature([User, Channel, ChannelMessages]),
+		TypeOrmModule.forFeature([
+			User,
+			Channel,
+			ChannelMessages
+		]),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
 			useFactory: (env: ConfigService) => ({

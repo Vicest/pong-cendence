@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { GamesController } from './games.controller';
 import { GamesService } from './games.service';
 import { JwtModule } from '@nestjs/jwt';
@@ -9,10 +9,12 @@ import { Game } from './entities/game.entity';
 import { Match } from './entities/match.entity';
 import { MatchEvent } from './entities/events.entity';
 import { MatchesSubscriber } from './matches.subscriber';
+import { MatchPlayer } from './entities/matchPlayer.entity';
+import { User } from 'src/users/entities/user.entity';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([Game, Match, MatchEvent]),
+		TypeOrmModule.forFeature([Game, Match, MatchEvent, MatchPlayer, User]),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
 			useFactory: (env: ConfigService) => ({

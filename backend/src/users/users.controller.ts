@@ -24,8 +24,6 @@ import * as fs from 'fs';
 import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
-
-import { GamesService } from 'src/games/games.service';
 import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 
 @Controller('users')
@@ -33,7 +31,6 @@ import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 export class UsersController {
 	constructor(
 		private readonly userService: UsersService,
-		private readonly gameService: GamesService,
 		private readonly configService: ConfigService
 	) {}
 

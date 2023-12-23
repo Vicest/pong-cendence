@@ -12,7 +12,7 @@ import { Match } from './entities/match.entity';
 export class MatchesSubscriber implements EntitySubscriberInterface<Match> {
 	constructor(
 		dataSource: DataSource,
-		private readonly gamesGateway: GamesGateway
+		private readonly gamesGateway: GamesGateway,
 	) {
 		dataSource.subscribers.push(this);
 	}
@@ -31,10 +31,11 @@ export class MatchesSubscriber implements EntitySubscriberInterface<Match> {
 
 	afterInsert(event: InsertEvent<Match>) {
 		this.gamesGateway.afterInit(this.gamesGateway.server);
+		const match = event.entity;
 		this.gamesGateway.server.emit(
 			'match:created',
-			event.entity.id,
-			event.entity
+			match.id,
+			match
 		);
 	}
 }

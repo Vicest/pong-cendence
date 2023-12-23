@@ -9,6 +9,7 @@ import {
 import { IsOptional, IsBase64, MaxLength, MinLength } from 'class-validator';
 import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 import { Channel } from 'src/chat/entities/channel.entity';
+import { MatchPlayer } from 'src/games/entities/matchPlayer.entity';
 
 @Entity({
 	name: 'Users'
@@ -16,12 +17,14 @@ import { Channel } from 'src/chat/entities/channel.entity';
 export class User {
 	@PrimaryGeneratedColumn()
 	id: number;
+
 	@Column({
 		type: 'varchar',
 		unique: true,
 		length: 20
 	})
 	login: string;
+
 	@Column({
 		type: 'varchar',
 		unique: true,
@@ -30,17 +33,20 @@ export class User {
 	@MinLength(4)
 	@MaxLength(20)
 	nickname: string;
+
 	@Column({
 		type: 'bool',
 		default: false,
 		update: false
 	})
 	isRegistered: boolean;
+
 	@Column({
 		type: 'bool',
 		default: false
 	})
 	isAdmin: boolean;
+
 	@Column({
 		type: 'text',
 		nullable: true,
@@ -49,6 +55,7 @@ export class User {
 	@IsBase64()
 	@IsOptional()
 	avatar: string;
+
 	@Column({
 		type: 'bytea',
 		nullable: true,
@@ -68,7 +75,7 @@ export class User {
 	IV: Buffer;
 
 	@Column({
-		enum: ['online', 'offline', 'in_game', 'away', 'busy', 'invisible'],
+		enum: ['online', 'offline', 'busy'],
 		default: 'offline'
 	})
 	status: string;
@@ -82,6 +89,10 @@ export class User {
 	@ManyToMany(() => User, (user) => user.friends, {
 		cascade: ['insert']
 	})
+
+	@OneToMany(() => MatchPlayer, (match) => match.user)
+	matches: MatchPlayer[];
+
 	@JoinTable({
 		name: 'UserFriends',
 		joinColumn: {

@@ -22,6 +22,7 @@ import { GamesModule } from 'src/games/games.module';
 		AuthModule
 	],
 	controllers: [MatchMakingController],
-	providers: [MatchMakingService, MatchMakingGateway]
+	providers: [MatchMakingService, MatchMakingGateway],
+	exports: [MatchMakingGateway, MatchMakingService]
 })
 export class MatchMakingModule {}

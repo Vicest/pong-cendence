@@ -5,9 +5,13 @@ export interface Person {
 	avatar: string;
 	two_factor_auth_enabled: boolean;
 	status: 'online' | 'offline' | 'away' | 'busy' | 'invisible';
+<<<<<<< HEAD
 	blocked: Person[];
 	invitations: Person[];
 	friends: Person[];
+=======
+	rank: number;
+>>>>>>> Ranking system hopefully workinf correcty, a major DB reestructuring happened, leaderboard works
 	// feed: MessageFeed[];
 }
 

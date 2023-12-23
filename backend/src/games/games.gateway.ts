@@ -11,7 +11,7 @@ import {
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { Inject, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { Match } from './entities/match.entity';
 import { PongInstance } from './instances/pong.instance';
@@ -63,21 +63,6 @@ export class GamesGateway
 		});
 	}
 
-	@SubscribeMessage('reset')
-	async handleResetGame(
-		@ConnectedSocket() client: Socket,
-		@MessageBody() gameId: string
-	) {
-		let id = parseInt(gameId);
-		this.gamesService.updateMatchStatus(id, 'running');
-		this.ActiveMatches = await this.gamesService.getActiveMatches();
-		if (!this.MatchInstances[id]) {
-			this.MatchInstances[id] = new PongInstance(
-				this.ActiveMatches.find((match) => match.id === id)
-			);
-		}
-	}
-
 	@SubscribeMessage('leave')
 	async handleLeaveGame(
 		@ConnectedSocket() client: Socket,
@@ -119,6 +104,10 @@ export class GamesGateway
 				this.ActiveMatches = await this.gamesService.getActiveMatches();
 				changed = true;
 			}
+			if (state.status === 'finished') {
+				console.log('Match: ', match, '\nState: ', state)
+				this.gamesService.setMatchWinner(match.id, state.winnerId);
+			}
 			if (changed || JSON.stringify(previousState) !== JSON.stringify(state)) {
 				this.sendTick(match, state);
 			}
@@ -143,7 +132,7 @@ export class GamesGateway
 		return token.split('=')[1];
 	}
 
-	handleConnection(@ConnectedSocket() client: Socket, ...args) {
+	handleConnection(@ConnectedSocket() client: Socket) {
 		try {
 			const decoded = this.jwtService.verify(this.getAuthCookie(client));
 			client.data.user = decoded;
@@ -154,11 +143,30 @@ export class GamesGateway
 		}
 	}
 
-	handleDisconnect(client) {
+	async handleDisconnect(@ConnectedSocket() client: Socket) {
+		const id: number = client.data.user.id;
+		client.leave(id.toString());
 		this.log.debug(
-			`${client.data.user.login} disconnected`,
+			`${client.data.user.login} disconnected an instance`,
 			this.constructor.name
 		);
+
+		const clientInstances = await this.server.in(id.toString()).fetchSockets();
+		if (clientInstances.length == 0) {
+			for(let gameId in this.MatchInstances) {
+				const match = this.MatchInstances[gameId];
+				let state = match.getState();
+				if (state.status === 'finished')
+					continue;
+				for (let player of state.players) {
+					if (player.id !== id) state.winnerId = player.id;
+				}
+			}
+			this.log.debug(
+				`${client.data.user.login} disconnected all instances`,
+				this.constructor.name
+			);
+		}
 	}
 
 	//TODO: On game creation add it to ActiveMatches
