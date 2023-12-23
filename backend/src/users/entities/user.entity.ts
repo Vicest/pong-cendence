@@ -89,11 +89,6 @@ export class User {
 	@ManyToMany(() => User, (user) => user.friends, {
 		cascade: ['insert']
 	})
-
-	@OneToMany(() => MatchPlayer, (match) => match.user)
-	matches: MatchPlayer[];
-
-	//@ManyToMany(() => Channel, (channel) => channel.members)
 	@JoinTable({
 		name: 'UserFriends',
 		joinColumn: {
@@ -106,6 +101,9 @@ export class User {
 		}
 	})
 	friends: User[];
+
+	@OneToMany(() => MatchPlayer, (match) => match.user)
+	matches: MatchPlayer[];
 
 	@ManyToMany(() => User)
 	@JoinTable({
