@@ -189,6 +189,12 @@ export class UsersController {
 			const databaseUri = this.configService.get<string>('BACKEND_BASE');
 			user.avatar = `${databaseUri}:${databasePort}/users/${imageName}/img`;
 		}
+		if (user.nickname) {
+            const nick_exist = await this.userService.findNickname(user.nickname);
+            if (nick_exist) {
+                return;
+            }
+        }
 		res.send(this.userService.updateById(req.user.id, user));
 	}
 }

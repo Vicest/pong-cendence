@@ -8,6 +8,7 @@
 	import ChatAvatar from './ChatAvatar.svelte';
 	import { Api } from '$services/api';
 	import { sendFriendRequest, userList } from '../../store/User';
+	import { get } from 'svelte/store';
 
 	function addRelation({
 		type,
@@ -31,9 +32,13 @@
 			channel.description.toLowerCase().includes(keyword.toLowerCase())
 		);
 	});
-	$: filteredUsers = channelList.friendSearchList().filter((user) => {
-		return user.nickname.toLowerCase().includes(keyword.toLowerCase());
+
+	$: filteredUsers = get(userList).filter((user) => {
+		return (
+			user.nickname.toLowerCase().includes(keyword.toLowerCase()) && user.id !== get(currentUser).id
+		);
 	});
+
 	let selected: ChannelsChat | Person;
 </script>
 
