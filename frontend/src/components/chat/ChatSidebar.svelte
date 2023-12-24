@@ -1,11 +1,18 @@
 <script lang="ts">
 	import type { ChannelsChat, Person } from '$lib/types';
 	import { faLock, faSquarePlus, faUser } from '@fortawesome/free-solid-svg-icons';
-	import { ListBox, ListBoxItem, getModalStore, type ModalSettings } from '@skeletonlabs/skeleton';
+	import {
+		ListBox,
+		ListBoxItem,
+		getModalStore,
+		type ModalSettings,
+		getToastStore
+	} from '@skeletonlabs/skeleton';
 	import ChatAvatar from './ChatAvatar.svelte';
 	import { userList } from '../../store/User';
 	import { goto } from '$app/navigation';
 	import Fa from 'svelte-fa';
+	import { MatchMakingSocket } from '$services/socket';
 	const modalStore = getModalStore();
 	let chatFinderModal: ModalSettings = {
 		type: 'component',
@@ -19,6 +26,18 @@
 	$: findUser = (id: number) => {
 		return $userList.find((user) => user.id === id) as Person;
 	};
+
+	//I know, not pretty, still functional
+	let toastStore = getToastStore();
+	function sendChallenge(targetId: number, gid: number, targetNick: string) {
+		MatchMakingSocket.emit('challenge', {
+			opponentId: targetId,
+			gameId: gid
+		});
+		toastStore.trigger({
+			message: `You challenged ${targetNick}`
+		});
+	}
 
 	export let channels: ChannelsChat[];
 	export let selectedChatIndex: number;
@@ -63,6 +82,21 @@
 						<ChatAvatar user={findUser(channel.user.id)} width="w-8" showStatus={false} />
 					</svelte:fragment>
 					{findUser(channel.user.id).nickname}
+					<!-- I know I should not hardcode the 0 and 1 for games ids, but it is what it is -->
+					<br />
+					<button
+						type="button"
+						class="btn btn-sm variant-filled"
+						on:click={() => sendChallenge(channel.user.id, 0, findUser(channel.user.id).nickname)}
+						>VS classic</button
+					>
+					<br />
+					<button
+						type="button"
+						class="btn btn-sm variant-filled"
+						on:click={() => sendChallenge(channel.user.id, 1, findUser(channel.user.id).nickname)}
+						>VS boundless</button
+					>
 				</ListBoxItem>
 			{/each}
 		</ListBox>

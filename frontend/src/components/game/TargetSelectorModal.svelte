@@ -34,7 +34,6 @@
 	}
 
 	function sendChallenge(targetId: number) {
-		console.log(`I challenged inside: ${selectedUser.login}`);
 		MatchMakingSocket.emit('challenge', {
 			opponentId: targetId,
 			gameId: $selectedGame?.id
@@ -42,7 +41,6 @@
 		toastStore.trigger({
 			message: `You challenged ${selectedUser.nickname}`
 		});
-		//Api.post(`matchmaking/challenge/${targetId}`);
 	}
 
 	export let parent: SvelteComponent;

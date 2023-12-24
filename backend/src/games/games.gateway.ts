@@ -152,14 +152,16 @@ export class GamesGateway
 		);
 
 		const clientInstances = await this.server.in(id.toString()).fetchSockets();
-		if (clientInstances.length == 0) {
+		if (clientInstances.length === 0) {
 			for(let gameId in this.MatchInstances) {
 				const match = this.MatchInstances[gameId];
 				let state = match.getState();
 				if (state.status === 'finished')
 					continue;
-				for (let player of state.players) {
-					if (player.id !== id) state.winnerId = player.id;
+				if (state.players[0].id === id || state.players[1].id === id) {
+					state.status = 'finished';
+					if (state.players[0].id === id) state.winnerId = state.players[1].id
+					else state.winnerId = state.players[0].id
 				}
 			}
 			this.log.debug(
