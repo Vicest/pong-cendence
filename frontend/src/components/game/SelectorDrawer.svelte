@@ -3,12 +3,25 @@
 	import type { ModalSettings } from '@skeletonlabs/skeleton';
 	import { gameList, gameListDrawerSettings } from '../../store/Game';
 	import { selectedGame } from '../../store/Common';
+	import { Api } from '$services/api';
 	const drawerStore = getDrawerStore();
 	const modalStore = getModalStore();
 	let targetSelectorModal: ModalSettings = {
 		type: 'component',
 		component: 'targetSelectorModal'
 	};
+
+	//If the user closes the Modal, front forgets about the state, but back retains it.
+	let playerInQueue = false;
+
+	function queueToggle() {
+		if (!playerInQueue) {
+			Api.post('/matchmaking/queue');
+		} else {
+			Api.delete('/matchmaking/queue');
+		}
+		playerInQueue = !playerInQueue;
+	}
 </script>
 
 <div class="flex flex-col gap-6 items-around h-full overflow-y-auto">
@@ -17,6 +30,11 @@
 	>
 		<h2 class="h2">Game list</h2>
 	</div>
+	{#if !playerInQueue}
+		<button on:click={() => queueToggle()}>Join queue</button>
+	{:else}
+		<button on:click={() => queueToggle()}>Leave queue</button>
+	{/if}
 	{#each $gameList as game}
 		<button
 			class="card {!game.enabled ? 'opacity-50 cursor-not-allowed' : ''} bg-surface-500/30"

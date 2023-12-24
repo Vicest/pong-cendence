@@ -214,11 +214,12 @@ export const init = () => {
 				}
 			);
 
-			GamesSocket.on('match:updated', (matchId: number, match) => {
+			GamesSocket.on('match:updated', async (matchId: number, match) => {
 				console.log('I listened')
 				//TODO if match is finished update ranking???
 				if (match.status !== 'finished')
 					return ;
+				get(currentUser).rank = await Api.get(`/users/${get(currentUser).id}/rank`);
 				console.log(`Id: ${matchId}\nMatch: ${JSON.stringify(match)}`)
 			});
 		})

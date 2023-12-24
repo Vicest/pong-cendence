@@ -16,6 +16,7 @@ import { Interval } from '@nestjs/schedule';
 import { Match } from './entities/match.entity';
 import { PongInstance } from './instances/pong.instance';
 import { GamesService } from './games.service';
+import { BoundlessInstance } from './instances/boundless.instance';
 
 @WebSocketGateway({
 	cors: true,
@@ -26,7 +27,7 @@ export class GamesGateway
 {
 	private log: Logger;
 	public ActiveMatches: Match[];
-	private MatchInstances: { [key: number]: PongInstance } = {};
+	private MatchInstances: { [key: number]: PongInstance | BoundlessInstance} = {};
 
 	@WebSocketServer()
 	server: Namespace;
@@ -44,6 +45,9 @@ export class GamesGateway
 			switch (match.game.name) {
 				case PongInstance.slug:
 					this.MatchInstances[match.id] = new PongInstance(match);
+					break;
+				case BoundlessInstance.slug:
+					this.MatchInstances[match.id] = new BoundlessInstance(match);
 					break;
 			}
 		});
