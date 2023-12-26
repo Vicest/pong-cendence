@@ -53,23 +53,25 @@
 			<div class="flex flex-col justify-center items-center my-10 card w-full p-10">
 				<div class="text-center font-bold mb-4">PLAY</div>
 				<div class="flex flex-row justify-center items-center">
-					<!-- I know I should not hardcode the 0 and 1 for games ids, but it is what it is -->
+					<!-- I know I should not hardcode the 1 and 2 for games ids, but it is what it is -->
 					<button
 						type="button"
 						class="btn btn-sm variant-filled"
+						disabled={profilePerson?.status !== 'online'}
 						on:click={() => sendChallenge(profilePerson?.id, 1, profilePerson?.nickname)}
 						>classic</button
 					>
 					<button
 						type="button"
 						class="btn btn-sm variant-filled"
+						disabled={profilePerson?.status !== 'online'}
 						on:click={() => sendChallenge(profilePerson?.id, 2, profilePerson?.nickname)}
 						>boundless</button
 					>
 				</div>
 			</div>
 			<div class="flex flex-col justify-center items-center my-10 card w-full p-10">
-				Matches played
+				<div class="text-center font-bold mb-4">MATCH HISTORY</div>
 			</div>
 		</div>
 	{/if}
