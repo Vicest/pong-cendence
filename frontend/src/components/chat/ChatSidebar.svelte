@@ -82,20 +82,11 @@
 						<ChatAvatar user={findUser(channel.user.id)} width="w-8" showStatus={false} />
 					</svelte:fragment>
 					{findUser(channel.user.id).nickname}
-					<!-- I know I should not hardcode the 0 and 1 for games ids, but it is what it is -->
 					<br />
 					<button
 						type="button"
 						class="btn btn-sm variant-filled"
-						on:click={() => sendChallenge(channel.user.id, 0, findUser(channel.user.id).nickname)}
-						>VS classic</button
-					>
-					<br />
-					<button
-						type="button"
-						class="btn btn-sm variant-filled"
-						on:click={() => sendChallenge(channel.user.id, 1, findUser(channel.user.id).nickname)}
-						>VS boundless</button
+						on:click={() => goto(`/app/profile/${channel.user.id}`)}>profile</button
 					>
 				</ListBoxItem>
 			{/each}
