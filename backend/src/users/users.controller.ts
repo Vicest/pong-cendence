@@ -14,14 +14,14 @@ import {
 	UseInterceptors,
 	FileTypeValidator,
 	Delete,
-	NotFoundException
+	NotFoundException,
+	BadRequestException
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Observable } from 'rxjs';
 import { User } from './entities/user.entity';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import * as fs from 'fs';
-import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
@@ -31,7 +31,6 @@ import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 export class UsersController {
 	constructor(
 		private readonly userService: UsersService,
-		private readonly configService: ConfigService
 	) {}
 
 	@Get(':login/img')
@@ -157,44 +156,6 @@ export class UsersController {
 		file: Express.Multer.File
 	) {
 		//TODO: validar imagen como multipart/form-data y no como json
-
-		//Crear imagen y guardarla en el servidor
-		if (user.avatar) {
-			const imageName = req.user.login + Date.now().toString();
-			try {
-				if (!fs.existsSync('usersdata')) fs.mkdirSync('usersdata');
-				fs.writeFile(
-					`usersdata/${imageName}.png`,
-					user.avatar,
-					'base64',
-					(err) => {
-						console.log(err);
-					}
-				);
-			} catch (e) {
-				console.log(e);
-				res.sendStatus(500);
-			}
-			try {
-				this.userService.findOne(req.user.login).then((res) => {
-					const pathFile = 'usersdata/' + res.avatar.split('/')[4] + '.png';
-					if (fs.existsSync(pathFile)) fs.unlinkSync(pathFile);
-				});
-			} catch (e) {
-				console.log(e);
-			}
-
-			// Especificar la url de la imagen del usuario
-			const databasePort = this.configService.get<number>('BACKEND_PORT');
-			const databaseUri = this.configService.get<string>('BACKEND_BASE');
-			user.avatar = `${databaseUri}:${databasePort}/users/${imageName}/img`;
-		}
-		if (user.nickname) {
-            const nick_exist = await this.userService.findNickname(user.nickname);
-            if (nick_exist) {
-                return;
-            }
-        }
-		res.send(this.userService.updateById(req.user.id, user));
+		return this.userService.updateById(req.user.id, await this.userService.validateUser(user,req.user));
 	}
 }

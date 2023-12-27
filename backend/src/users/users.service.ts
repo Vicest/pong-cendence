@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { User } from './entities/user.entity';
 
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,6 +8,8 @@ import { Channel, MessageType } from 'src/chat/entities/channel.entity';
 import { UsersGateway } from './users.gateway';
 import { ChatGateway } from 'src/chat/chat.gateway';
 import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
+import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
 
 @Injectable()
 export class UsersService {
@@ -19,7 +21,8 @@ export class UsersService {
 		@InjectRepository(Channel)
 		private readonly channelRepository: Repository<Channel>,
 		private readonly usersGateway: UsersGateway,
-		private readonly chatGateway: ChatGateway
+		private readonly chatGateway: ChatGateway,
+		private readonly configService: ConfigService
 	) {
 		this.log = new Logger();
 	}
@@ -41,6 +44,48 @@ export class UsersService {
 			this.log.error(`Error parsing fields ${error}`);
 			return null;
 		}
+	}
+
+	public async validateUser(user:  User, requser: User )
+	{
+		//Crear imagen y guardarla en el servidor
+		if (user.avatar) {
+			const imageName = requser.login + Date.now().toString();
+			try {
+				if (!fs.existsSync('usersdata')) fs.mkdirSync('usersdata');
+				fs.writeFile(
+					`usersdata/${imageName}.png`,
+					user.avatar,
+					'base64',
+					(err) => {
+						console.log(err);
+					}
+				);
+			} catch (e) {
+				throw new Error("Error: " + e.message);
+			}
+			try {
+				this.findOne(user.login).then((res) => {
+					const pathFile = 'usersdata/' + res.avatar.split('/')[4] + '.png';
+					if (fs.existsSync(pathFile)) fs.unlinkSync(pathFile);
+				});
+			} catch (e) {
+				console.log(e);
+			}
+
+			// Especificar la url de la imagen del usuario
+			const databasePort = this.configService.get<number>('BACKEND_PORT');
+			const databaseUri = this.configService.get<string>('BACKEND_BASE');
+			user.avatar = `${databaseUri}:${databasePort}/users/${imageName}/img`;
+		}
+
+		if (user.nickname) {
+			console.log(await this.findNickname(user.nickname))
+            if (await this.findNickname(user.nickname)) {
+				throw new  BadRequestException("Username already exists")
+            }
+        }
+		return user
 	}
 
 	public async save(user: User) {
