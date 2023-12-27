@@ -70,7 +70,7 @@ export class ChatService {
 		const channelName = await this.channelRepository.findOne({
 			where: { name: data.name }
 		});
-		if (channelName)
+		if (channelName && channelName.id !== channelId)
 			throw new BadRequestException('Channel name already exists');
 		await this.channelRepository.update(channelId, {
 			...data,
