@@ -144,11 +144,16 @@ export class ChatGateway
 
 	public channelCreated(channel: Channel) {
 		this.server.sockets.forEach((socket) => {
-			channel.users.forEach((user) => {
-				if (socket.data.user.id == user.id) {
-					socket.join('channel_' + channel.id);
-				}
-			});
+			if (channel.name === null) {
+				channel.users = [];
+				socket.join('channel_' + channel.id);
+			} else {
+				channel.users.forEach((user) => {
+					if (socket.data.user.id == user.id) {
+						socket.join('channel_' + channel.id);
+					}
+				});
+			}
 		});
 		this.server.to('channel_' + channel.id).emit('channel:created', channel);
 	}

@@ -53,7 +53,7 @@
 	let keyword: string = '';
 	$: filteredChannels = channelList.chatSearchList().filter((channel) => {
 		return (
-			channel.name.toLowerCase().includes(keyword.toLowerCase()) ||
+			(channel.name ?? 'Empty name').toLowerCase().includes(keyword.toLowerCase()) ||
 			channel.description.toLowerCase().includes(keyword.toLowerCase())
 		);
 	});

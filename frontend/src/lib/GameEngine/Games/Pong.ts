@@ -34,7 +34,7 @@ export class PongGame extends GameEngine {
 				width: number;
 				height: number;
 			};
-			avatar: string;
+			avatar?: string;
 		}[];
 		ball: {
 			x: number;
@@ -138,26 +138,26 @@ export class PongGame extends GameEngine {
 		this.players.forEach((player, index) => {
 			// Draw player avatar
 			if (!this.cache.avatars) this.cache.avatars = {};
-			if (!this.cache.avatars[player.avatar])
+			if (player.avatar && !this.cache.avatars[player.avatar])
 				this.cache.avatars[player.avatar] = this.p.loadImage(player.avatar);
 			if (this.gameState.status === 'paused') {
 				this.p.tint(255, this.alphaValue);
 			} else {
 				this.p.noTint();
 			}
-			this.p.image(
-				this.cache.avatars[player.avatar],
-				this.p.width / 2 + (index === 0 ? -50 : 0),
-				0,
-				50,
-				50,
-				0,
-				0,
-				0,
-				0,
-				this.p.COVER
-			);
-
+			if (player.avatar && this.cache.avatars[player.avatar])
+				this.p.image(
+					this.cache.avatars[player.avatar],
+					this.p.width / 2 + (index === 0 ? -50 : 0),
+					0,
+					50,
+					50,
+					0,
+					0,
+					0,
+					0,
+					this.p.COVER
+				);
 			this.p.textSize(16);
 			this.p.textAlign(this.p.CENTER, this.p.CENTER);
 			this.p.fill(255, this.alphaValue);
@@ -239,7 +239,11 @@ export class PongGame extends GameEngine {
 		this.p.textSize(32);
 		this.p.textAlign(this.p.CENTER, this.p.CENTER);
 		this.p.fill(255, 255, 255);
-		this.p.text(`Game starting in ${Math.ceil(this.gameState.countdown / 1000)}.`, this.p.width / 2, this.p.height / 2 - 50);
+		this.p.text(
+			`Game starting in ${Math.ceil(this.gameState.countdown / 1000)}.`,
+			this.p.width / 2,
+			this.p.height / 2 - 50
+		);
 	}
 
 	public destroy() {

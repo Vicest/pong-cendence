@@ -14,9 +14,9 @@ export const gameListDrawerSettings = readable<DrawerSettings>({
 	position: 'right'
 });
 
-export const gameList = writable<Game[]>();
+export const gameList = writable<Game[]>([]);
 
-export const gameInstances = writable<GameInstance[]>();
+export const gameInstances = writable<GameInstance[]>([]);
 
 export const init = () => {
 	GamesSocket.connect();

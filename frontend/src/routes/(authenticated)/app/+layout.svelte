@@ -32,9 +32,7 @@
 					goto('/login');
 				} else if (err.statusCode === 400 && err.message === '2FA not validated') {
 					goto('/login/2fa');
-				}
-				else
-				{
+				} else {
 					goto('/login');
 				}
 			});
@@ -44,7 +42,7 @@
 <!-- App Shell -->
 {#if $loading}
 	<div class="flex justify-center items-center h-screen animate-pulse">
-			<img src="/images/logo.png" alt="logo" class="h-20" />
+		<img src="/images/logo.png" alt="logo" class="h-20" />
 	</div>
 {:else}
 	<Drawer />

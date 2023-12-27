@@ -1,10 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Not, Repository } from 'typeorm';
 import { Game } from './entities/game.entity';
 import { Match } from './entities/match.entity';
 import { User } from 'src/users/entities/user.entity';
 import { MatchPlayer } from './entities/matchPlayer.entity';
+import { Chat } from 'src/chat/chat.interface';
+import { ChatGateway } from 'src/chat/chat.gateway';
+import { Channel, MessageType } from 'src/chat/entities/channel.entity';
 
 @Injectable()
 export class GamesService {
@@ -14,23 +17,30 @@ export class GamesService {
 		@InjectRepository(Match)
 		private readonly matchRepository: Repository<Match>,
 		@InjectRepository(MatchPlayer)
-		private readonly matchPlayerRepository: Repository<MatchPlayer>
-
+		private readonly matchPlayerRepository: Repository<MatchPlayer>,
+		@Inject(forwardRef(() => ChatGateway))
+		private readonly chatGateway: ChatGateway
 	) {
 		this.log = new Logger();
 	}
 
 	public async createMatch(
 		data: Partial<Match>,
-		p1: {p1: User, rankShift: number},
-		p2: {p2: User, rankShift: number}
+		p1: { p1: User; rankShift: number },
+		p2: { p2: User; rankShift: number }
 	): Promise<Match | null> {
-		let mp1 = { user: p1.p1, rankShift: p1.rankShift } as MatchPlayer
-		let mp2 = { user: p2.p2, rankShift: p2.rankShift } as MatchPlayer
-		data.players = [
-			mp1,
-			mp2
-		]
+		let mp1 = { user: p1.p1, rankShift: p1.rankShift } as MatchPlayer;
+		let mp2 = { user: p2.p2, rankShift: p2.rankShift } as MatchPlayer;
+		data.players = [mp1, mp2];
+		/** let chat = {
+			owner: p1.p1,
+			members: [p1.p1, p2.p2],
+			admins: [p1.p1, p2.p2],
+			type: MessageType.CHANNEL,
+			description: 'Match chat'
+		};
+		data.channel = chat;
+		this.chatGateway.channelCreated(result.channel as Channel);*/
 		return await this.matchRepository.save(data);
 	}
 
@@ -48,7 +58,15 @@ export class GamesService {
 
 	public async findAllMatches() {
 		const allMatches = await this.matchRepository.find({
-			relations: ['game', 'players', 'players.user', 'events'],
+			relations: [
+				'game',
+				'players',
+				'players.user',
+				'events',
+				'channel.users',
+				'channel.admins',
+				'channel'
+			],
 			select: {
 				id: true,
 				created_at: true,
@@ -56,9 +74,11 @@ export class GamesService {
 				game: {
 					id: true
 				},
-				players: {//FIXME I'm like 100% sure this breaks spectator rails
+				players: {
+					//FIXME I'm like 100% sure this breaks spectator rails
 					id: true,
-					user: {//TODO Does this do what I think it does?
+					user: {
+						//TODO Does this do what I think it does?
 						id: true
 					}
 				},

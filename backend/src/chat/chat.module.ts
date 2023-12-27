@@ -10,10 +10,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Channel } from './entities/channel.entity';
 import { ChannelMessages } from './entities/channel.message.entity';
 import { ChatSubscriber } from './chat.subscriber';
+import { GamesModule } from 'src/games/games.module';
 
 @Module({
 	imports: [
 		forwardRef(() => UsersModule),
+		forwardRef(() => GamesModule),
 		TypeOrmModule.forFeature([User, Channel, ChannelMessages]),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],

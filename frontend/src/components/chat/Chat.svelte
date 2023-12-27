@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Avatar, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
-	import { channelList, joinedChannelsChat } from '../../store/Chat';
+	import { channelList } from '../../store/Chat';
 	import { userList } from '../../store/User';
 	import { get } from 'svelte/store';
 	import type { ChannelsChat, MessageFeed, Person } from '$lib/types';

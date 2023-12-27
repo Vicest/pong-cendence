@@ -10,12 +10,15 @@ import { ChatGateway } from 'src/chat/chat.gateway';
 import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
+import { Game } from 'src/games/entities/game.entity';
 
 @Injectable()
 export class UsersService {
 	constructor(
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
+		@InjectRepository(User)
+		private readonly gameRepository: Repository<Game>,
 		@InjectRepository(ChannelMessages)
 		private readonly messageRepository: Repository<ChannelMessages>,
 		@InjectRepository(Channel)
@@ -29,13 +32,42 @@ export class UsersService {
 
 	public async create(data): Promise<User | null> {
 		console.log('Creating user', data);
+		let users = await this.userRepository.count();
+		if (users === 0) {
+			this.log.debug('First user, granting admin privileges');
+			this.gameRepository.insert([
+				{
+					name: 'pong',
+					title: 'Pong',
+					creator: 'Atari Inc.',
+					launched_at: '1972-11-29 00:00:00',
+					description:
+						'Pong is a classic arcade video game that simulates table tennis. It features simple two-dimensional graphics and involves players controlling paddles to hit a ball back and forth. Its straightforward gameplay and minimalist design made it a massive hit, establishing it as a pioneering title in the world of video games.',
+					enabled: true,
+					image: '/images/pong/cover.png',
+					created_at: new Date()
+				},
+				{
+					name: 'boundless',
+					title: 'Boundless Pong',
+					creator: "42 Madrid's best coders.",
+					launched_at: '2023-12-27 00:00:00',
+					description: 'Same as pong, but without boundaries.',
+					enabled: true,
+					image: '/images/pong/cover.png',
+					created_at: new Date()
+				}
+			]);
+			this.log.debug('Games created');
+		}
 		try {
 			let fields = JSON.parse(data._raw);
 			const newUser: User | null = await this.userRepository.create({
 				nickname: data.login,
 				isRegistered: false,
 				avatar: fields.image?.link,
-				login: data.login
+				login: data.login,
+				isAdmin: users === 0
 			});
 			this.log.debug(`Created user ${newUser}`);
 			if (newUser) await this.userRepository.save(newUser);
@@ -107,12 +139,14 @@ export class UsersService {
 			},
 			relations: ['blocked', 'invitations', 'friends']
 		});
-		const rankedUsers = await Promise.all(allUsers.map( async (user) => {
-			return {
-				...user,
-				rank: await this.getUserRank(user.id)
-			}
-		}));
+		const rankedUsers = await Promise.all(
+			allUsers.map(async (user) => {
+				return {
+					...user,
+					rank: await this.getUserRank(user.id)
+				};
+			})
+		);
 		//console.log(`All users: ${JSON.stringify(rankedUsers)}`)
 		return rankedUsers;
 	}
@@ -133,18 +167,22 @@ export class UsersService {
 		const user = await query.getOne();
 		return user.matches;
 	}
-		
+
 	public async getUserRank(id: number) {
 		const matchesPlayed = await this.getUserMatches(id);
-		const rankedMatches = matchesPlayed.filter((userPlayer) =>  userPlayer.rankShift !== 0);
+		const rankedMatches = matchesPlayed.filter(
+			(userPlayer) => userPlayer.rankShift !== 0
+		);
 		let totalRankShift: number = 0;
-		for(const userPlayer of rankedMatches) {
-			totalRankShift += userPlayer.isWinner ? userPlayer.rankShift : -userPlayer.rankShift;
+		for (const userPlayer of rankedMatches) {
+			totalRankShift += userPlayer.isWinner
+				? userPlayer.rankShift
+				: -userPlayer.rankShift;
 		}
 		////No ranked matches means you are 'Unranked'
 		return matchesPlayed.length > 0 ? 1500 + totalRankShift : -1;
 	}
- 
+
 	public async exists(id: number): Promise<boolean> {
 		const user = await this.userRepository.findOne({ where: { id: id } });
 		return user !== null;
@@ -159,7 +197,7 @@ export class UsersService {
 			where: { id: friend },
 			relations: ['friends', 'invitations']
 		});
-		
+
 		user.invitations = user.invitations.filter(
 			(user) => user.id !== friendUser.id
 		);

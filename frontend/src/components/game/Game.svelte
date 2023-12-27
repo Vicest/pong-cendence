@@ -35,7 +35,7 @@
 	}
 
 	onDestroy(() => {
-		game.destroy();
+		if (typeof game !== 'undefined') game.destroy();
 	});
 </script>
 

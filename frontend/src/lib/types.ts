@@ -75,6 +75,7 @@ export interface GameInstance {
 	id: number;
 	game: GameType;
 	players: number[];
+	channel: ChannelsChat;
 	created_at: Date;
 	status: 'waiting' | 'running' | 'finished' | 'paused';
 }
