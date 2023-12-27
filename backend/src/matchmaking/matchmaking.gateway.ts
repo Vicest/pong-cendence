@@ -39,7 +39,7 @@ export class MatchMakingGateway
 	} = {};
 
 	constructor(
-		@Inject(forwardRef( () => MatchMakingService ))
+		@Inject(forwardRef(() => MatchMakingService))
 		private matchMakingService: MatchMakingService,
 		private jwtService: JwtService,
 		private gameService: GamesService,
@@ -104,8 +104,10 @@ export class MatchMakingGateway
 
 		const clientInstances = await this.server.in(id.toString()).fetchSockets();
 		if (clientInstances.length == 0) {
-			let myChallenges = this.pendingChallenges_.filter((c) => c.challengerId === id)
-			myChallenges.forEach(c => this.deleteChallenge(c));
+			let myChallenges = this.pendingChallenges_.filter(
+				(c) => c.challengerId === id
+			);
+			myChallenges.forEach((c) => this.deleteChallenge(c));
 			this.matchMakingService.leaveQueue(id);
 			this.log.debug(
 				`${client.data.user.login} disconnected all instances`,
@@ -199,10 +201,14 @@ export class MatchMakingGateway
 			const p2 = await this.userService.find(responseId);
 
 			const gameId = await this.gameService.findGame(challenge.gameId);
-			const match = await this.gameService.createMatch({
-				game: gameId,
-				status: 'waiting'
-			}, {p1, rankShift: 0}, {p2, rankShift: 0});
+			const match = await this.gameService.createMatch(
+				{
+					game: gameId,
+					status: 'waiting'
+				},
+				{ p1, rankShift: 0 },
+				{ p2, rankShift: 0 }
+			);
 			console.log(`Challenge accepted`, match);
 			this.sendMatchCreated(challengerId, responseId, match.id);
 		}

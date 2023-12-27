@@ -5,12 +5,15 @@ import {
 	OneToMany,
 	JoinTable,
 	JoinColumn,
-	ManyToOne
+	ManyToOne,
+	OneToOne
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Game } from './game.entity';
 import { MatchEvent } from './events.entity';
 import { MatchPlayer } from './matchPlayer.entity';
+import { Chat } from 'src/chat/chat.interface';
+import { Channel } from 'src/chat/entities/channel.entity';
 
 @Entity({
 	name: 'Matches'
@@ -31,6 +34,14 @@ export class Match {
 		default: 'waiting'
 	})
 	status: string;
+
+	@OneToOne(() => Channel, (channel) => channel.id, {
+		cascade: ['insert']
+	})
+	@JoinColumn({
+		name: 'channel_id'
+	})
+	channel: Partial<Channel>;
 
 	@OneToMany(() => MatchPlayer, (matchPlayer) => matchPlayer.match, {
 		cascade: ['insert']

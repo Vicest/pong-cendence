@@ -6,9 +6,6 @@ import { userList } from './User';
 import { currentUser } from './Auth';
 import { Api } from '$services/api';
 
-export const joinedChannelsChat = writable<ChannelsChat[]>();
-export const notJoinedChannelChat = writable<ChannelsChat[]>();
-
 export const sendJoinChanneldRequest = (id: number) => {
 	return Api.post(`/chat/${id}/join`);
 };
@@ -34,7 +31,7 @@ export const updateChannel = async (id: number, data) => {
 };
 
 function createChannelListStore() {
-	const { set, subscribe } = writable<ChannelsChat[]>();
+	const { set, subscribe } = writable<ChannelsChat[]>([]);
 	let state: ChannelsChat[] = [];
 	subscribe((v) => (state = v));
 	return {

@@ -11,6 +11,7 @@ import { MatchEvent } from './entities/events.entity';
 import { MatchesSubscriber } from './matches.subscriber';
 import { MatchPlayer } from './entities/matchPlayer.entity';
 import { User } from 'src/users/entities/user.entity';
+import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
 	imports: [
@@ -21,7 +22,8 @@ import { User } from 'src/users/entities/user.entity';
 				secret: env.get('jwt.secret')
 			}),
 			inject: [ConfigService]
-		})
+		}),
+		forwardRef(() => ChatModule)
 	],
 	controllers: [GamesController],
 	providers: [GamesService, GamesGateway, MatchesSubscriber],

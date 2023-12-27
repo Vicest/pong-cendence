@@ -5,7 +5,7 @@ import {
 	OneToMany,
 	ManyToMany,
 	JoinTable,
-	ManyToOne,
+	ManyToOne
 } from 'typeorm';
 import { ChannelMessages } from './channel.message.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -28,7 +28,7 @@ export class Channel {
 		type: 'varchar',
 		unique: true,
 		length: 20,
-		nullable: false
+		nullable: true
 	})
 	@MinLength(4)
 	@MaxLength(20)

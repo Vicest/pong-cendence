@@ -5,7 +5,7 @@ import { currentUser } from './Auth';
 import type { Person } from '$lib/types';
 
 function createUserListStore() {
-	const { set, subscribe } = writable<Person[]>();
+	const { set, subscribe } = writable<Person[]>([]);
 	let state: Person[] = [];
 	subscribe((v) => (state = v));
 	return {
@@ -96,9 +96,9 @@ export const rejectUser = (id: number) => {
 	return Api.delete(`/users/${id}/accept`);
 };
 
-export const init = () => {
+export const init = async () => {
 	UsersSocket.connect();
-	Api.get('/users')
+	await Api.get('/users')
 		.then(({ data }) => {
 			userList.set(data);
 			setTimeout(() => {
@@ -215,13 +215,14 @@ export const init = () => {
 			);
 
 			GamesSocket.on('match:updated', async (matchId: number, match) => {
-				console.log('I listened')
+				console.log('I listened');
 				//TODO if match is finished update ranking???
-				if (match.status !== 'finished')
-					return ;
+				if (match.status !== 'finished') return;
 				get(currentUser).rank = await Api.get(`/users/${get(currentUser).id}/rank`);
-				console.log(`Id: ${matchId}\nMatch: ${JSON.stringify(match)}`)
+				console.log(`Id: ${matchId}\nMatch: ${JSON.stringify(match)}`);
 			});
+
+			return data;
 		})
 		.catch((err) => {
 			console.log(err);
