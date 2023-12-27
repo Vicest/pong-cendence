@@ -181,7 +181,7 @@ export class UsersService {
 				: -userPlayer.rankShift;
 		}
 		////No ranked matches means you are 'Unranked'
-		return matchesPlayed.length > 0 ? 1500 + totalRankShift : -1;
+		return rankedMatches.length > 0 ? 1500 + totalRankShift : -1;
 	}
 
 	public async exists(id: number): Promise<boolean> {

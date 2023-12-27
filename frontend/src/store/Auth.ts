@@ -1,4 +1,4 @@
-import { writable, get } from 'svelte/store';
+import { writable } from 'svelte/store';
 import { Api } from '$services/api';
 import type { Person } from '$lib/types';
 
@@ -10,6 +10,7 @@ export const currentUser = writable<Person>();
 export const init = async () => {
 	try {
 		let res = await Api.get('/auth/me');
+		res.data.inQueue = false;
 		currentUser.set(res.data);
 		setTimeout(() => {
 			loading.set(false);

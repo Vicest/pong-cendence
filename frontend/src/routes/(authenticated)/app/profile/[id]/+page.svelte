@@ -48,7 +48,7 @@
 				<div>{profilePerson.nickname}: {profilePerson.status}</div>
 			</div>
 			<div class="flex flex-col justify-center items-center my-10 card w-full p-10">
-				Rank: {profilePerson.rank}
+				Rank: {profilePerson.rank === -1 ? 'Unranked' : profilePerson.rank}
 			</div>
 			<div class="flex flex-col justify-center items-center my-10 card w-full p-10">
 				<div class="text-center font-bold mb-4">PLAY</div>
@@ -72,6 +72,11 @@
 			</div>
 			<div class="flex flex-col justify-center items-center my-10 card w-full p-10">
 				<div class="text-center font-bold mb-4">MATCH HISTORY</div>
+				<!--
+				{#each profilePerson.matches as match}
+					match.id
+				{/each}
+				-->
 			</div>
 		</div>
 	{/if}
