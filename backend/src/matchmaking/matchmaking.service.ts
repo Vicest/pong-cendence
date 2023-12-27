@@ -16,6 +16,10 @@ export class MatchMakingService {
 		this.queuedPlayers_ = [];
 	}
 
+	public getAll(): number[] {
+		return this.queuedPlayers_.map((qp: QueuePlayer) => qp.id);
+	}
+
 	public async joinQueue(user: User): Promise<boolean> {
 		const joiningPlayer: User | null = await this.userService.find(user.id);
 		if (joiningPlayer === null) {
@@ -43,7 +47,9 @@ export class MatchMakingService {
 			);
 			return false;
 		}
-		//TODO Check user status. Can't join if not online, not gaming, etc...
+		//Can't join if not online: gaming, etc...
+		if ((await this.userService.find(user.id)).status !== 'online')
+			return ;
 		this.queuedPlayers_.push(queuedPlayer);
 		return true;
 	}
@@ -114,8 +120,6 @@ export class MatchMakingService {
 			this.matchMakingGateway.sendMatchCreated(lhs.id, candidates[0].id, match.id);
 			this.leaveQueue(lhs.id);
 			this.leaveQueue(candidates[0].id);
-			//vvv afterInsert? vvv
-			//TODO ^^ also change user status as busy. A nivel de match listener^^
 		}
 	}
 }

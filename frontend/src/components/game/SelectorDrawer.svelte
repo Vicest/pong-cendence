@@ -4,6 +4,8 @@
 	import { gameList, gameListDrawerSettings } from '../../store/Game';
 	import { selectedGame } from '../../store/Common';
 	import { Api } from '$services/api';
+	import { currentUser } from '../../store/Auth';
+	import { get } from 'svelte/store';
 	const drawerStore = getDrawerStore();
 	const modalStore = getModalStore();
 	let targetSelectorModal: ModalSettings = {
@@ -11,17 +13,23 @@
 		component: 'targetSelectorModal'
 	};
 
-	//If the user closes the Modal, front forgets about the state, but back retains it.
-	let playerInQueue = false;
-
-	function queueToggle() {
-		if (!playerInQueue) {
-			Api.post('/matchmaking/queue');
-		} else {
-			Api.delete('/matchmaking/queue');
-		}
-		playerInQueue = !playerInQueue;
-	}
+	//currentUser
+	////If the user closes the Modal, front forgets about the state, but back retains it.
+	//let playerInQueue = false;
+	//
+	//function queueToggle() {
+	//	if (!playerInQueue) {
+	//		Api.post('/matchmaking/queue');
+	//	} else {
+	//		Api.delete('/matchmaking/queue');
+	//	}
+	//	playerInQueue = !playerInQueue;
+	//}
+	$: inQueue = get(currentUser).inQueue;
+	currentUser.subscribe((user) => {
+		console.log('Queue value: ', user);
+		inQueue = user.inQueue;
+	});
 </script>
 
 <div class="flex flex-col gap-6 items-around h-full overflow-y-auto">
@@ -30,10 +38,27 @@
 	>
 		<h2 class="h2">Game list</h2>
 	</div>
-	{#if !playerInQueue}
-		<button on:click={() => queueToggle()}>Join queue</button>
+	{#if inQueue}
+		<button
+			on:click={async () => {
+				await Api.delete('/matchmaking/queue');
+				currentUser.update((person) => {
+					person.inQueue = false;
+					return person;
+				});
+				console.log('qweqwe  ', get(currentUser).inQueue);
+			}}>Leave queue</button
+		>
 	{:else}
-		<button on:click={() => queueToggle()}>Leave queue</button>
+		<button
+			on:click={async () => {
+				await Api.post('/matchmaking/queue');
+				currentUser.update((person) => {
+					person.inQueue = true;
+					return person;
+				});
+			}}>Join queue</button
+		>
 	{/if}
 	{#each $gameList as game}
 		<button

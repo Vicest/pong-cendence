@@ -11,9 +11,11 @@ import { MatchEvent } from './entities/events.entity';
 import { MatchesSubscriber } from './matches.subscriber';
 import { MatchPlayer } from './entities/matchPlayer.entity';
 import { User } from 'src/users/entities/user.entity';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
 	imports: [
+		UsersModule,
 		TypeOrmModule.forFeature([Game, Match, MatchEvent, MatchPlayer, User]),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],

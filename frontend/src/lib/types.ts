@@ -9,6 +9,7 @@ export interface Person {
 	invitations: Person[];
 	friends: Person[];
 	rank: number;
+	inQueue: boolean;
 }
 
 export interface MessageFeed {
@@ -57,7 +58,7 @@ export interface Group {
 	members: Person[];
 }
 
-type GameType = 'pong' | 'tetris';
+type GameType = 'pong' | 'boundless';
 
 export interface Game {
 	id: number;

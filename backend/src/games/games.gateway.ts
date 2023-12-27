@@ -17,6 +17,7 @@ import { Match } from './entities/match.entity';
 import { PongInstance } from './instances/pong.instance';
 import { GamesService } from './games.service';
 import { BoundlessInstance } from './instances/boundless.instance';
+import { UsersService } from 'src/users/users.service';
 
 @WebSocketGateway({
 	cors: true,
@@ -34,6 +35,7 @@ export class GamesGateway
 
 	constructor(
 		private jwtService: JwtService,
+		private userService: UsersService,
 		private gamesService: GamesService
 	) {
 		this.log = new Logger();
@@ -111,6 +113,7 @@ export class GamesGateway
 			if (state.status === 'finished') {
 				console.log('Match: ', match, '\nState: ', state)
 				this.gamesService.setMatchWinner(match.id, state.winnerId);
+				this.userService
 			}
 			if (changed || JSON.stringify(previousState) !== JSON.stringify(state)) {
 				this.sendTick(match, state);
@@ -140,6 +143,7 @@ export class GamesGateway
 		try {
 			const decoded = this.jwtService.verify(this.getAuthCookie(client));
 			client.data.user = decoded;
+			client.join(decoded.id.toString());
 			this.log.debug(`${decoded.login} connected`, this.constructor.name);
 		} catch (error) {
 			this.log.error(`${error}`, this.constructor.name);

@@ -91,13 +91,13 @@ export class UsersService {
 		
 	public async getUserRank(id: number) {
 		const matchesPlayed = await this.getUserMatches(id);
-		const rankedMatches = matchesPlayed.filter((userPlayer) =>  userPlayer.rankShift !== 0);
+		const rankedMatches = matchesPlayed.filter((userPlayer) => userPlayer.rankShift !== 0);
 		let totalRankShift: number = 0;
 		for(const userPlayer of rankedMatches) {
 			totalRankShift += userPlayer.isWinner ? userPlayer.rankShift : -userPlayer.rankShift;
 		}
 		////No ranked matches means you are 'Unranked'
-		return matchesPlayed.length > 0 ? 1500 + totalRankShift : -1;
+		return rankedMatches.length > 0 ? 1500 + totalRankShift : -1;
 	}
  
 	public async exists(id: number): Promise<boolean> {
