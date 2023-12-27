@@ -34,10 +34,28 @@ export class UsersService {
 			this.log.debug('First user, granting admin privileges');
 			this.gameRepository.insert([
 				{
+					name: 'pong',
+					title: 'Pong',
+					creator: 'Atari Inc.',
+					launched_at: '1972-11-29 00:00:00',
+					description:
+						'Pong is a classic arcade video game that simulates table tennis. It features simple two-dimensional graphics and involves players controlling paddles to hit a ball back and forth. Its straightforward gameplay and minimalist design made it a massive hit, establishing it as a pioneering title in the world of video games.',
+					enabled: true,
+					image: '/images/pong/cover.png',
+					created_at: new Date()
+				},
+				{
+					name: 'boundless',
+					title: 'Boundless Pong',
+					creator: "42 Madrid's best coders.",
+					launched_at: '2023-12-27 00:00:00',
+					description: 'Same as pong, but without boundaries.',
+					enabled: true,
+					image: '/images/pong/cover.png',
 					created_at: new Date()
 				}
 			]);
-			this.log.debug('Game created');
+			this.log.debug('Games created');
 		}
 		try {
 			let fields = JSON.parse(data._raw);
