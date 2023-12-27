@@ -27,7 +27,8 @@ export class GamesGateway
 {
 	private log: Logger;
 	public ActiveMatches: Match[];
-	private MatchInstances: { [key: number]: PongInstance | BoundlessInstance} = {};
+	private MatchInstances: { [key: number]: PongInstance | BoundlessInstance } =
+		{};
 
 	@WebSocketServer()
 	server: Namespace;
@@ -96,6 +97,7 @@ export class GamesGateway
 
 	@Interval(1000 / 60)
 	GameEngine() {
+		if (typeof this.ActiveMatches === 'undefined') return;
 		this.ActiveMatches.forEach(async (match, key) => {
 			const previousState = JSON.parse(
 				JSON.stringify(this.MatchInstances[match.id].getState())
@@ -109,7 +111,7 @@ export class GamesGateway
 				changed = true;
 			}
 			if (state.status === 'finished') {
-				console.log('Match: ', match, '\nState: ', state)
+				console.log('Match: ', match, '\nState: ', state);
 				this.gamesService.setMatchWinner(match.id, state.winnerId);
 			}
 			if (changed || JSON.stringify(previousState) !== JSON.stringify(state)) {
@@ -157,15 +159,14 @@ export class GamesGateway
 
 		const clientInstances = await this.server.in(id.toString()).fetchSockets();
 		if (clientInstances.length === 0) {
-			for(let gameId in this.MatchInstances) {
+			for (let gameId in this.MatchInstances) {
 				const match = this.MatchInstances[gameId];
 				let state = match.getState();
-				if (state.status === 'finished')
-					continue;
+				if (state.status === 'finished') continue;
 				if (state.players[0].id === id || state.players[1].id === id) {
 					state.status = 'finished';
-					if (state.players[0].id === id) state.winnerId = state.players[1].id
-					else state.winnerId = state.players[0].id
+					if (state.players[0].id === id) state.winnerId = state.players[1].id;
+					else state.winnerId = state.players[0].id;
 				}
 			}
 			this.log.debug(

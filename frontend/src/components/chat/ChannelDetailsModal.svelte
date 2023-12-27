@@ -10,9 +10,7 @@
 
 	let modalStore = getModalStore();
 
-	export let parent: SvelteComponent;
-
-	let channel = $channelList.find((c) => c.id === $modalStore[0]?.meta?.id);
+	let channel = $channelList.find((c) => c.id === $modalStore[0]?.meta?.id) as ChannelsChat;
 	let channelCopy = {
 		name: channel.name,
 		description: channel.description,

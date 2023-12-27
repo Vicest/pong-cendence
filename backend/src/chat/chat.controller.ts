@@ -18,6 +18,7 @@ import { ChatService } from './chat.service';
 import { Channel } from './entities/channel.entity';
 import { ChannelCreateDto } from './dto/create.channel.dto';
 import { UpdateCreateDto } from './dto/update.channel.dto';
+import { ChannelPasswordDto } from './dto/channel.password.dto';
 
 @Controller('chat')
 @UseGuards(JwtGuard)
@@ -65,19 +66,24 @@ export class ChatController {
 
 	// Post /:id/join
 	@Post('/:id/join')
-	joinChannel(@Req() req, @Param('id') id: number) {
-		return this.chatService.joinChannel(req.user.id, id);
+	async joinChannel(
+		@Req() req,
+		@Param('id') id: number,
+		@Body('data')
+		data?: ChannelPasswordDto
+	) {
+		return await this.chatService.joinChannel(req.user.id, id, data);
 	}
 
 	// Post /:id/join
 	@Post('/:id/leave')
-	leaveChannel(@Req() req, @Param('id') id: number) {
-		return this.chatService.leaveChannel(req.user.id, id);
+	async leaveChannel(@Req() req, @Param('id') id: number) {
+		return await this.chatService.leaveChannel(req.user.id, id);
 	}
 
 	// Post /:id/kick/:userId
 	@Post('/:id/kick/:userId')
-	kickUserFromChannel(
+	async kickUserFromChannel(
 		@Req() req,
 		@Param('id') id: number,
 		@Param('userId', {
@@ -89,6 +95,6 @@ export class ChatController {
 		})
 		userId: number
 	) {
-		return this.chatService.kickUserFromChannel(req.user.id, id, userId);
+		return await this.chatService.kickUserFromChannel(req.user.id, id, userId);
 	}
 }

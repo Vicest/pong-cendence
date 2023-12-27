@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
+	import { ListBox, ListBoxItem, getModalStore, type ModalSettings } from '@skeletonlabs/skeleton';
 	import { channelList, joinChannel } from '../../store/Chat';
 
 	import type { ChannelsChat, Person } from '$lib/types';
@@ -9,18 +9,43 @@
 	import { Api } from '$services/api';
 	import { sendFriendRequest, userList } from '../../store/User';
 	import { get } from 'svelte/store';
+	import Fa from 'svelte-fa';
+	import { faLock, faUser } from '@fortawesome/free-solid-svg-icons';
+
+	const chatPasswordModal: ModalSettings = {
+		type: 'prompt',
+		// Data
+		title: 'Enter Password',
+		body: 'Please enter the password for this channel.',
+		// Populates the input value and attributes
+		value: '',
+		valueAttr: { type: 'password', minlength: 4, required: true },
+		// Returns the updated response value
+		response: (r: string) => {
+			addRelation({
+				type: 'Channel',
+				selected,
+				password: r
+			});
+			return r;
+		}
+	};
+
+	let modalStore = getModalStore();
 
 	function addRelation({
 		type,
-		selected
+		selected,
+		password = undefined
 	}: {
 		type: 'Direct' | 'Channel';
 		selected: ChannelsChat | Person;
+		password?: string;
 	}) {
 		if (type === 'Direct') {
 			sendFriendRequest(selected.id);
 		} else {
-			joinChannel(selected.id);
+			joinChannel(selected.id, password);
 		}
 	}
 
@@ -91,10 +116,17 @@
 				name="people"
 				value={channel}
 			>
-				<div class="flex items-center space-x-4">
-					<span>
-						{channel.name}
-					</span>
+				<div class="grid grid-cols-[1fr_auto_auto] gap-2 items-center">
+					{channel.name}
+					{#if channel.users.length > 0}
+						<div class="opacity-50 flex items-center space-x-1">
+							<p>{channel.users.length}</p>
+							<Fa icon={faUser} size="xs" />
+						</div>
+					{/if}
+					{#if channel.hasPassword}
+						<Fa icon={faLock} size="xs" class="text-surface-500/50" />
+					{/if}
 				</div>
 			</ListBoxItem>
 		{/each}
@@ -108,6 +140,12 @@
 		<button
 			class="btn variant-filled-primary"
 			on:click={() => {
+				console.log('selected', selected);
+				if (selected.type === 'Channel' && selected.hasPassword) {
+					parent.onClose();
+					modalStore.trigger(chatPasswordModal);
+					return;
+				}
 				addRelation({
 					type: typeof selected.login !== 'undefined' ? 'Direct' : selected.type,
 					selected

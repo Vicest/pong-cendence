@@ -4,6 +4,7 @@ import { ChatGateway } from './chat.gateway';
 import { Channel, MessageType } from './entities/channel.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ChannelPasswordDto } from './dto/channel.password.dto';
 
 @Injectable()
 export class ChatService {
@@ -101,60 +102,59 @@ export class ChatService {
 		this.chatGateway.channelDeleted(channel);
 	}
 
-	public async joinChannel(userId: number, channelId: number) {
-		try {
-			const user = await this.userRepository.findOne({
-				where: { id: userId },
-				relations: ['channels']
-			});
-			const channel = await this.channelRepository.findOne({
-				where: { id: channelId },
-				relations: ['users', 'messages.sender', 'owner']
-			});
-			if (!user) throw new BadRequestException('User not found');
-			else if (!channel) throw new BadRequestException('Channel not found');
-			channel.users.push(user);
-			await this.channelRepository.save(channel);
-			this.chatGateway.userJoinedChannel(userId, channel);
-			return {
-				status: 'success',
-				message: 'User joined channel'
-			};
-		} catch (error) {
-			this.log.error(error);
-			return {
-				status: 'error',
-				message: error.message
-			};
-		}
+	public async joinChannel(
+		userId: number,
+		channelId: number,
+		data?: ChannelPasswordDto
+	) {
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+			relations: ['channels']
+		});
+		const channel = await this.channelRepository.findOne({
+			where: { id: channelId },
+			relations: ['users', 'messages.sender', 'owner']
+		});
+		let channelPassword = await this.channelRepository.findOne({
+			where: { id: channelId },
+			select: ['password']
+		});
+		if (!user) throw new BadRequestException('User not found');
+		else if (!channel) throw new BadRequestException('Channel not found');
+		else if (
+			typeof data !== 'undefined' &&
+			channelPassword.password !== data.password
+		)
+			throw new BadRequestException('Invalid password');
+		else if (channel.users.some((u) => u.id === userId))
+			throw new BadRequestException('User already joined channel');
+		channel.users.push(user);
+		await this.channelRepository.save(channel);
+		this.chatGateway.userJoinedChannel(userId, channel);
+		return {
+			status: 'success',
+			message: 'User joined channel'
+		};
 	}
 
 	public async leaveChannel(userId: number, channelId: number) {
-		try {
-			const user = await this.userRepository.findOne({
-				where: { id: userId },
-				relations: ['channels']
-			});
-			const channel = await this.channelRepository.findOne({
-				where: { id: channelId },
-				relations: ['users']
-			});
-			if (!user) throw new Error('User not found');
-			else if (!channel) throw new Error('Channel not found');
-			channel.users = channel.users.filter((u) => u.id !== userId);
-			await this.channelRepository.save(channel);
-			this.chatGateway.userLeftChannel(userId, channel);
-			return {
-				status: 'success',
-				message: 'User left channel'
-			};
-		} catch (error) {
-			this.log.error(error);
-			return {
-				status: 'error',
-				message: error.message
-			};
-		}
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+			relations: ['channels']
+		});
+		const channel = await this.channelRepository.findOne({
+			where: { id: channelId },
+			relations: ['users']
+		});
+		if (!user) throw new Error('User not found');
+		else if (!channel) throw new Error('Channel not found');
+		channel.users = channel.users.filter((u) => u.id !== userId);
+		await this.channelRepository.save(channel);
+		this.chatGateway.userLeftChannel(userId, channel);
+		return {
+			status: 'success',
+			message: 'User left channel'
+		};
 	}
 
 	public async kickUserFromChannel(

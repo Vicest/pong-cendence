@@ -72,8 +72,8 @@ function createChannelListStore() {
 
 export const channelList = createChannelListStore();
 
-export const joinChannel = (id: number) => {
-	Api.post(`/chat/${id}/join`);
+export const joinChannel = (id: number, password?: string) => {
+	Api.post(`/chat/${id}/join`, typeof password !== 'undefined' ? { data: { password } } : {});
 };
 
 export const init = () => {

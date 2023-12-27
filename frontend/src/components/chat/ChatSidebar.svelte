@@ -15,7 +15,6 @@
 		type: 'component',
 		component: 'chatCreatorModal'
 	};
-
 	$: findUser = (id: number) => {
 		return $userList.find((user) => user.id === id) as Person;
 	};
