@@ -18,6 +18,8 @@ import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Channel } from './entities/channel.entity';
+import { ChannelMuted } from './entities/channel.muted.entity';
+import { Interval } from '@nestjs/schedule';
 
 @WebSocketGateway({
 	cors: true,
@@ -32,6 +34,8 @@ export class ChatGateway
 		private readonly userRepository: Repository<User>,
 		@InjectRepository(Channel)
 		private readonly channelRepository: Repository<Channel>,
+		@InjectRepository(ChannelMuted)
+		private readonly channelMutedRepository: Repository<ChannelMuted>,
 		private jwtService: JwtService,
 		@Inject(forwardRef(() => UsersService)) private usersService: UsersService
 	) {
@@ -54,6 +58,32 @@ export class ChatGateway
 		return token.split('=')[1];
 	}
 
+	@Interval(1000)
+	async checkTimeouts() {
+		const channels = await this.channelRepository.find({
+			relations: ['muted']
+		});
+		channels.forEach(async (channel) => {
+			const muted = channel.muted;
+			if (muted.length > 0) {
+				muted.forEach(async (muted) => {
+					if (muted.expire < new Date()) {
+						await this.channelMutedRepository
+							.createQueryBuilder()
+							.delete()
+							.from(ChannelMuted)
+							.where('id = :id', { id: muted.id })
+							.execute();
+						this.server.to('channel_' + channel.id).emit('channel:unmuted', {
+							channel,
+							userId: muted.user.id
+						});
+					}
+				});
+			}
+		});
+	}
+
 	private async getChatRooms(jwtUser: any) {
 		try {
 			const userBlockedRelations = await this.userRepository.findOne({
@@ -71,6 +101,16 @@ export class ChatGateway
 				.leftJoinAndSelect('messages.sender', 'sender')
 				.orderBy('messages.created_at', 'ASC')
 				.getMany();
+			for (let i = 0; i < channels.length; i++) {
+				channels[i].muted = await this.channelMutedRepository.find({
+					where: {
+						channel: {
+							id: channels[i].id
+						}
+					},
+					relations: ['user', 'channel']
+				});
+			}
 			let notJoinedChannels = channels
 				.filter((channel) => {
 					return (
@@ -103,6 +143,7 @@ export class ChatGateway
 								: channel.users.find((user) => user.id === jwtUser.id)
 					};
 				});
+
 			return joinedChannels.concat(notJoinedChannels);
 		} catch (error) {
 			console.log(error);
@@ -137,6 +178,7 @@ export class ChatGateway
 	public channelDeleted(channel: Channel) {
 		this.server.to('channel_' + channel.id).emit('channel:deleted', channel);
 		this.server.sockets.forEach((socket) => {
+			socket.emit('channel:deleted', channel);
 			socket.leave('channel_' + channel.id);
 		});
 	}
@@ -223,10 +265,15 @@ export class ChatGateway
 		});
 	}
 
-	public userMutedChannel(userId: number, channel: Channel) {
+	public userMutedChannel(
+		userId: number,
+		channel: Channel,
+		muted: ChannelMuted
+	) {
 		this.server.to('channel_' + channel.id).emit('channel:muted', {
 			userId: userId,
-			channel
+			channel,
+			muted
 		});
 	}
 
@@ -251,8 +298,8 @@ export class ChatGateway
 			channel.banned.some((user) => {
 				return user.id === client.data.user.id;
 			}) &&
-			channel.muted.some((user) => {
-				return user.id === client.data.user.id;
+			channel.muted.some((muted) => {
+				return muted.user.id === client.data.user.id;
 			})
 				? false
 				: true;

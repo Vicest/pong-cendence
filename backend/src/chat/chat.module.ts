@@ -11,12 +11,13 @@ import { Channel } from './entities/channel.entity';
 import { ChannelMessages } from './entities/channel.message.entity';
 import { ChatSubscriber } from './chat.subscriber';
 import { GamesModule } from 'src/games/games.module';
+import { ChannelMuted } from './entities/channel.muted.entity';
 
 @Module({
 	imports: [
 		forwardRef(() => UsersModule),
 		forwardRef(() => GamesModule),
-		TypeOrmModule.forFeature([User, Channel, ChannelMessages]),
+		TypeOrmModule.forFeature([User, Channel, ChannelMessages, ChannelMuted]),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
 			useFactory: (env: ConfigService) => ({
