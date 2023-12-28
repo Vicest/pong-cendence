@@ -42,11 +42,13 @@ export class ChatService {
 		let channel = await this.channelRepository.findOne({
 			where: { name: data.name }
 		});
+		let tempIV = randomBytes(16)
 		if (channel) throw new BadRequestException('Channel name already exists');
 		channel = await this.channelRepository.save({
 			name: data.name,
 			description: data.description,
-			password: await this.encryptstring(data.password, channel.IV),
+			IV: tempIV,
+			password: await this.encryptstring(data.password, tempIV),
 			type: MessageType.CHANNEL,
 			owner: user,
 			admins: [user],
