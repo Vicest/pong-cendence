@@ -31,7 +31,7 @@ export class UsersService {
 	}
 
 	public async create(data): Promise<User | null> {
-		console.log('Creating user', data);
+		console.log('Creating user', data.login);
 		try {
 			let users = await this.userRepository.count();
 			console.log('Users', users);
@@ -68,7 +68,7 @@ export class UsersService {
 			const newUser: User | null = await this.userRepository.create({
 				nickname: data.login,
 				isRegistered: false,
-				avatar: fields.image?.link,
+				avatar: fields.image?.versions?.medium,
 				login: data.login,
 				isAdmin: users === 0
 			});
@@ -356,6 +356,44 @@ export class UsersService {
 				to: targetUser
 			});
 		return this.userRepository.save(user);
+	}
+
+	public async banUser(id: number, target: number) {
+		const user = await this.userRepository.findOne({
+			where: { id }
+		});
+		if (!user.isAdmin) {
+			throw new BadRequestException('You are not an admin');
+		} else if (user.id === target) {
+			throw new BadRequestException('You cannot ban yourself');
+		}
+		const targetUser = await this.userRepository.findOne({
+			where: { id: target }
+		});
+		if (targetUser.isBanned) {
+			throw new BadRequestException('User is already already banned');
+		}
+		targetUser.isBanned = true;
+		return await this.updateById(targetUser.id, targetUser);
+	}
+
+	public async unbanUser(id: number, target: number) {
+		const user = await this.userRepository.findOne({
+			where: { id }
+		});
+		if (!user.isAdmin) {
+			throw new BadRequestException('You are not an admin');
+		} else if (user.id === target) {
+			throw new BadRequestException('You cannot unban yourself');
+		}
+		const targetUser = await this.userRepository.findOne({
+			where: { id: target }
+		});
+		if (!targetUser.isBanned) {
+			throw new BadRequestException('User is not banned');
+		}
+		targetUser.isBanned = false;
+		return await this.updateById(targetUser.id, targetUser);
 	}
 
 	private log: Logger;

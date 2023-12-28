@@ -50,6 +50,12 @@ export class User {
 	isAdmin: boolean;
 
 	@Column({
+		type: 'bool',
+		default: false
+	})
+	isBanned: boolean;
+
+	@Column({
 		type: 'text',
 		nullable: true,
 		default: null

@@ -1,8 +1,9 @@
 import { get, writable } from 'svelte/store';
 import { Api } from '$services/api';
-import { GamesSocket, UsersSocket } from '$services/socket';
+import { ChatSocket, GamesSocket, MatchMakingSocket, Socket, UsersSocket } from '$services/socket';
 import { currentUser } from './Auth';
 import type { Person } from '$lib/types';
+import { goto } from '$app/navigation';
 
 function createUserListStore() {
 	const { set, subscribe } = writable<Person[]>([]);
@@ -20,6 +21,12 @@ function createUserListStore() {
 		},
 		findByNickname: (name: string) => {
 			return state.find((u) => u.nickname === name);
+		},
+		isAdmin(id: number) {
+			return state.find((u) => u.id === id)?.isAdmin ?? false;
+		},
+		isBanned(id: number) {
+			return state.find((u) => u.id === id)?.isBanned ?? false;
 		},
 		invitedByMe: (id: number) => {
 			return (
@@ -96,6 +103,14 @@ export const rejectUser = (id: number) => {
 	return Api.delete(`/users/${id}/accept`);
 };
 
+export const banUser = (id: number) => {
+	return Api.post(`/users/${id}/ban`);
+};
+
+export const unbanUser = (id: number) => {
+	return Api.delete(`/users/${id}/ban`);
+};
+
 export const init = async () => {
 	UsersSocket.connect();
 	await Api.get('/users')
@@ -118,6 +133,15 @@ export const init = async () => {
 				});
 				const user = get(currentUser);
 				if (user.id === id) {
+					if (typeof updatedMetadata.isBanned === 'boolean' && updatedMetadata.isBanned) {
+						console.log('banned');
+						[Socket, UsersSocket, GamesSocket, MatchMakingSocket, ChatSocket].forEach((s) => {
+							s.disconnect();
+						});
+						document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+						document.cookie = 'refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+						goto('/banned');
+					}
 					currentUser.update((user) => {
 						return { ...user, ...updatedMetadata };
 					});

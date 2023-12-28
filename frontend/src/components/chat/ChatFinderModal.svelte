@@ -22,6 +22,7 @@
 		valueAttr: { type: 'password', minlength: 4, required: true },
 		// Returns the updated response value
 		response: (r: string) => {
+			if (typeof r === 'undefined' || r === '') return r;
 			addRelation({
 				type: 'Channel',
 				selected,
@@ -58,7 +59,7 @@
 		);
 	});
 
-	$: filteredUsers = get(userList).filter((user) => {
+	$: filteredUsers = channelList.friendSearchList().filter((user) => {
 		return (
 			user.nickname.toLowerCase().includes(keyword.toLowerCase()) && user.id !== get(currentUser).id
 		);

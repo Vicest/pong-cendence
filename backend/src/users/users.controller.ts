@@ -27,6 +27,7 @@ import * as fs from 'fs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
+import { AdminGuard } from 'src/auth/guards/admin.guard';
 
 @Controller('users')
 @UseGuards(JwtGuard)
@@ -100,6 +101,16 @@ export class UsersController {
 	@Post(':id')
 	updateUser(@Param('id', ParseIntPipe) id: number, @Body() body) {
 		this.userService.updateById(id, body.data);
+	}
+
+	@Post(':id/ban')
+	async banUser(@Req() req, @Param('id', ParseIntPipe) id: number) {
+		return await this.userService.banUser(req.user.id, id);
+	}
+
+	@Delete(':id/ban')
+	async unbanUser(@Req() req, @Param('id', ParseIntPipe) id: number) {
+		return await this.userService.unbanUser(req.user.id, id);
 	}
 
 	// POST /users/:id

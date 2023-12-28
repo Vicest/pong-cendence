@@ -112,9 +112,9 @@ function createChannelListStore() {
 			return state.some((c) => c.id === id && c.banned.some((a) => a.id === userId));
 		},
 		friendSearchList: () => {
-			return state
-				.filter((channel) => channel.type === 'Direct' && !channel.joined)
-				.map((channel) => channel.user);
+			return get(userList).filter(
+				(user) => !user.friends.some((f) => f.id === get(currentUser).id)
+			);
 		},
 		chatSearchList: () => {
 			return state.filter((channel) => channel.type === 'Channel' && !channel.joined);

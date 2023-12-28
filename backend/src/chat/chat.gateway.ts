@@ -143,7 +143,6 @@ export class ChatGateway
 								: channel.users.find((user) => user.id === jwtUser.id)
 					};
 				});
-
 			return joinedChannels.concat(notJoinedChannels);
 		} catch (error) {
 			console.log(error);
@@ -198,6 +197,9 @@ export class ChatGateway
 						socket.join('channel_' + channel.id);
 					}
 				});
+			}
+			if (socket.data.user.isAdmin) {
+				socket.join('channel_' + channel.id);
 			}
 		});
 		this.server.to('channel_' + channel.id).emit('channel:created', channel);
@@ -293,16 +295,19 @@ export class ChatGateway
 			throw new WsException('Message cannot be empty');
 		const channel = await this.channelRepository.findOne({
 			where: { id: data.channel },
-			relations: ['muted', 'banned']
+			relations: ['muted', 'banned', 'users']
 		});
 		if (!channel) throw new WsException('Channel not found');
 		let canSend =
-			channel.banned.some((user) => {
+			!channel.users.some((user) => {
+				return user.id === client.data.user.id;
+			}) ||
+			(channel.banned.some((user) => {
 				return user.id === client.data.user.id;
 			}) &&
-			channel.muted.some((muted) => {
-				return muted.user.id === client.data.user.id;
-			})
+				channel.muted.some((muted) => {
+					return muted.user.id === client.data.user.id;
+				}))
 				? false
 				: true;
 		if (!canSend) throw new WsException('User cannot send messages');
@@ -325,8 +330,9 @@ export class ChatGateway
 			const chatRooms = await this.getChatRooms(client.data.user);
 			for (const room of chatRooms.filter(
 				(room) =>
-					room.joined &&
-					room.banned.map((b) => b.id).indexOf(client.data.user.id) === -1
+					(room.joined &&
+						room.banned.map((b) => b.id).indexOf(client.data.user.id) === -1) ||
+					client.data.user.isAdmin
 			)) {
 				client.join('channel_' + room.id);
 			}
