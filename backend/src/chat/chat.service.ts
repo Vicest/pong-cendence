@@ -42,7 +42,7 @@ export class ChatService {
 		let channel = await this.channelRepository.findOne({
 			where: { name: data.name }
 		});
-		let tempIV = randomBytes(16)
+		let tempIV = randomBytes(16);
 		if (channel) throw new BadRequestException('Channel name already exists');
 		channel = await this.channelRepository.save({
 			name: data.name,
@@ -119,18 +119,23 @@ export class ChatService {
 		});
 		const channel = await this.channelRepository.findOne({
 			where: { id: channelId },
-			relations: ['users', 'messages.sender', 'owner', 'admins', 'banned']
+			relations: [
+				'users',
+				'messages.sender',
+				'owner',
+				'admins',
+				'banned',
+				'muted'
+			]
 		});
-		const channelPassword = await this.channelRepository.findOne({
+		const { password } = await this.channelRepository.findOne({
 			where: { id: channelId },
 			select: ['password']
 		});
+		let decryptedPassword = await this.decryptstring(password, channel.IV);
 		if (!user) throw new BadRequestException('User not found');
 		else if (!channel) throw new BadRequestException('Channel not found');
-		else if (
-			typeof data !== 'undefined' &&
-			channelPassword.password !== await this.encryptstring(data.password, channel.IV)
-		)
+		else if (typeof data !== 'undefined' && decryptedPassword !== data.password)
 			throw new BadRequestException('Invalid password');
 		else if (channel.banned.some((u) => u.id === userId))
 			throw new BadRequestException('User is banned from channel');
@@ -201,7 +206,6 @@ export class ChatService {
 	}
 
 	public async decryptstring(todecrypt: Buffer, iv: Buffer) {
-		console.log('decrypt:', todecrypt);
 		const password = '6QURUCWJ';
 		const key = (await promisify(scrypt)(password, 'salt', 32)) as Buffer;
 		const decipher = createDecipheriv('aes-256-ctr', key, iv);

@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Channel } from './channel.entity';
+import { MinLength } from 'class-validator';
 
 @Entity({
 	name: 'ChannelMessages'
@@ -16,6 +17,7 @@ export class ChannelMessages {
 	id: number;
 
 	@Column({ type: 'text' })
+	@MinLength(1)
 	content: string;
 
 	@ManyToOne(() => User, (user) => user.id)
