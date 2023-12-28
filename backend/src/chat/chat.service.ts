@@ -191,7 +191,6 @@ export class ChatService {
 		};
 	}
 
-<<<<<<< HEAD
 	public async encryptstring(toencrypt: string, iv: Buffer) {
 		const password = '6QURUCWJ';
 		const key = (await promisify(scrypt)(password, 'salt', 32)) as Buffer;
@@ -210,7 +209,6 @@ export class ChatService {
 		]).toString();
 	}
 
-=======
 	public async banUserFromChannel(
 		userId: number,
 		channelId: number,
@@ -404,6 +402,6 @@ export class ChatService {
 			message: 'User unmuted from channel'
 		};
 	}
->>>>>>> 51b75bdd4b0e24b752400c1fd5a4f4f795928994
+
 	private log: Logger;
 }
