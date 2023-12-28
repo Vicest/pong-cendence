@@ -170,8 +170,8 @@ export class AuthController {
 			.redirect(this.frontendConfig.baseUrl.concat('/app'));
 	}
 	@UseGuards(JwtGuard)
-	@Post('2FA')
-	async post2fa(@Req() req) {
+	@Get('2FA')
+	async get2fa(@Req() req) {
 		if (req.user.two_factor_auth_enabled == false) {
 			const usr = await this.userservice.findOne(req.user.login);
 			return this.authService.generateTwoFactorAuthenticationSecret(usr);
