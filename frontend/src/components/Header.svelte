@@ -8,7 +8,7 @@
 		getToastStore
 	} from '@skeletonlabs/skeleton';
 	import Fa from 'svelte-fa';
-	import { faTrophy, faInfo, faMessage, faSignal } from '@fortawesome/free-solid-svg-icons';
+	import { faTrophy, faInfo, faMessage, faSignal, faLock } from '@fortawesome/free-solid-svg-icons';
 	import { faBattleNet } from '@fortawesome/free-brands-svg-icons';
 	import { currentUser } from '../store/Auth';
 	import { gameListDrawerSettings } from '../store/Game';
@@ -56,6 +56,13 @@
 			icon: faMessage
 		}
 	];
+	if ($currentUser.isAdmin) {
+		links.push({
+			name: 'Admin',
+			href: '/app/admin',
+			icon: faLock
+		});
+	}
 </script>
 
 <!-- App Bar -->

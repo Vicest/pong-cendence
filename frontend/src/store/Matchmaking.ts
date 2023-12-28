@@ -1,6 +1,7 @@
 import { goto } from '$app/navigation';
 import { MatchMakingSocket } from '$services/socket';
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
+import { currentUser } from './Auth';
 
 export const matchMakingChallenges = writable<
 	{
@@ -21,14 +22,14 @@ export const init = () => {
 
 	MatchMakingSocket.on('challengeDeleted', (removeId) => {
 		matchMakingChallenges.update((challenges) => {
-			return challenges.filter((id) => id !== removeId);
+			return challenges
+				.map((challenge) => `${challenge.opponentId}-${get(currentUser).id}-${challenge.gameId}`)
+				.filter((id) => id !== removeId);
 		});
 	});
 
 	MatchMakingSocket.on('challengeAccepted', (matchId) => {
-		matchMakingChallenges.update((challenges) => {
-			return challenges.filter((id) => id !== matchId);
-		});
+		matchMakingChallenges.set([]);
 		goto(`/app/arena/${matchId}`);
 	});
 };

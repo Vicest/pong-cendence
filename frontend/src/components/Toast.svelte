@@ -8,7 +8,6 @@
 	const toastStore = getToastStore();
 
 	matchMakingChallenges.subscribe((challenges) => {
-		console.log('challenges', challenges);
 		if (challenges.length === 0) return;
 		let challenge = challenges[challenges.length - 1];
 		let user = $userList.find((user) => user.id === challenge.opponentId);
