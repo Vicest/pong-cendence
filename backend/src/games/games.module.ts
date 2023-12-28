@@ -16,6 +16,7 @@ import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
 	imports: [
+		UsersModule,
 		TypeOrmModule.forFeature([Game, Match, MatchEvent, MatchPlayer, User]),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],

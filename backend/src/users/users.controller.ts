@@ -101,6 +101,14 @@ export class UsersController {
 		return userMatches;
 	}
 
+	@Get(':id/history')
+	async getMatchHistory(@Param('id') id: number) {
+		if (!(await this.userService.exists(id)))
+			throw new NotFoundException();
+		const userMatches = await this.userService.getUserMatches(id);
+		return userMatches;
+	}
+
 	// POST /users/:id
 	@Post(':id')
 	updateUser(@Param('id') id: number, @Body() body) {
