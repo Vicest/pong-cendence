@@ -19,6 +19,7 @@ import { Channel } from './entities/channel.entity';
 import { ChannelCreateDto } from './dto/create.channel.dto';
 import { UpdateCreateDto } from './dto/update.channel.dto';
 import { ChannelPasswordDto } from './dto/channel.password.dto';
+import { ChannelMutedDto } from './dto/channel.muted.dto';
 
 @Controller('chat')
 @UseGuards(JwtGuard)
@@ -182,9 +183,16 @@ export class ChatController {
 				return userId;
 			}
 		})
-		userId: number
+		userId: number,
+		@Body('data')
+		data: ChannelMutedDto
 	) {
-		return await this.chatService.muteUserFromChannel(req.user.id, id, userId);
+		return await this.chatService.muteUserFromChannel(
+			req.user.id,
+			id,
+			userId,
+			data.time
+		);
 	}
 
 	// Delete /:id/mute/:userId

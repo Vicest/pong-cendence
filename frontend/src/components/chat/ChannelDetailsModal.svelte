@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Tab, TabAnchor, TabGroup } from '@skeletonlabs/skeleton';
+	import { Tab, TabAnchor, TabGroup, type ModalSettings } from '@skeletonlabs/skeleton';
 	import type { SvelteComponent } from 'svelte';
 	import { Modal, getModalStore } from '@skeletonlabs/skeleton';
 	import {
@@ -13,12 +13,29 @@
 		unMuteUserFromChannel,
 		muteUserFromChannel
 	} from '../../store/Chat';
-	import type { ChannelsChat } from '$lib/types';
+	import type { ChannelsChat, Person } from '$lib/types';
 	import { faEdit, faLock } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 	import ChatAvatar from './ChatAvatar.svelte';
 	import { currentUser } from '../../store/Auth';
 	import { userList } from '../../store/User';
+
+	const chatMuteIntervalModal: ModalSettings = {
+		type: 'prompt',
+		// Data
+		title: 'Enter Time',
+		body: 'Please enter the time for this mute. (in minutes)',
+		// Populates the input value and attributes
+		value: '',
+		valueAttr: { type: 'number', min: 0, required: true },
+		// Returns the updated response value
+		response: (r: string) => {
+			muteUserFromChannel(channel.id, selectedMuteUser.id, r !== '' ? parseInt(r) : 0);
+			return r;
+		}
+	};
+
+	let selectedMuteUser: Person;
 
 	let modalStore = getModalStore();
 
@@ -126,6 +143,7 @@
 													modalStore.close();
 												});
 											}}
+											disabled={channelList.isBanned(channel.id, user.id)}
 										>
 											Kick
 										</button>
@@ -190,9 +208,9 @@
 											<button
 												class="btn variant-soft"
 												on:click={() => {
-													muteUserFromChannel(channel.id, user.id).then(() => {
-														modalStore.close();
-													});
+													selectedMuteUser = user;
+													modalStore.close();
+													modalStore.trigger(chatMuteIntervalModal);
 												}}
 											>
 												Mute
