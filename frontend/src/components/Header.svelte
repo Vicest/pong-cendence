@@ -95,7 +95,7 @@
 		</a>
 	</svelte:fragment>
 </AppBar>
-{#if $drawerStore.open === false && !$page.url.pathname.startsWith('/app/arena')}
+{#if $drawerStore.open === false && $page.url.pathname === '/app' }
 	<div class="fixed bottom-0 right-0 z-10 p-4">
 		<div class="flex flex-col justify-end items-end space-y-4">
 			<button
@@ -105,6 +105,7 @@
 			>
 				<Fa icon={faSignal} class={playerInQueue ? 'animate-pulse' : ''} />
 			</button>
+
 			<button
 				on:click={() => drawerStore.open($gameListDrawerSettings)}
 				class="btn bg-gradient-to-br variant-gradient-secondary-primary rounded-full shadow-lg flex items-center justify-center lg:btn-xl btn-md"
