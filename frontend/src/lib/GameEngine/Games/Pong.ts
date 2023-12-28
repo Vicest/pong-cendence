@@ -74,31 +74,6 @@ export class PongGame extends GameEngine {
 			this.p.textAlign(this.p.CENTER, this.p.CENTER);
 			this.p.fill(255, 255, 255);
 			this.p.text('Game finished', this.p.width / 2, this.p.height / 2 - 50);
-
-			// Add clickable button to leave game
-			this.p.textSize(16);
-			this.p.textAlign(this.p.CENTER, this.p.CENTER);
-			this.p.fill(255, 255, 255);
-			this.p.text('Click here to reset', this.p.width / 2, this.p.height / 2);
-			if (
-				this.p.mouseX > this.p.width / 2 - 100 &&
-				this.p.mouseX < this.p.width / 2 + 100 &&
-				this.p.mouseY > this.p.height / 2 - 25 &&
-				this.p.mouseY < this.p.height / 2 + 25
-			) {
-				this.p.cursor(this.p.HAND);
-			} else {
-				this.p.cursor(this.p.ARROW);
-			}
-			if (
-				this.p.mouseIsPressed &&
-				this.p.mouseX > this.p.width / 2 - 100 &&
-				this.p.mouseX < this.p.width / 2 + 100 &&
-				this.p.mouseY > this.p.height / 2 - 25 &&
-				this.p.mouseY < this.p.height / 2 + 25
-			) {
-				this.resetGame();
-			}
 		}
 		if (
 			typeof this.gameState === 'undefined' ||
@@ -230,8 +205,7 @@ export class PongGame extends GameEngine {
 			this.p.textAlign(this.p.CENTER, this.p.CENTER);
 			this.p.fill(255, 255, 255);
 			this.p.text('Controls:', this.p.width / 2, this.p.height / 2 + 25);
-			this.p.text('Player 1: W and S', this.p.width / 2, this.p.height / 2 + 50);
-			this.p.text('Player 2: UP and DOWN', this.p.width / 2, this.p.height / 2 + 75);
+			this.p.text('W and S', this.p.width / 2, this.p.height / 2 + 50);
 		}
 	}
 

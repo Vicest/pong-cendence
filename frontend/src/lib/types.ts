@@ -9,6 +9,8 @@ export interface Person {
 	invitations: Person[];
 	friends: Person[];
 	isAdmin: boolean;
+	created_at: Date;
+	isBanned: boolean;
 	rank: number;
 }
 

@@ -32,6 +32,8 @@
 					goto('/login');
 				} else if (err.statusCode === 400 && err.message === '2FA not validated') {
 					goto('/login/2fa');
+				} else if (err.statusCode === 400 && err.message === 'User is banned') {
+					goto('/banned');
 				} else {
 					goto('/login');
 				}

@@ -82,6 +82,8 @@ export class ChatService {
 		});
 		if (channelName && channelName.id !== channelId)
 			throw new BadRequestException('Channel name already exists');
+		if (typeof data.password !== 'undefined' && data.password !== '')
+			data.password = await this.encryptstring(data.password, channel.IV);
 		await this.channelRepository.update(channelId, {
 			...data,
 			hasPassword: typeof data.password !== 'undefined' && data.password !== ''
@@ -105,7 +107,7 @@ export class ChatService {
 		});
 		if (!user) throw new BadRequestException('User not found');
 		else if (!channel) throw new BadRequestException('Channel not found');
-		else if (channel.owner.id !== userId)
+		else if (channel.owner.id !== userId && user.isAdmin === false)
 			throw new BadRequestException('You are not the owner of this channel');
 		await this.channelRepository.delete(channelId);
 		this.chatGateway.channelDeleted(channel);
@@ -138,7 +140,7 @@ export class ChatService {
 		});
 		let decryptedPassword = await this.decryptstring(password, channel.IV);
 		if (!user) throw new BadRequestException('User not found');
-		else if (typeof data !== 'undefined' && decryptedPassword !== data.password)
+		else if (decryptedPassword !== data?.password ?? '')
 			throw new BadRequestException('Invalid password');
 		else if (channel.banned.some((u) => u.id === userId))
 			throw new BadRequestException('User is banned from channel');

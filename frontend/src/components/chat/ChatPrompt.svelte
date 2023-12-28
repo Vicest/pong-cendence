@@ -47,7 +47,8 @@
 				userList.blockedByMe(channel.user.id) ||
 				!(channel.type === 'Channel' || userList.areFriends(channel.user.id)) ||
 				(channel.type === 'Channel' && channelList.isBanned(channel.id, $currentUser.id)) ||
-				(channel.type === 'Channel' && channelList.isMuted(channel.id, $currentUser.id))}
+				(channel.type === 'Channel' && channelList.isMuted(channel.id, $currentUser.id)) ||
+				(channel.type === 'Channel' && !channelList.iJoined(channel.id))}
 			on:keydown={onPromptKeydown}
 		/>
 		<button
