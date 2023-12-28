@@ -13,19 +13,23 @@
 		component: 'targetSelectorModal'
 	};
 
-	//currentUser
-	////If the user closes the Modal, front forgets about the state, but back retains it.
-	//let playerInQueue = false;
-	//
-	//function queueToggle() {
-	//	if (!playerInQueue) {
-	//		Api.post('/matchmaking/queue');
-	//	} else {
-	//		Api.delete('/matchmaking/queue');
-	//	}
-	//	playerInQueue = !playerInQueue;
-	//}
-	$: inQueue = get(currentUser).inQueue;
+	$: inQueue = false;
+	Api.get('/matchmaking/queue')
+		.then((res) => {
+			const queuedIds: number[] = res.data;
+			console.log('Axios test: ', queuedIds);
+			inQueue =
+				queuedIds.find((id: number) => {
+					return id === get(currentUser).id;
+				}) !== undefined;
+			currentUser.update((person) => {
+				person.inQueue = inQueue;
+				return person;
+			});
+		})
+		.catch((err) => {
+			console.log(err);
+		});
 	currentUser.subscribe((user) => {
 		console.log('Queue value: ', user);
 		inQueue = user.inQueue;
@@ -42,10 +46,6 @@
 		<button
 			on:click={async () => {
 				await Api.delete('/matchmaking/queue');
-				currentUser.update((person) => {
-					person.inQueue = false;
-					return person;
-				});
 				console.log('qweqwe  ', get(currentUser).inQueue);
 			}}>Leave queue</button
 		>
@@ -53,10 +53,6 @@
 		<button
 			on:click={async () => {
 				await Api.post('/matchmaking/queue');
-				currentUser.update((person) => {
-					person.inQueue = true;
-					return person;
-				});
 			}}>Join queue</button
 		>
 	{/if}
@@ -68,7 +64,6 @@
 				drawerStore.close();
 				selectedGame.set(game);
 				modalStore.trigger(targetSelectorModal);
-				//goto('/app/arena');
 			}}
 		>
 			<header class="relative">

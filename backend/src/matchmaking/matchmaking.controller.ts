@@ -17,7 +17,7 @@ export class MatchMakingController {
 	) {}
 
 	@Get('/queue')
-	async getQueue() {
+	getQueue() {
 		return this.matchMakingService.getAll();
 	}
 

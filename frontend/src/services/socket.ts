@@ -1,4 +1,3 @@
-import Cookies from 'js-cookie';
 import { PUBLIC_BACKEND_PORT, PUBLIC_BACKEND_BASE } from '$env/static/public';
 import { io } from 'socket.io-client';
 

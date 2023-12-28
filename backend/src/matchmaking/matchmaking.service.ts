@@ -51,6 +51,7 @@ export class MatchMakingService {
 		if ((await this.userService.find(user.id)).status !== 'online')
 			return ;
 		this.queuedPlayers_.push(queuedPlayer);
+		this.matchMakingGateway.server.to(user.id.toString()).emit('user:queue', 'joined');
 		return true;
 	}
 
@@ -64,6 +65,8 @@ export class MatchMakingService {
 			return this.log.warn(`Player not in queue: ${id}`);
 		}
 		this.queuedPlayers_.splice(index, 1);
+		this.matchMakingGateway.server.to(id.toString()).emit('user:queue', 'left');
+
 	}
 
 	private log: Logger;

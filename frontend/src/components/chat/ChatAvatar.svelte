@@ -15,7 +15,7 @@
 			case 'offline':
 				color = 'bg-gray-500';
 				break;
-			case 'away':
+			case 'busy':
 				color = 'bg-yellow-500';
 				break;
 		}
