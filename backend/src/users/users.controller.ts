@@ -15,7 +15,9 @@ import {
 	FileTypeValidator,
 	Delete,
 	NotFoundException,
-	BadRequestException
+	BadRequestException,
+	SetMetadata,
+	ParseIntPipe
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { Observable } from 'rxjs';
@@ -31,9 +33,10 @@ import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 export class UsersController {
 	constructor(private readonly userService: UsersService) {}
 
-	@Get(':login/img')
-	getUserImg(@Param('login') login: string, @Res() res) {
-		const imagePath = `usersdata/${login}.png`;
+	@Get(':imgname/img')
+	@SetMetadata('skipJwtGuard', true)
+	getUserImg(@Param('imgname') imgName: string, @Res() res) {
+		const imagePath = `usersdata/${imgName}.png`;
 		if (fs.existsSync(imagePath)) {
 			const fileContent = fs.readFileSync(imagePath);
 			res.setHeader('Content-Type', 'image/png');
@@ -69,25 +72,25 @@ export class UsersController {
 
 	// GET /friends/:id
 	@Post('/friends/:id')
-	addFriend(@Req() req, @Param('id') id: number) {
+	addFriend(@Req() req, @Param('id', ParseIntPipe) id: number) {
 		return this.userService.addFriend(req.user.id, id);
 	}
 
 	// Delte /friends/:id
 	@Delete('/friends/:id')
-	removeFriend(@Req() req, @Param('id') id: number) {
+	removeFriend(@Req() req, @Param('id', ParseIntPipe) id: number) {
 		return this.userService.removeFriend(req.user.id, id);
 	}
 
 	// GET /users/:login
 	@Get(':id')
-	getOneUsers(@Param('id') id: number): Promise<User | null> {
+	getOneUsers(@Param('id', ParseIntPipe) id: number): Promise<User | null> {
 		console.log('PEDIMOS EL USUARIO X');
 		return this.userService.find(id);
 	}
 
 	@Get(':id/rank')
-	async getRank(@Param('id') id: number) {
+	async getRank(@Param('id', ParseIntPipe) id: number) {
 		if (!(await this.userService.exists(id))) throw new NotFoundException();
 		const userRank: number = await this.userService.getUserRank(id);
 		return userRank;
@@ -95,36 +98,36 @@ export class UsersController {
 
 	// POST /users/:id
 	@Post(':id')
-	updateUser(@Param('id') id: number, @Body() body) {
+	updateUser(@Param('id', ParseIntPipe) id: number, @Body() body) {
 		this.userService.updateById(id, body.data);
 	}
 
 	// POST /users/:id
 	@Post(':id/block')
-	blockUser(@Req() req, @Param('id') id: number) {
+	blockUser(@Req() req, @Param('id', ParseIntPipe) id: number) {
 		this.userService.blockUser(req.user.id, id);
 	}
 
 	// POST /users/:id
 	@Delete(':id/block')
-	unblockUser(@Req() req, @Param('id') id: number) {
+	unblockUser(@Req() req, @Param('id', ParseIntPipe) id: number) {
 		this.userService.unblockUser(req.user.id, id);
 	}
 
 	// Post /friends/:id
 	@Post('/:id/friend')
-	sendFriendRequest(@Req() req, @Param('id') id: number) {
+	sendFriendRequest(@Req() req, @Param('id', ParseIntPipe) id: number) {
 		return this.userService.sendFriendRequest(req.user.id, id);
 	}
 
 	// Delete /friends/:id
 	@Delete('/:id/friend')
-	cancelFriendRequest(@Req() req, @Param('id') id: number) {
+	cancelFriendRequest(@Req() req, @Param('id', ParseIntPipe) id: number) {
 		return this.userService.cancelFriendRequest(req.user.id, id);
 	}
 
 	@Post(':id/accept')
-	acceptFriendRequest(@Req() req, @Param('id') id: number) {
+	acceptFriendRequest(@Req() req, @Param('id', ParseIntPipe) id: number) {
 		return this.userService.acceptFriendRequest(req.user.id, id);
 	}
 
