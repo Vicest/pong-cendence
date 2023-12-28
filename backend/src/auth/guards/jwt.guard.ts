@@ -18,6 +18,10 @@ export class JwtGuard extends AuthGuard('jwt') implements CanActivate  {
 	handleRequest(err, user, info, context, status) {
 		const req = context.switchToHttp().getRequest();
 		const res = context.switchToHttp().getResponse();
+		const skipJwtGuard = this.reflector.get<boolean>('skipJwtGuard', context.getHandler());
+		if (skipJwtGuard) {
+			return true;
+		}
 
 		if (!['token', 'refreshToken'].some((key) => req.cookies[key])) {
 			throw new HttpException('No token or refreshToken', HttpStatus.FORBIDDEN);
@@ -32,12 +36,5 @@ export class JwtGuard extends AuthGuard('jwt') implements CanActivate  {
 		}
 		return user;
 	}
-	canActivate(context: ExecutionContext): boolean {
-		const skipJwtGuard = this.reflector.get<boolean>('skipJwtGuard', context.getHandler());
 
-		// Si la metadata 'skipJwtGuard' está presente, no aplicamos el guard
-		if (skipJwtGuard) {
-			return true;
-		}
-	}
 }
