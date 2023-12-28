@@ -29,9 +29,7 @@ import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 @Controller('users')
 @UseGuards(JwtGuard)
 export class UsersController {
-	constructor(
-		private readonly userService: UsersService,
-	) {}
+	constructor(private readonly userService: UsersService) {}
 
 	@Get(':login/img')
 	getUserImg(@Param('login') login: string, @Res() res) {
@@ -90,9 +88,8 @@ export class UsersController {
 
 	@Get(':id/rank')
 	async getRank(@Param('id') id: number) {
-		if (!(await this.userService.exists(id)))
-			throw new NotFoundException();
-		const userRank:number = await this.userService.getUserRank(id);
+		if (!(await this.userService.exists(id))) throw new NotFoundException();
+		const userRank: number = await this.userService.getUserRank(id);
 		return userRank;
 	}
 
@@ -142,7 +139,6 @@ export class UsersController {
 	@UseInterceptors(FileInterceptor('file'))
 	async updateCurrentUser(
 		@Req() req,
-		@Res() res,
 		@Body() user: User,
 		@UploadedFile(
 			new ParseFilePipe({
@@ -156,6 +152,7 @@ export class UsersController {
 		file: Express.Multer.File
 	) {
 		//TODO: validar imagen como multipart/form-data y no como json
-		return this.userService.updateById(req.user.id, await this.userService.validateUser(user,req.user));
+		let validateUser = await this.userService.validateUser(user, req.user);
+		return await this.userService.updateById(req.user.id, validateUser);
 	}
 }

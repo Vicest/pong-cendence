@@ -6,6 +6,18 @@
 
 	export let channel: ChannelsChat;
 	export let elemChat: HTMLElement;
+
+	let formatDate = (date: string): string => {
+		let d = new Date(date);
+		return d.toLocaleString('en-US', {
+			hour: 'numeric',
+			minute: 'numeric',
+			second: 'numeric',
+			day: 'numeric',
+			month: 'short',
+			year: 'numeric'
+		});
+	};
 </script>
 
 <!-- Coversation -->
@@ -25,7 +37,7 @@
 				<div class="card p-4 variant-soft rounded-tr-none space-y-2">
 					<header class="flex justify-between items-center">
 						<p class="font-bold">{message.sender.nickname}</p>
-						<small class="opacity-50">{message.created_at}</small>
+						<small class="opacity-50">{formatDate(message.created_at)}</small>
 					</header>
 					<p>{message.content}</p>
 				</div>
@@ -37,7 +49,7 @@
 				<div class="card p-4 rounded-tl-none space-y-2">
 					<header class="flex justify-between items-center">
 						<p class="font-bold">{message.sender.nickname}</p>
-						<small class="opacity-50">{message.created_at}</small>
+						<small class="opacity-50">{formatDate(message.created_at)}</small>
 					</header>
 					<p>{message.content}</p>
 				</div>

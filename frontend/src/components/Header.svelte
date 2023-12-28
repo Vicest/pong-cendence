@@ -1,14 +1,43 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { AppBar, Avatar, getDrawerStore, type DrawerSettings } from '@skeletonlabs/skeleton';
+	import {
+		AppBar,
+		Avatar,
+		getDrawerStore,
+		type DrawerSettings,
+		getToastStore
+	} from '@skeletonlabs/skeleton';
 	import Fa from 'svelte-fa';
-	import { faTrophy, faInfo, faMessage } from '@fortawesome/free-solid-svg-icons';
+	import { faTrophy, faInfo, faMessage, faSignal } from '@fortawesome/free-solid-svg-icons';
 	import { faBattleNet } from '@fortawesome/free-brands-svg-icons';
 	import { currentUser } from '../store/Auth';
 	import { gameListDrawerSettings } from '../store/Game';
 	import ChatAvatar from './chat/ChatAvatar.svelte';
+	import { Api } from '$services/api';
 	const drawerStore = getDrawerStore();
 	drawerStore.close();
+
+	const toastStore = getToastStore();
+
+	//If the user closes the Modal, front forgets about the state, but back retains it.
+	let playerInQueue = false;
+
+	function queueToggle() {
+		if (!playerInQueue) {
+			Api.post('/matchmaking/queue').then((res) => {
+				toastStore.trigger({
+					message: 'You are now in queue!'
+				});
+			});
+		} else {
+			Api.delete('/matchmaking/queue').then((res) => {
+				toastStore.trigger({
+					message: 'You are now out of queue!'
+				});
+			});
+		}
+		playerInQueue = !playerInQueue;
+	}
 
 	let links = [
 		{
@@ -60,14 +89,23 @@
 	</svelte:fragment>
 </AppBar>
 {#if $drawerStore.open === false && !$page.url.pathname.startsWith('/app/arena')}
-	<div class="hidden lg:block lg:fixed bottom-0 right-0 z-10 p-4">
-		<button
-			on:click={() => drawerStore.open($gameListDrawerSettings)}
-			class="btn bg-gradient-to-br variant-gradient-secondary-primary rounded-full shadow-lg flex items-center justify-center btn-xl"
-		>
-			<span>Battle zone</span>
-			<span><Fa icon={faBattleNet} class="mt-1" /></span>
-		</button>
+	<div class="fixed bottom-0 right-0 z-10 p-4">
+		<div class="flex flex-col justify-end items-end space-y-4">
+			<button
+				type="button"
+				class="btn-icon rounded-full shadow-lg variant-ghost-surface"
+				on:click={() => queueToggle()}
+			>
+				<Fa icon={faSignal} class={playerInQueue ? 'animate-pulse' : ''} />
+			</button>
+			<button
+				on:click={() => drawerStore.open($gameListDrawerSettings)}
+				class="btn bg-gradient-to-br variant-gradient-secondary-primary rounded-full shadow-lg flex items-center justify-center lg:btn-xl btn-md"
+			>
+				<span class="hidden lg:block">Battle zone</span>
+				<span class="!ml-0"><Fa icon={faBattleNet} class="mt-1" /></span>
+			</button>
+		</div>
 	</div>
 {/if}
 

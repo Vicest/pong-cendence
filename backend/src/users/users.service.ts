@@ -17,7 +17,7 @@ export class UsersService {
 	constructor(
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
-		@InjectRepository(User)
+		@InjectRepository(Game)
 		private readonly gameRepository: Repository<Game>,
 		@InjectRepository(ChannelMessages)
 		private readonly messageRepository: Repository<ChannelMessages>,
@@ -32,35 +32,38 @@ export class UsersService {
 
 	public async create(data): Promise<User | null> {
 		console.log('Creating user', data);
-		let users = await this.userRepository.count();
-		if (users === 0) {
-			this.log.debug('First user, granting admin privileges');
-			this.gameRepository.insert([
-				{
-					name: 'pong',
-					title: 'Pong',
-					creator: 'Atari Inc.',
-					launched_at: '1972-11-29 00:00:00',
-					description:
-						'Pong is a classic arcade video game that simulates table tennis. It features simple two-dimensional graphics and involves players controlling paddles to hit a ball back and forth. Its straightforward gameplay and minimalist design made it a massive hit, establishing it as a pioneering title in the world of video games.',
-					enabled: true,
-					image: '/images/pong/cover.png',
-					created_at: new Date()
-				},
-				{
-					name: 'boundless',
-					title: 'Boundless Pong',
-					creator: "42 Madrid's best coders.",
-					launched_at: '2023-12-27 00:00:00',
-					description: 'Same as pong, but without boundaries.',
-					enabled: true,
-					image: '/images/pong/cover.png',
-					created_at: new Date()
-				}
-			]);
-			this.log.debug('Games created');
-		}
 		try {
+			let users = await this.userRepository.count();
+			console.log('Users', users);
+			if (users === 0) {
+				this.log.debug('First user, granting admin privileges');
+				let newGames = await this.gameRepository.create([
+					{
+						name: 'pong',
+						title: 'Pong',
+						creator: 'Atari Inc.',
+						launched_at: '1972-11-29 00:00:00',
+						description:
+							'Pong is a classic arcade video game that simulates table tennis. It features simple two-dimensional graphics and involves players controlling paddles to hit a ball back and forth. Its straightforward gameplay and minimalist design made it a massive hit, establishing it as a pioneering title in the world of video games.',
+						enabled: true,
+						image: '/images/pong/cover.png',
+						created_at: new Date()
+					},
+					{
+						name: 'boundless',
+						title: 'Boundless Pong',
+						creator: "42 Madrid's best coders.",
+						launched_at: '2023-12-27 00:00:00',
+						description: 'Same as pong, but without boundaries.',
+						enabled: true,
+						image: '/images/pong/cover.png',
+						created_at: new Date()
+					}
+				]);
+				await this.gameRepository.save(newGames);
+				this.log.debug('Games created');
+			}
+
 			let fields = JSON.parse(data._raw);
 			const newUser: User | null = await this.userRepository.create({
 				nickname: data.login,
@@ -78,8 +81,7 @@ export class UsersService {
 		}
 	}
 
-	public async validateUser(user:  User, requser: User )
-	{
+	public async validateUser(user: User, requser: User) {
 		//Crear imagen y guardarla en el servidor
 		if (user.avatar) {
 			const imageName = requser.login + Date.now().toString();
@@ -94,7 +96,7 @@ export class UsersService {
 					}
 				);
 			} catch (e) {
-				throw new Error("Error: " + e.message);
+				throw new Error('Error: ' + e.message);
 			}
 			try {
 				this.findOne(user.login).then((res) => {
@@ -112,12 +114,11 @@ export class UsersService {
 		}
 
 		if (user.nickname) {
-			console.log(await this.findNickname(user.nickname))
-            if (await this.findNickname(user.nickname)) {
-				throw new  BadRequestException("Username already exists")
-            }
-        }
-		return user
+			if ((await this.findNickname(user.nickname)) && user.id !== requser.id) {
+				throw new BadRequestException('Username already exists');
+			}
+		}
+		return user;
 	}
 
 	public async save(user: User) {
@@ -352,8 +353,8 @@ export class UsersService {
 
 	private log: Logger;
 
-	public updateById(id: number, userUpdate: User): Promise<UpdateResult> {
-		return this.userRepository.update(
+	public async updateById(id: number, userUpdate: User) {
+		return await this.userRepository.update(
 			{ id },
 			{
 				...userUpdate,

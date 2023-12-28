@@ -1,10 +1,4 @@
-import {
-	Controller,
-	Post,
-	Delete,
-	UseGuards,
-	Req
-} from '@nestjs/common';
+import { Controller, Post, Delete, UseGuards, Req } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { MatchMakingService } from './matchmaking.service';
 import { AuthService } from 'src/auth/auth.service';
