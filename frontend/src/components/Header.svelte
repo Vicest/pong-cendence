@@ -1,12 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import {
-		AppBar,
-		Avatar,
-		getDrawerStore,
-		type DrawerSettings,
-		getToastStore
-	} from '@skeletonlabs/skeleton';
+	import { AppBar, getDrawerStore, getToastStore } from '@skeletonlabs/skeleton';
 	import Fa from 'svelte-fa';
 	import { faTrophy, faInfo, faMessage, faSignal, faLock } from '@fortawesome/free-solid-svg-icons';
 	import { faBattleNet } from '@fortawesome/free-brands-svg-icons';
@@ -14,16 +8,34 @@
 	import { gameListDrawerSettings } from '../store/Game';
 	import ChatAvatar from './chat/ChatAvatar.svelte';
 	import { Api } from '$services/api';
+	import { get } from 'svelte/store';
 	const drawerStore = getDrawerStore();
 	drawerStore.close();
 
 	const toastStore = getToastStore();
 
-	//If the user closes the Modal, front forgets about the state, but back retains it.
-	let playerInQueue = false;
+	$: inQueue = false;
+	Api.get('/matchmaking/queue')
+		.then((res) => {
+			const queuedIds: number[] = res.data;
+			inQueue =
+				queuedIds.find((id: number) => {
+					return id === get(currentUser).id;
+				}) !== undefined;
+			currentUser.update((person) => {
+				person.inQueue = inQueue;
+				return person;
+			});
+		})
+		.catch((err) => {
+			console.log(err);
+		});
+	currentUser.subscribe((user) => {
+		inQueue = user.inQueue;
+	});
 
 	function queueToggle() {
-		if (!playerInQueue) {
+		if (!inQueue) {
 			Api.post('/matchmaking/queue').then((res) => {
 				toastStore.trigger({
 					message: 'You are now in queue!'
@@ -36,7 +48,6 @@
 				});
 			});
 		}
-		playerInQueue = !playerInQueue;
 	}
 
 	let links = [
@@ -103,7 +114,7 @@
 				class="btn-icon rounded-full shadow-lg variant-ghost-surface"
 				on:click={() => queueToggle()}
 			>
-				<Fa icon={faSignal} class={playerInQueue ? 'animate-pulse' : ''} />
+				<Fa icon={faSignal} class={inQueue ? 'animate-pulse' : ''} />
 			</button>
 			<button
 				on:click={() => drawerStore.open($gameListDrawerSettings)}
