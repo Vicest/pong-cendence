@@ -6,6 +6,7 @@ import {
 	HttpException,
 	HttpStatus,
 	Param,
+	ParseIntPipe,
 	Post,
 	Put,
 	Req,
@@ -46,7 +47,7 @@ export class ChatController {
 		@Req() req,
 		@Body()
 		data: UpdateCreateDto,
-		@Param('id', {
+		@Param('id', ParseIntPipe, {
 			transform: (value) => {
 				const channelId = parseInt(value);
 				if (isNaN(channelId))
@@ -61,7 +62,7 @@ export class ChatController {
 
 	// Post /:id/join
 	@Delete('/:id')
-	async deleteChannel(@Req() req, @Param('id') id: number) {
+	async deleteChannel(@Req() req, @Param('id', ParseIntPipe) id: number) {
 		return await this.chatService.deleteChannel(req.user.id, id);
 	}
 
@@ -69,7 +70,7 @@ export class ChatController {
 	@Post('/:id/join')
 	async joinChannel(
 		@Req() req,
-		@Param('id') id: number,
+		@Param('id', ParseIntPipe) id: number,
 		@Body('data')
 		data?: ChannelPasswordDto
 	) {
@@ -78,7 +79,7 @@ export class ChatController {
 
 	// Post /:id/join
 	@Post('/:id/leave')
-	async leaveChannel(@Req() req, @Param('id') id: number) {
+	async leaveChannel(@Req() req, @Param('id', ParseIntPipe) id: number) {
 		return await this.chatService.leaveChannel(req.user.id, id);
 	}
 
@@ -86,7 +87,7 @@ export class ChatController {
 	@Post('/:id/kick/:userId')
 	async kickUserFromChannel(
 		@Req() req,
-		@Param('id') id: number,
+		@Param('id', ParseIntPipe) id: number,
 		@Param('userId', {
 			transform: (value) => {
 				const userId = parseInt(value);
@@ -103,7 +104,7 @@ export class ChatController {
 	@Post('/:id/ban/:userId')
 	async banUserFromChannel(
 		@Req() req,
-		@Param('id') id: number,
+		@Param('id', ParseIntPipe) id: number,
 		@Param('userId', {
 			transform: (value) => {
 				const userId = parseInt(value);
@@ -120,7 +121,7 @@ export class ChatController {
 	@Delete('/:id/ban/:userId')
 	async unBanUserFromChannel(
 		@Req() req,
-		@Param('id') id: number,
+		@Param('id', ParseIntPipe) id: number,
 		@Param('userId', {
 			transform: (value) => {
 				const userId = parseInt(value);
@@ -137,7 +138,7 @@ export class ChatController {
 	@Post('/:id/admin/:userId')
 	async adminUserFromChannel(
 		@Req() req,
-		@Param('id') id: number,
+		@Param('id', ParseIntPipe) id: number,
 		@Param('userId', {
 			transform: (value) => {
 				const userId = parseInt(value);
@@ -154,7 +155,7 @@ export class ChatController {
 	@Delete('/:id/admin/:userId')
 	async unAdminUserFromChannel(
 		@Req() req,
-		@Param('id') id: number,
+		@Param('id', ParseIntPipe) id: number,
 		@Param('userId', {
 			transform: (value) => {
 				const userId = parseInt(value);
@@ -175,7 +176,7 @@ export class ChatController {
 	@Post('/:id/mute/:userId')
 	async muteUserFromChannel(
 		@Req() req,
-		@Param('id') id: number,
+		@Param('id', ParseIntPipe) id: number,
 		@Param('userId', {
 			transform: (value) => {
 				const userId = parseInt(value);
@@ -199,7 +200,7 @@ export class ChatController {
 	@Delete('/:id/mute/:userId')
 	async unMuteUserFromChannel(
 		@Req() req,
-		@Param('id') id: number,
+		@Param('id', ParseIntPipe) id: number,
 		@Param('userId', {
 			transform: (value) => {
 				const userId = parseInt(value);
