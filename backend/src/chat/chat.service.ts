@@ -33,7 +33,7 @@ export class ChatService {
 			where: { id: userId },
 			relations: ['channels']
 		});
-		if (!user) throw new Error('User not found');
+		if (!user) throw new BadRequestException('User not found');
 		let users = [];
 		if (typeof data.users !== 'undefined') {
 			users = await this.userRepository.findByIds(data.users);
@@ -50,6 +50,8 @@ export class ChatService {
 			type: MessageType.CHANNEL,
 			owner: user,
 			admins: [user],
+			banned: [],
+			muted: [],
 			users: [user, ...users],
 			hasPassword: typeof data.password !== 'undefined' && data.password !== ''
 		});
@@ -115,9 +117,9 @@ export class ChatService {
 		});
 		const channel = await this.channelRepository.findOne({
 			where: { id: channelId },
-			relations: ['users', 'messages.sender', 'owner']
+			relations: ['users', 'messages.sender', 'owner', 'admins', 'banned']
 		});
-		let channelPassword = await this.channelRepository.findOne({
+		const channelPassword = await this.channelRepository.findOne({
 			where: { id: channelId },
 			select: ['password']
 		});
@@ -128,6 +130,8 @@ export class ChatService {
 			channelPassword.password !== await this.encryptstring(data.password, channel.IV)
 		)
 			throw new BadRequestException('Invalid password');
+		else if (channel.banned.some((u) => u.id === userId))
+			throw new BadRequestException('User is banned from channel');
 		else if (channel.users.some((u) => u.id === userId))
 			throw new BadRequestException('User already joined channel');
 		channel.users.push(user);
@@ -148,8 +152,8 @@ export class ChatService {
 			where: { id: channelId },
 			relations: ['users']
 		});
-		if (!user) throw new Error('User not found');
-		else if (!channel) throw new Error('Channel not found');
+		if (!user) throw new BadRequestException('User not found');
+		else if (!channel) throw new BadRequestException('Channel not found');
 		channel.users = channel.users.filter((u) => u.id !== userId);
 		await this.channelRepository.save(channel);
 		this.chatGateway.userLeftChannel(userId, channel);
@@ -172,13 +176,12 @@ export class ChatService {
 			where: { id: channelId },
 			relations: ['users', 'admins', 'owner']
 		});
-		if (!user) throw new Error('User not found');
-		else if (!channel) throw new Error('Channel not found');
-		else if (
-			user.id !== channel.owner.id ||
-			!channel.admins.some((a) => a.id === user.id)
-		)
-			throw new Error('You are not allowed to kick users from this channel');
+		if (!user) throw new BadRequestException('User not found');
+		else if (!channel) throw new BadRequestException('Channel not found');
+		else if (!channel.admins.some((a) => a.id === user.id))
+			throw new BadRequestException(
+				'You are not allowed to kick users from this channel'
+			);
 		channel.users = channel.users.filter((u) => u.id !== kickedUserId);
 		await this.channelRepository.save(channel);
 		this.chatGateway.userLeftChannel(kickedUserId, channel);
@@ -188,6 +191,7 @@ export class ChatService {
 		};
 	}
 
+<<<<<<< HEAD
 	public async encryptstring(toencrypt: string, iv: Buffer) {
 		const password = '6QURUCWJ';
 		const key = (await promisify(scrypt)(password, 'salt', 32)) as Buffer;
@@ -206,5 +210,200 @@ export class ChatService {
 		]).toString();
 	}
 
+=======
+	public async banUserFromChannel(
+		userId: number,
+		channelId: number,
+		bannedUserId: number
+	) {
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+			relations: ['channels']
+		});
+		let bannedUser = await this.userRepository.findOne({
+			where: { id: bannedUserId },
+			relations: ['channels']
+		});
+		const channel = await this.channelRepository.findOne({
+			where: { id: channelId },
+			relations: ['users', 'admins', 'owner', 'banned']
+		});
+		if (!user) throw new BadRequestException('User not found');
+		else if (!channel) throw new BadRequestException('Channel not found');
+		else if (user.id !== channel.owner.id)
+			throw new BadRequestException(
+				'You are not allowed to ban users from this channel'
+			);
+		channel.banned = [...channel.banned, bannedUser];
+		await this.channelRepository.save(channel);
+		this.chatGateway.userBannedChannel(bannedUserId, channel);
+		return {
+			status: 'success',
+			message: 'User banned from channel'
+		};
+	}
+
+	public async unBanUserFromChannel(
+		userId: number,
+		channelId: number,
+		bannedUserId: number
+	) {
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+			relations: ['channels']
+		});
+		let bannedUser = await this.userRepository.findOne({
+			where: { id: bannedUserId },
+			relations: ['channels']
+		});
+		const channel = await this.channelRepository.findOne({
+			where: { id: channelId },
+			relations: ['users', 'admins', 'owner', 'banned']
+		});
+		if (!user) throw new BadRequestException('User not found');
+		else if (!channel) throw new BadRequestException('Channel not found');
+		else if (user.id !== channel.owner.id)
+			throw new BadRequestException(
+				'You are not allowed to unban users from this channel'
+			);
+		channel.banned = channel.banned.filter((u) => u.id !== bannedUserId);
+		await this.channelRepository.save(channel);
+		this.chatGateway.userUnbannedChannel(bannedUserId, channel);
+		return {
+			status: 'success',
+			message: 'User unbanned from channel'
+		};
+	}
+
+	public async adminUserFromChannel(
+		userId: number,
+		channelId: number,
+		adminUserId: number
+	) {
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+			relations: ['channels']
+		});
+		let adminUser = await this.userRepository.findOne({
+			where: { id: adminUserId },
+			relations: ['channels']
+		});
+		const channel = await this.channelRepository.findOne({
+			where: { id: channelId },
+			relations: ['users', 'admins', 'owner', 'banned']
+		});
+		if (!user) throw new BadRequestException('User not found');
+		else if (!channel) throw new BadRequestException('Channel not found');
+		else if (user.id !== channel.owner.id)
+			throw new BadRequestException(
+				'You are not allowed to admin users from this channel'
+			);
+		channel.admins = [...channel.admins, adminUser];
+		await this.channelRepository.save(channel);
+		this.chatGateway.userAdminedChannel(adminUserId, channel);
+		return {
+			status: 'success',
+			message: 'User admined from channel'
+		};
+	}
+
+	public async unAdminUserFromChannel(
+		userId: number,
+		channelId: number,
+		adminUserId: number
+	) {
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+			relations: ['channels']
+		});
+		let adminUser = await this.userRepository.findOne({
+			where: { id: adminUserId },
+			relations: ['channels']
+		});
+		const channel = await this.channelRepository.findOne({
+			where: { id: channelId },
+			relations: ['users', 'admins', 'owner', 'banned']
+		});
+		if (!user) throw new BadRequestException('User not found');
+		else if (!channel) throw new BadRequestException('Channel not found');
+		else if (user.id !== channel.owner.id)
+			throw new BadRequestException(
+				'You are not allowed to unadmin users from this channel'
+			);
+		channel.admins = channel.admins.filter((u) => u.id !== adminUserId);
+		await this.channelRepository.save(channel);
+		this.chatGateway.userUnadminedChannel(adminUserId, channel);
+		return {
+			status: 'success',
+			message: 'User unadmined from channel'
+		};
+	}
+
+	public async muteUserFromChannel(
+		userId: number,
+		channelId: number,
+		mutedUserId: number
+	) {
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+			relations: ['channels']
+		});
+		let mutedUser = await this.userRepository.findOne({
+			where: { id: mutedUserId },
+			relations: ['channels']
+		});
+		const channel = await this.channelRepository.findOne({
+			where: { id: channelId },
+			relations: ['users', 'admins', 'owner', 'banned', 'muted']
+		});
+		if (!user) throw new BadRequestException('User not found');
+		else if (!channel) throw new BadRequestException('Channel not found');
+		else if (
+			channel.admins.some((a) => a.id === mutedUserId) &&
+			mutedUserId === userId
+		)
+			throw new BadRequestException('You can not mute yourself');
+		channel.muted = [...channel.muted, mutedUser];
+		this.chatGateway.userMutedChannel(mutedUserId, channel);
+		await this.channelRepository.save(channel);
+		return {
+			status: 'success',
+			message: 'User muted from channel'
+		};
+	}
+
+	public async unMuteUserFromChannel(
+		userId: number,
+		channelId: number,
+		mutedUserId: number
+	) {
+		const user = await this.userRepository.findOne({
+			where: { id: userId },
+			relations: ['channels']
+		});
+		let mutedUser = await this.userRepository.findOne({
+			where: { id: mutedUserId },
+			relations: ['channels']
+		});
+		const channel = await this.channelRepository.findOne({
+			where: { id: channelId },
+			relations: ['users', 'admins', 'owner', 'banned', 'muted']
+		});
+		if (!user) throw new BadRequestException('User not found');
+		else if (!channel) throw new BadRequestException('Channel not found');
+		else if (
+			channel.admins.some((a) => a.id === mutedUserId) &&
+			mutedUserId === userId
+		)
+			throw new BadRequestException('You can not unmute yourself');
+		channel.muted = channel.muted.filter((u) => u.id !== mutedUserId);
+		this.chatGateway.userUnmutedChannel(mutedUserId, channel);
+		await this.channelRepository.save(channel);
+		return {
+			status: 'success',
+			message: 'User unmuted from channel'
+		};
+	}
+>>>>>>> 51b75bdd4b0e24b752400c1fd5a4f4f795928994
 	private log: Logger;
 }

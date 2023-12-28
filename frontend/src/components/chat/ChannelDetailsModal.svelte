@@ -2,11 +2,23 @@
 	import { Tab, TabAnchor, TabGroup } from '@skeletonlabs/skeleton';
 	import type { SvelteComponent } from 'svelte';
 	import { Modal, getModalStore } from '@skeletonlabs/skeleton';
-	import { channelList, kickUserFromChannel, updateChannel } from '../../store/Chat';
+	import {
+		channelList,
+		kickUserFromChannel,
+		banUserFromChannel,
+		updateChannel,
+		unBanUserFromChannel,
+		unAdminUserFromChannel,
+		adminUserFromChannel,
+		unMuteUserFromChannel,
+		muteUserFromChannel
+	} from '../../store/Chat';
 	import type { ChannelsChat } from '$lib/types';
 	import { faEdit, faLock } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 	import ChatAvatar from './ChatAvatar.svelte';
+	import { currentUser } from '../../store/Auth';
+	import { userList } from '../../store/User';
 
 	let modalStore = getModalStore();
 
@@ -15,6 +27,9 @@
 		name: channel.name,
 		description: channel.description,
 		password: ''
+	};
+	$: findUser = (id: number) => {
+		return $userList.find((user) => user.id === id) as Person;
 	};
 
 	let tabSet: string = channelList.iOwn(channel.id) ? 'tab1' : 'tab2';
@@ -92,11 +107,18 @@
 				{:else if tabSet === 'tab2'}
 					<div class="grid gap-2">
 						{#each channel.users as user}
-							<div class="grid grid-cols-[auto_auto_1fr] gap-2 items-center">
-								<ChatAvatar {user} width="w-10" />
-								<span>{user.nickname}</span>
+							<div class="grid grid-cols-[auto_auto_auto_1fr] gap-2 items-center">
+								<ChatAvatar user={findUser(user.id)} width="w-10" />
+								<span>{findUser(user.id).nickname}</span>
+								<small class="text-surface-500/50"
+									>{channelList.isAdmin(channel.id, user.id)
+										? channelList.isOwner(channel.id, user.id)
+											? 'Owner'
+											: 'Admin'
+										: ''}</small
+								>
 								<div class="flex justify-end items-center space-x-2">
-									{#if channelList.iOwn(channel.id) && !channelList.iAdmin(user.id)}
+									{#if channelList.iAdmin(channel.id) && user.id !== $currentUser.id && !channelList.isOwner(channel.id, user.id)}
 										<button
 											class="btn variant-soft"
 											on:click={() => {
@@ -107,9 +129,75 @@
 										>
 											Kick
 										</button>
-										<button class="btn variant-soft">Ban</button>
-										<button class="btn variant-soft">Promote</button>
-										<button class="btn variant-soft">Mute</button>
+										{#if channelList.isBanned(channel.id, user.id) && channelList.iOwn(channel.id)}
+											<button
+												class="btn variant-soft"
+												on:click={() => {
+													unBanUserFromChannel(channel.id, user.id).then(() => {
+														modalStore.close();
+													});
+												}}
+											>
+												Unban
+											</button>
+										{:else if !channelList.isBanned(channel.id, user.id) && channelList.iOwn(channel.id)}
+											<button
+												class="btn variant-soft"
+												on:click={() => {
+													banUserFromChannel(channel.id, user.id).then(() => {
+														modalStore.close();
+													});
+												}}
+											>
+												Ban
+											</button>
+										{/if}
+										{#if channelList.isAdmin(channel.id, user.id) && channelList.iOwn(channel.id)}
+											<button
+												class="btn variant-soft"
+												on:click={() => {
+													unAdminUserFromChannel(channel.id, user.id).then(() => {
+														modalStore.close();
+													});
+												}}
+											>
+												Unpromote
+											</button>
+										{:else if !channelList.isAdmin(channel.id, user.id) && channelList.iOwn(channel.id)}
+											<button
+												class="btn variant-soft"
+												on:click={() => {
+													adminUserFromChannel(channel.id, user.id).then(() => {
+														modalStore.close();
+													});
+												}}
+											>
+												Promote
+											</button>
+										{/if}
+										{#if channelList.isMuted(channel.id, user.id)}
+											<button
+												class="btn variant-soft"
+												on:click={() => {
+													unMuteUserFromChannel(channel.id, user.id).then(() => {
+														modalStore.close();
+													});
+												}}
+											>
+												Unmute
+											</button>
+										{:else if !channelList.isMuted(channel.id, user.id)}
+											<button
+												class="btn variant-soft"
+												on:click={() => {
+													muteUserFromChannel(channel.id, user.id).then(() => {
+														modalStore.close();
+													});
+												}}
+											>
+												Mute
+											</button>
+										{/if}
 									{/if}
 								</div>
 							</div>

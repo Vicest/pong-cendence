@@ -136,9 +136,11 @@ export const init = async () => {
 						if (u.id === from.id) {
 							u.friends = u.friends.filter((u) => u.id !== to.id);
 							u.invitations = u.invitations.filter((u) => u.id !== to.id);
+							u.blocked = u.blocked.filter((u) => u.id !== to.id);
 						} else if (u.id === to.id) {
 							u.friends = u.friends.filter((u) => u.id !== from.id);
 							u.invitations = u.invitations.filter((u) => u.id !== from.id);
+							u.blocked = u.blocked.filter((u) => u.id !== from.id);
 						}
 						return u;
 					});
@@ -150,8 +152,6 @@ export const init = async () => {
 					return users.map((u) => {
 						if (u.id === from.id) {
 							u.blocked = [...u.blocked, to];
-						} else if (u.id === to.id) {
-							u.blocked = [...u.blocked, from];
 						}
 						return u;
 					});
@@ -163,8 +163,6 @@ export const init = async () => {
 					return users.map((u) => {
 						if (u.id === from.id) {
 							u.blocked = u.friends.filter((u) => u.id !== to.id);
-						} else if (u.id === to.id) {
-							u.blocked = u.friends.filter((u) => u.id !== from.id);
 						}
 						return u;
 					});

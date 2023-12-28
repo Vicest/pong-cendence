@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { ChannelsChat } from '$lib/types';
 	import { ChatSocket } from '$services/socket';
+	import { currentUser } from '../../store/Auth';
+	import { channelList } from '../../store/Chat';
 	import { userList } from '../../store/User';
 
 	export let channel: ChannelsChat;
@@ -43,7 +45,9 @@
 			rows="1"
 			disabled={userList.blockedMe(channel.user.id) ||
 				userList.blockedByMe(channel.user.id) ||
-				!(channel.type === 'Channel' || userList.areFriends(channel.user.id))}
+				!(channel.type === 'Channel' || userList.areFriends(channel.user.id)) ||
+				(channel.type === 'Channel' && channelList.isBanned(channel.id, $currentUser.id)) ||
+				(channel.type === 'Channel' && channelList.isMuted(channel.id, $currentUser.id))}
 			on:keydown={onPromptKeydown}
 		/>
 		<button

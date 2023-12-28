@@ -39,6 +39,7 @@
 
 		if (Object.keys(updateinfo).length > 0) {
 			// TODO: multiparted image
+			console.log(updateinfo)
 			const res = await Api.put('/users', updateinfo);
 			if (res.status === 200) {
 				editMode = false;
@@ -46,6 +47,7 @@
 		}
 	}
 
+	
 	let edit2FABase64Qr: string | null = null;
 	async function get2FAData() {
 		if (edit2FAMode) {

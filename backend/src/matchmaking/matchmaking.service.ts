@@ -11,7 +11,8 @@ export class MatchMakingService {
 	constructor(
 		private userService: UsersService,
 		private gameService: GamesService,
-		private matchMakingGateway: MatchMakingGateway) {
+		private matchMakingGateway: MatchMakingGateway
+	) {
 		this.log = new Logger();
 		this.queuedPlayers_ = [];
 	}
@@ -28,10 +29,7 @@ export class MatchMakingService {
 		let rank = await this.userService.getUserRank(joiningPlayer.id);
 		this.log.verbose(`ID: ${user.id}, ranked ${rank} joins queue.`);
 		rank = rank !== -1 ? rank : 1500;
-		const queuedPlayer = new QueuePlayer(
-			user,
-			rank
-		);
+		const queuedPlayer = new QueuePlayer(user, rank);
 		this.log.verbose(`The queued player: ${JSON.stringify(queuedPlayer)}`);
 		if (
 			this.queuedPlayers_.find((player: QueuePlayer): boolean => {
@@ -49,7 +47,9 @@ export class MatchMakingService {
 	}
 
 	public leaveQueue(id: number): void {
-		this.log.verbose(`ID: ${id} leaves queue.\n ${this.queuedPlayers_}`);
+		this.log.verbose(
+			`ID: ${id} leaves queue. Queued players: ${this.queuedPlayers_.length}`
+		);
 		const leavingPlayer = (queuedPlayer: QueuePlayer) => {
 			return id == queuedPlayer.id;
 		};
@@ -102,16 +102,30 @@ export class MatchMakingService {
 			this.log.verbose(`Match found: ${lhs.id} vs ${candidates[0].id}`);
 
 			const p1 = await this.userService.find(lhs.id);
-			const rankShiftP1Wins = QueuePlayer.ratingIncrease(lhs.rating, candidates[0].rating);
+			const rankShiftP1Wins = QueuePlayer.ratingIncrease(
+				lhs.rating,
+				candidates[0].rating
+			);
 			const p2 = await this.userService.find(candidates[0].id);
-			const rankShiftP2Wins = QueuePlayer.ratingIncrease(candidates[0].rating, lhs.rating);
+			const rankShiftP2Wins = QueuePlayer.ratingIncrease(
+				candidates[0].rating,
+				lhs.rating
+			);
 
 			const gameId = await this.gameService.findGameByName('pong');
-			const match = await this.gameService.createMatch({
-				game: gameId,
-				status: 'waiting'
-			}, {p1, rankShift: rankShiftP1Wins}, {p2, rankShift: rankShiftP2Wins});
-			this.matchMakingGateway.sendMatchCreated(lhs.id, candidates[0].id, match.id);
+			const match = await this.gameService.createMatch(
+				{
+					game: gameId,
+					status: 'waiting'
+				},
+				{ p1, rankShift: rankShiftP1Wins },
+				{ p2, rankShift: rankShiftP2Wins }
+			);
+			this.matchMakingGateway.sendMatchCreated(
+				lhs.id,
+				candidates[0].id,
+				match.id
+			);
 			this.leaveQueue(lhs.id);
 			this.leaveQueue(candidates[0].id);
 			//vvv afterInsert? vvv

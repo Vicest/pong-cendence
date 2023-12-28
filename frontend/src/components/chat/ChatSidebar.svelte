@@ -24,7 +24,7 @@
 </script>
 
 <!-- Navigation -->
-<div class="hidden lg:grid grid-rows-[auto_1fr_auto] border-r border-surface-500/30">
+<div class="lg:grid grid-rows-[auto_1fr_auto] border-r border-surface-500/30">
 	<!-- Header -->
 	<header class="border-b border-surface-500/30 p-4">
 		<input
@@ -62,12 +62,6 @@
 						<ChatAvatar user={findUser(channel.user.id)} width="w-8" showStatus={false} />
 					</svelte:fragment>
 					{findUser(channel.user.id).nickname}
-					<br />
-					<button
-						type="button"
-						class="btn btn-sm variant-filled"
-						on:click={() => goto(`/app/profile/${channel.user.id}`)}>profile</button
-					>
 				</ListBoxItem>
 			{/each}
 		</ListBox>

@@ -106,7 +106,7 @@ export class Channel {
 	})
 	admins: User[];
 
-	@ManyToMany(() => User)
+	@ManyToMany(() => User, (user) => user.id, { cascade: true })
 	@JoinTable({
 		name: 'ChannelBanned',
 		joinColumn: {

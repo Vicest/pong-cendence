@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { User } from './entities/user.entity';
 
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,6 +8,8 @@ import { Channel, MessageType } from 'src/chat/entities/channel.entity';
 import { UsersGateway } from './users.gateway';
 import { ChatGateway } from 'src/chat/chat.gateway';
 import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
+import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
 import { Game } from 'src/games/entities/game.entity';
 
 @Injectable()
@@ -15,31 +17,53 @@ export class UsersService {
 	constructor(
 		@InjectRepository(User)
 		private readonly userRepository: Repository<User>,
-		@InjectRepository(User)
+		@InjectRepository(Game)
 		private readonly gameRepository: Repository<Game>,
 		@InjectRepository(ChannelMessages)
 		private readonly messageRepository: Repository<ChannelMessages>,
 		@InjectRepository(Channel)
 		private readonly channelRepository: Repository<Channel>,
 		private readonly usersGateway: UsersGateway,
-		private readonly chatGateway: ChatGateway
+		private readonly chatGateway: ChatGateway,
+		private readonly configService: ConfigService
 	) {
 		this.log = new Logger();
 	}
 
 	public async create(data): Promise<User | null> {
 		console.log('Creating user', data);
-		let users = await this.userRepository.count();
-		if (users === 0) {
-			this.log.debug('First user, granting admin privileges');
-			this.gameRepository.insert([
-				{
-					created_at: new Date()
-				}
-			]);
-			this.log.debug('Game created');
-		}
 		try {
+			let users = await this.userRepository.count();
+			console.log('Users', users);
+			if (users === 0) {
+				this.log.debug('First user, granting admin privileges');
+				let newGames = await this.gameRepository.create([
+					{
+						name: 'pong',
+						title: 'Pong',
+						creator: 'Atari Inc.',
+						launched_at: '1972-11-29 00:00:00',
+						description:
+							'Pong is a classic arcade video game that simulates table tennis. It features simple two-dimensional graphics and involves players controlling paddles to hit a ball back and forth. Its straightforward gameplay and minimalist design made it a massive hit, establishing it as a pioneering title in the world of video games.',
+						enabled: true,
+						image: '/images/pong/cover.png',
+						created_at: new Date()
+					},
+					{
+						name: 'boundless',
+						title: 'Boundless Pong',
+						creator: "42 Madrid's best coders.",
+						launched_at: '2023-12-27 00:00:00',
+						description: 'Same as pong, but without boundaries.',
+						enabled: true,
+						image: '/images/pong/cover.png',
+						created_at: new Date()
+					}
+				]);
+				await this.gameRepository.save(newGames);
+				this.log.debug('Games created');
+			}
+
 			let fields = JSON.parse(data._raw);
 			const newUser: User | null = await this.userRepository.create({
 				nickname: data.login,
@@ -55,6 +79,46 @@ export class UsersService {
 			this.log.error(`Error parsing fields ${error}`);
 			return null;
 		}
+	}
+
+	public async validateUser(user: User, requser: User) {
+		//Crear imagen y guardarla en el servidor
+		if (user.avatar) {
+			const imageName = requser.login + Date.now().toString();
+			try {
+				if (!fs.existsSync('usersdata')) fs.mkdirSync('usersdata');
+				fs.writeFile(
+					`usersdata/${imageName}.png`,
+					user.avatar,
+					'base64',
+					(err) => {
+						console.log(err);
+					}
+				);
+			} catch (e) {
+				throw new Error('Error: ' + e.message);
+			}
+			try {
+				this.findOne(user.login).then((res) => {
+					const pathFile = 'usersdata/' + res.avatar.split('/')[4] + '.png';
+					if (fs.existsSync(pathFile)) fs.unlinkSync(pathFile);
+				});
+			} catch (e) {
+				console.log(e);
+			}
+
+			// Especificar la url de la imagen del usuario
+			const databasePort = this.configService.get<number>('BACKEND_PORT');
+			const databaseUri = this.configService.get<string>('BACKEND_BASE');
+			user.avatar = `${databaseUri}:${databasePort}/users/${imageName}/img`;
+		}
+
+		if (user.nickname) {
+			if ((await this.findNickname(user.nickname)) && user.id !== requser.id) {
+				throw new BadRequestException('Username already exists');
+			}
+		}
+		return user;
 	}
 
 	public async save(user: User) {
@@ -128,16 +192,17 @@ export class UsersService {
 	public async removeFriend(id: number, friend: number): Promise<User> {
 		let user = await this.userRepository.findOne({
 			where: { id },
-			relations: ['friends', 'channels', 'invitations']
+			relations: ['friends', 'channels', 'invitations', 'blocked']
 		});
 		const friendUser = await this.userRepository.findOne({
 			where: { id: friend },
-			relations: ['friends', 'invitations']
+			relations: ['friends', 'invitations', 'blocked']
 		});
 
 		user.invitations = user.invitations.filter(
 			(user) => user.id !== friendUser.id
 		);
+		user.blocked = user.blocked.filter((user) => user.id !== friendUser.id);
 		user.friends = user.friends.filter((user) => user.id !== friendUser.id);
 		this.userRepository.save(user);
 
@@ -150,6 +215,10 @@ export class UsersService {
 		friendUser.invitations = friendUser.invitations.filter(
 			(_user) => _user.id !== user.id
 		);
+		friendUser.blocked = friendUser.blocked.filter(
+			(_user) => _user.id !== user.id
+		);
+		this.userRepository.save(friendUser);
 		this.usersGateway.server
 			.to(['user_' + id, 'user_' + friend])
 			.emit('user:friend_removed', {
@@ -210,12 +279,14 @@ export class UsersService {
 		});
 		let targetUser = await this.userRepository.findOne({
 			where: { id: target },
-			relations: ['friends']
+			relations: ['friends', 'invitations']
 		});
 		user.invitations = user.invitations.filter(
 			(user) => user.id !== targetUser.id
 		);
-
+		targetUser.invitations = targetUser.invitations.filter(
+			(user) => user.id !== user.id
+		);
 		targetUser.friends.push(user);
 		await this.userRepository.save(targetUser);
 		targetUser = await this.userRepository.findOne({
@@ -289,8 +360,8 @@ export class UsersService {
 
 	private log: Logger;
 
-	public updateById(id: number, userUpdate: User): Promise<UpdateResult> {
-		return this.userRepository.update(
+	public async updateById(id: number, userUpdate: User) {
+		return await this.userRepository.update(
 			{ id },
 			{
 				...userUpdate,

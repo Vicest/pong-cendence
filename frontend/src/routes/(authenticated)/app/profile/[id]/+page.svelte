@@ -27,7 +27,7 @@
 	}
 </script>
 
-<div class="h-full grid gap-4 p-4 lg:grid-cols-[4fr,1fr] lg:grid-rows-[1fr] grid-rows-[2fr,1fr]">
+<div class="h-full grid gap-4 p-4 lg:grid-cols-[1fr] lg:grid-rows-[1fr] grid-rows-[2fr,1fr]">
 	{#if profilePerson === undefined}
 		<div class="text-center font-bold mb-4">No such profile :sadge:</div>
 	{:else}

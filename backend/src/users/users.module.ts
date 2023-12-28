@@ -10,14 +10,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 import { ChatModule } from 'src/chat/chat.module';
+import { Game } from 'src/games/entities/game.entity';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([
-			User,
-			Channel,
-			ChannelMessages
-		]),
+		TypeOrmModule.forFeature([User, Channel, ChannelMessages, Game]),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
 			useFactory: (env: ConfigService) => ({

@@ -32,6 +32,7 @@ export class User {
 	})
 	@MinLength(4)
 	@MaxLength(20)
+	@IsOptional()
 	nickname: string;
 
 	@Column({

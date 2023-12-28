@@ -8,6 +8,7 @@ export interface Person {
 	blocked: Person[];
 	invitations: Person[];
 	friends: Person[];
+	isAdmin: boolean;
 	rank: number;
 }
 

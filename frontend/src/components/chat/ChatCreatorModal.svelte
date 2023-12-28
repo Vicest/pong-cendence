@@ -75,7 +75,7 @@
 		<Step>
 			<svelte:fragment slot="header">Channel details</svelte:fragment>
 			<p>Enter a name and description for your channel. This is the first step in the process.</p>
-			<div class="grid grid-cols-[auto_1fr] gap-4">
+			<div class="grid gap-4 lg:grid-cols-[auto_1fr_auto] grid-cols-1">
 				<div class="space-y-2">
 					<label class="label" for="name">Name</label>
 					<input
@@ -89,7 +89,13 @@
 				<div class="space-y-2">
 					<label class="label" for="password">Password</label>
 					<div class="input-group grid-cols-[1fr_auto] items-center">
-						<input type="password" id="password" placeholder="Password (optional)" bind:value={chatForm.password} class="input" />
+						<input
+							type="password"
+							id="password"
+							placeholder="Password (optional)"
+							bind:value={chatForm.password}
+							class="input"
+						/>
 						<Fa icon={faLock} class="input-group-shim text-surface-500/50 pr-2" />
 					</div>
 				</div>
