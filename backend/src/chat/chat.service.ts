@@ -5,6 +5,8 @@ import { Channel, MessageType } from './entities/channel.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ChannelPasswordDto } from './dto/channel.password.dto';
+import { promisify } from 'util';
+import { createCipheriv, createDecipheriv, randomBytes, scrypt } from 'crypto';
 
 @Injectable()
 export class ChatService {
@@ -44,7 +46,7 @@ export class ChatService {
 		channel = await this.channelRepository.save({
 			name: data.name,
 			description: data.description,
-			password: data.password,
+			password: await this.encryptstring(data.password, channel.IV),
 			type: MessageType.CHANNEL,
 			owner: user,
 			admins: [user],
@@ -123,7 +125,7 @@ export class ChatService {
 		else if (!channel) throw new BadRequestException('Channel not found');
 		else if (
 			typeof data !== 'undefined' &&
-			channelPassword.password !== data.password
+			channelPassword.password !== await this.encryptstring(data.password, channel.IV)
 		)
 			throw new BadRequestException('Invalid password');
 		else if (channel.users.some((u) => u.id === userId))
@@ -184,6 +186,24 @@ export class ChatService {
 			status: 'success',
 			message: 'User kicked from channel'
 		};
+	}
+
+	public async encryptstring(toencrypt: string, iv: Buffer) {
+		const password = '6QURUCWJ';
+		const key = (await promisify(scrypt)(password, 'salt', 32)) as Buffer;
+		const cipher = createCipheriv('aes-256-ctr', key, iv);
+		return Buffer.concat([cipher.update(toencrypt), cipher.final()]);
+	}
+
+	public async decryptstring(todecrypt: Buffer, iv: Buffer) {
+		console.log('decrypt:', todecrypt);
+		const password = '6QURUCWJ';
+		const key = (await promisify(scrypt)(password, 'salt', 32)) as Buffer;
+		const decipher = createDecipheriv('aes-256-ctr', key, iv);
+		return Buffer.concat([
+			decipher.update(todecrypt),
+			decipher.final()
+		]).toString();
 	}
 
 	private log: Logger;

@@ -91,6 +91,7 @@ export class PongInstance extends EventEmitter {
 				radius: PongInstance.ballRadius
 			}
 		};
+		console.log(this.players[0].user.nickname, this.players[1].user.nickname)
 		this.log.debug('Pong instance created', this.constructor.name);
 	}
 

@@ -33,18 +33,25 @@ export class Channel {
 	@MinLength(4)
 	@MaxLength(20)
 	name: string;
-
+	
 	@Column({
 		nullable: true
 	})
 	description: string;
 
 	@Column({
+		type: 'bytea',
 		nullable: true,
 		select: false
 	})
 	@Optional()
-	password: string;
+	password: Buffer;
+
+	@Column({
+		type: 'bytea',
+		default: null
+	})
+	IV: Buffer;
 
 	@Column({
 		type: 'timestamp',
