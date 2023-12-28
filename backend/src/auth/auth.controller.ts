@@ -196,13 +196,16 @@ export class AuthController {
 	async post2fcheck(@Req() req, @Body() body, @Res() res: Response) {
 		let user = await this.authService.validateUser(req.user);
 		let validate = await this.authService.check2FAToken(user, body.token);
-		console.log(validate);
 		if (validate) {
+			req.user.twofavalidated = true;
+			req.user.twofaenabled = true;
+			user.two_factor_auth_enabled = true;
+			await this.userservice.save(user);
 			const { token, refreshToken } = await this.authService.grantTokenPair(
 				req.user,
 				true
 			);
-			res
+			return res
 				.cookie('token', token, {
 					httpOnly: true,
 					sameSite: 'strict',

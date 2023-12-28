@@ -12,7 +12,6 @@ export const init = async () => {
 	try {
 		let res = await Api.get('/auth/me');
 		currentUser.set(res.data);
-		console.log(Date.now() - new Date(get(currentUser).created_at).getTime());
 		if (Date.now() - new Date(get(currentUser).created_at).getTime() < 2500) {
 			loading.set(false);
 			goto('/app/profile');

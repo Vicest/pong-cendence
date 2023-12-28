@@ -39,6 +39,9 @@ const errorHandler = (error: AxiosError) => {
 				? [resError?.data.message]
 				: resError?.data.message;
 		messages.forEach((message) => {
+			if (message === '2FA not validated') {
+				return;
+			}
 			lastError.set(message);
 		});
 	} else if (resError?.status === 401) {

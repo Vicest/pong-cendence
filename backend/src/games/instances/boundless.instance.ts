@@ -61,7 +61,9 @@ export class BoundlessInstance extends EventEmitter {
 				{
 					id: this.players[0].user.id,
 					x: 0 + BoundlessInstance.paddlesWidth,
-					y: BoundlessInstance.canvasHeight / 2 - BoundlessInstance.paddlesHeight / 2,
+					y:
+						BoundlessInstance.canvasHeight / 2 -
+						BoundlessInstance.paddlesHeight / 2,
 					score: 0,
 					input: [],
 					paddle: {
@@ -73,7 +75,9 @@ export class BoundlessInstance extends EventEmitter {
 				{
 					id: this.players[1].user.id,
 					x: BoundlessInstance.canvasWidth - BoundlessInstance.paddlesWidth,
-					y: BoundlessInstance.canvasHeight / 2 - BoundlessInstance.paddlesHeight / 2,
+					y:
+						BoundlessInstance.canvasHeight / 2 -
+						BoundlessInstance.paddlesHeight / 2,
 					score: 0,
 					input: [],
 					paddle: {
@@ -86,8 +90,10 @@ export class BoundlessInstance extends EventEmitter {
 			ball: {
 				x: BoundlessInstance.canvasWidth / 2,
 				y: BoundlessInstance.canvasHeight / 2,
-				speedX: BoundlessInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1),
-				speedY: BoundlessInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1),
+				speedX:
+					BoundlessInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1),
+				speedY:
+					BoundlessInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1),
 				radius: BoundlessInstance.ballRadius
 			}
 		};
@@ -116,13 +122,13 @@ export class BoundlessInstance extends EventEmitter {
 	}
 
 	public handleInput(userId: number, data: PongInstanceInput[]) {
-		const index = this.players.findIndex((matchPlayer) => matchPlayer.user.id === userId);
+		const index = this.players.findIndex(
+			(matchPlayer) => matchPlayer.user.id === userId
+		);
 		this.state.players[index].input = data;
 		if (data.some((input) => input[27])) {
-			if (this.state.status === 'paused')
-				this.state.status = 'running';
-			else if (this.state.status === 'running')
-				this.state.status = 'paused';
+			if (this.state.status === 'paused') this.state.status = 'running';
+			else if (this.state.status === 'running') this.state.status = 'paused';
 		}
 	}
 
@@ -130,20 +136,27 @@ export class BoundlessInstance extends EventEmitter {
 		scorer.score += 1;
 		this.state.ball.x = BoundlessInstance.canvasWidth / 2;
 		this.state.ball.y = BoundlessInstance.canvasHeight / 2;
-		this.state.ball.speedX = BoundlessInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1);
-		this.state.ball.speedY = BoundlessInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1);
+		this.state.ball.speedX =
+			BoundlessInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1);
+		this.state.ball.speedY =
+			BoundlessInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1);
 	}
 
 	private hitsPaddle(player): boolean {
+		if (this.state.ball.speedX < 0) this.state.ball.speedX -= 0.5;
+		else this.state.ball.speedX += 0.5;
+		if (this.state.ball.speedY < 0) this.state.ball.speedY -= 0.5;
+		else this.state.ball.speedY += 0.5;
 		const lamda = (player.x - this.state.ball.x) / this.state.ball.speedX;
-		const yCollision = this.state.ball.y + (lamda * this.state.ball.speedY);
-		return (yCollision >= player.y && yCollision <= player.y + player.paddle.height);
+		const yCollision = this.state.ball.y + lamda * this.state.ball.speedY;
+		return (
+			yCollision >= player.y && yCollision <= player.y + player.paddle.height
+		);
 	}
 
 	private moveBall() {
 		let newX = this.state.ball.x + this.state.ball.speedX;
 		let newY = this.state.ball.y + this.state.ball.speedY;
-
 
 		// Walls collision
 		if (newY < 0) {
@@ -157,11 +170,11 @@ export class BoundlessInstance extends EventEmitter {
 		//Paddle collision
 		if (newX < this.state.players[0].x) {
 			if (this.hitsPaddle(this.state.players[0])) {
-				newX = this.state.players[0].x + (this.state.players[0].x -newX);
+				newX = this.state.players[0].x + (this.state.players[0].x - newX);
 				this.state.ball.speedX *= -1;
 			} else {
 				this.score(this.state.players[1]);
-				return ;
+				return;
 			}
 		} else if (newX > this.state.players[1].x) {
 			if (this.hitsPaddle(this.state.players[1])) {
@@ -169,7 +182,7 @@ export class BoundlessInstance extends EventEmitter {
 				this.state.ball.speedX *= -1;
 			} else {
 				this.score(this.state.players[0]);
-				return ;
+				return;
 			}
 		}
 		this.state.ball.x = newX;
@@ -191,9 +204,10 @@ export class BoundlessInstance extends EventEmitter {
 		}
 		if (this.state.status === 'waiting') {
 			this.state.countdown =
-				this.match.created_at.getTime() + BoundlessInstance.waitingTime - Date.now();
-			if (this.state.countdown <= 0)
-				this.state.status = 'running';
+				this.match.created_at.getTime() +
+				BoundlessInstance.waitingTime -
+				Date.now();
+			if (this.state.countdown <= 0) this.state.status = 'running';
 			return;
 		}
 		this.movePaddles();

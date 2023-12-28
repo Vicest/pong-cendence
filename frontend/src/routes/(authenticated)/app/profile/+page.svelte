@@ -11,6 +11,7 @@
 	let editMode: boolean = false;
 	let encodedImg: string;
 	let imageFile: any;
+	let twofaCode: string;
 
 	const handleFileChange = (event: any) => {
 		imageFile = event.target.files[0];
@@ -39,7 +40,7 @@
 
 		if (Object.keys(updateinfo).length > 0) {
 			// TODO: multiparted image
-			console.log(updateinfo)
+			console.log(updateinfo);
 			const res = await Api.put('/users', updateinfo);
 			if (res.status === 200) {
 				editMode = false;
@@ -47,7 +48,6 @@
 		}
 	}
 
-	
 	let edit2FABase64Qr: string | null = null;
 	async function get2FAData() {
 		if (edit2FAMode) {
@@ -61,7 +61,21 @@
 	}
 
 	async function save2FAChanges() {
-		console.log('save2FAChanges');
+		if (!twofaCode) {
+			alert('Please enter the code');
+			return;
+		}
+		console.log(twofaCode);
+		Api.post('/auth/2FAcheck', {
+			token: twofaCode
+		})
+			.catch((err) => {
+				console.log(err);
+			})
+			.finally(() => {
+				twofaCode = '';
+				edit2FAMode = false;
+			});
 	}
 </script>
 
@@ -129,6 +143,15 @@
 				<label class="label">
 					<span class="text-2xl font-bold 2fa-label">2FA</span>
 					<img src={edit2FABase64Qr} alt="2FA QR Code" />
+					<input
+						class="input"
+						type="text"
+						placeholder="Input"
+						bind:value={twofaCode}
+						on:keydown={(e) => {
+							if (e.key === 'Enter') save2FAChanges();
+						}}
+					/>
 					<button class="btn btn-primary mt-2" on:click={save2FAChanges}>Save</button>
 				</label>
 			</div>
