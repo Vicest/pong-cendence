@@ -29,7 +29,11 @@ export interface ChannelsChat {
 	users: Person[];
 	admins: Person[];
 	banned: Person[];
-	muted: Person[];
+	muted: {
+		user: Person;
+		channel: ChannelsChat;
+		expire: Date;
+	}[];
 	user: Person;
 	index: number;
 	owner: Person;

@@ -11,6 +11,7 @@ import { ChannelMessages } from './channel.message.entity';
 import { User } from 'src/users/entities/user.entity';
 import { MaxLength, MinLength } from 'class-validator';
 import { Optional } from '@nestjs/common';
+import { ChannelMuted } from './channel.muted.entity';
 
 export enum MessageType {
 	DIRECT = 'Direct',
@@ -33,7 +34,7 @@ export class Channel {
 	@MinLength(4)
 	@MaxLength(20)
 	name: string;
-	
+
 	@Column({
 		nullable: true
 	})
@@ -120,19 +121,10 @@ export class Channel {
 	})
 	banned: User[];
 
-	@ManyToMany(() => User)
-	@JoinTable({
-		name: 'ChannelMuted',
-		joinColumn: {
-			name: 'channel',
-			referencedColumnName: 'id'
-		},
-		inverseJoinColumn: {
-			name: 'user',
-			referencedColumnName: 'id'
-		}
+	@OneToMany(() => ChannelMuted, (muted) => muted.channel, {
+		cascade: true
 	})
-	muted: User[];
+	muted: ChannelMuted[];
 
 	@Column({
 		type: 'enum',

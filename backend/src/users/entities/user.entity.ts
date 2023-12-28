@@ -10,6 +10,7 @@ import { IsOptional, IsBase64, MaxLength, MinLength } from 'class-validator';
 import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 import { Channel } from 'src/chat/entities/channel.entity';
 import { MatchPlayer } from 'src/games/entities/matchPlayer.entity';
+import { ChannelMuted } from 'src/chat/entities/channel.muted.entity';
 
 @Entity({
 	name: 'Users'
@@ -102,6 +103,9 @@ export class User {
 		}
 	})
 	friends: User[];
+
+	@OneToMany(() => ChannelMuted, (muted) => muted.user)
+	muted: ChannelMuted[];
 
 	@OneToMany(() => MatchPlayer, (match) => match.user)
 	matches: MatchPlayer[];
