@@ -26,6 +26,30 @@ export const kickUserFromChannel = async (id: number, userId: number) => {
 	return Api.post(`/chat/${id}/kick/${userId}`);
 };
 
+export const banUserFromChannel = async (id: number, userId: number) => {
+	return Api.post(`/chat/${id}/ban/${userId}`);
+};
+
+export const unBanUserFromChannel = async (id: number, userId: number) => {
+	return Api.delete(`/chat/${id}/ban/${userId}`);
+};
+
+export const unAdminUserFromChannel = async (id: number, userId: number) => {
+	return Api.delete(`/chat/${id}/admin/${userId}`);
+};
+
+export const adminUserFromChannel = async (id: number, userId: number) => {
+	return Api.post(`/chat/${id}/admin/${userId}`);
+};
+
+export const muteUserFromChannel = async (id: number, userId: number) => {
+	return Api.post(`/chat/${id}/mute/${userId}`);
+};
+
+export const unMuteUserFromChannel = async (id: number, userId: number) => {
+	return Api.delete(`/chat/${id}/mute/${userId}`);
+};
+
 export const updateChannel = async (id: number, data) => {
 	return Api.put(`/chat/${id}`, data);
 };
@@ -53,8 +77,23 @@ function createChannelListStore() {
 		iOwn(id: number) {
 			return state.some((c) => c.id === id && c.owner.id === get(currentUser).id);
 		},
+		isOwner(id: number, userId: number) {
+			return state.some((c) => c.id === id && c.owner.id === userId);
+		},
 		iAdmin(id: number) {
 			return state.some((c) => c.id === id && c.admins.some((a) => a.id === get(currentUser).id));
+		},
+		isAdmin(id: number, userId: number) {
+			return state.some((c) => c.id === id && c.admins.some((a) => a.id === userId));
+		},
+		isMuted(id: number, userId: number) {
+			return state.some((c) => c.id === id && c.muted.some((a) => a.id === userId));
+		},
+		iMuted(id: number) {
+			return state.some((c) => c.id === id && c.muted.some((a) => a.id === get(currentUser).id));
+		},
+		isBanned(id: number, userId: number) {
+			return state.some((c) => c.id === id && c.banned.some((a) => a.id === userId));
 		},
 		friendSearchList: () => {
 			return state
@@ -102,6 +141,8 @@ export const init = () => {
 					if (ch.id === channel.id && userId === get(currentUser).id) {
 						channel.joined = true;
 						return channel; // In order to retrieve users property from new channel
+					} else if (ch.id === channel.id) {
+						ch.users.push(get(userList).find((u) => u.id === userId));
 					}
 					return ch;
 				});
@@ -116,9 +157,82 @@ export const init = () => {
 				return channels.map((ch) => {
 					if (ch.id === channel.id && userId === get(currentUser).id) {
 						ch.joined = false;
-					} else if (ch.id === channel.id) {
+					}
+					if (ch.id === channel.id) {
 						ch.users = ch.users.filter((u) => u.id !== userId);
 					}
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on(
+		'channel:banned',
+		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id) ch.banned.push(get(userList).find((u) => u.id === userId));
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on(
+		'channel:unbanned',
+		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id) ch.banned = ch.banned.filter((u) => u.id !== userId);
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on(
+		'channel:admined',
+		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id) ch.admins.push(get(userList).find((u) => u.id === userId));
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on(
+		'channel:unadmined',
+		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id) ch.admins = ch.admins.filter((u) => u.id !== userId);
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on(
+		'channel:muted',
+		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id) ch.muted.push(get(userList).find((u) => u.id === userId));
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on(
+		'channel:unmuted',
+		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id) ch.muted = ch.muted.filter((u) => u.id !== userId);
 					return ch;
 				});
 			});

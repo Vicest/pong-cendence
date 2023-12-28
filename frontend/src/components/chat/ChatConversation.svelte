@@ -3,6 +3,7 @@
 	import ChatAvatar from './ChatAvatar.svelte';
 	import { currentUser } from '../../store/Auth';
 	import { userList } from '../../store/User';
+	import { channelList } from '../../store/Chat';
 
 	export let channel: ChannelsChat;
 	export let elemChat: HTMLElement;
@@ -26,7 +27,9 @@
 		channel.user.id
 	) ||
 	userList.blockedByMe(channel.user.id) ||
-	(channel.type === 'Direct' && !userList.areFriends(channel.user.id))
+	(channel.type === 'Direct' && !userList.areFriends(channel.user.id)) ||
+	(channel.type === 'Channel' && channelList.isBanned(channel.id, $currentUser.id)) ||
+	(channel.type === 'Channel' && channelList.isMuted(channel.id, $currentUser.id))
 		? 'opacity-30 cursor-not-allowed'
 		: ''}"
 	bind:this={elemChat}
@@ -78,6 +81,20 @@
 						? 'You can unblock this user in the user profile'
 						: `You can't send messages to this user until he unblocks you`}
 				</p>
+			</div>
+		</div>
+	{:else if channel.type === 'Channel' && channelList.isBanned(channel.id, $currentUser.id)}
+		<div class="absolute inset-0 flex justify-center items-center">
+			<div class="card p-4 space-y-2">
+				<h1 class="text-center">You have been banned from this channel</h1>
+				<p class="text-center">You can't send messages to this channel until you are unbanned</p>
+			</div>
+		</div>
+	{:else if channel.type === 'Channel' && channelList.isMuted(channel.id, $currentUser.id)}
+		<div class="absolute inset-0 flex justify-center items-center">
+			<div class="card p-4 space-y-2">
+				<h1 class="text-center">You have been muted in this channel</h1>
+				<p class="text-center">You can't send messages to this channel until you are unmuted</p>
 			</div>
 		</div>
 	{/if}

@@ -4,7 +4,7 @@
 	export let channel: ChannelsChat;
 </script>
 
-{#if channelList.iJoined(channel.id) || channelList.iOwn(channel.id)}
+{#if channelList.iOwn(channel.id)}
 	<button
 		type="button"
 		class="btn variant-filled-error"

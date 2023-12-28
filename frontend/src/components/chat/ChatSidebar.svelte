@@ -62,12 +62,6 @@
 						<ChatAvatar user={findUser(channel.user.id)} width="w-8" showStatus={false} />
 					</svelte:fragment>
 					{findUser(channel.user.id).nickname}
-					<br />
-					<button
-						type="button"
-						class="btn btn-sm variant-filled"
-						on:click={() => goto(`/app/profile/${channel.user.id}`)}>profile</button
-					>
 				</ListBoxItem>
 			{/each}
 		</ListBox>

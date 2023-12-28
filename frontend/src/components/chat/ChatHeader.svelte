@@ -14,7 +14,13 @@
 	import Fa from 'svelte-fa';
 	import { getModalStore, type ModalSettings } from '@skeletonlabs/skeleton';
 	import ChannelDetailsModal from './ChannelDetailsModal.svelte';
+	import { goto } from '$app/navigation';
+	import { userList } from '../../store/User';
 	export let channel: ChannelsChat;
+
+	$: findUser = (id: number) => {
+		return $userList.find((user) => user.id === id) as Person;
+	};
 
 	const modalStore = getModalStore();
 	let channelDetailsModal: ModalSettings = {
@@ -29,13 +35,21 @@
 <!-- Header -->
 {#if channel.type === 'Direct'}
 	<header class="border-b border-surface-500/50 p-4">
-		<div class="grid grid-cols-[auto_1fr_auto] gap-2">
-			<ChatAvatar user={channel.user} width="w-8" showStatus={false} />
-			<div class="space-y-2">
-				<p class="font-bold">
-					{channel.user.nickname}
-				</p>
-				<small class="opacity-50">{channel.user.status}</small>
+		<div class="grid grid-cols-[1fr_auto] gap-2">
+			<div
+				class="flex items-center space-x-2 hover:cursor-pointer transition"
+				on:click={() => {
+					goto(`/app/profile/${channel.user.id}`);
+				}}
+				aria-hidden="true"
+			>
+				<ChatAvatar user={findUser(channel.user.id)} width="w-8" showStatus={false} />
+				<div class="space-y-2">
+					<p class="font-bold">
+						{findUser(channel.user.id).nickname}
+					</p>
+					<small class="opacity-50">{findUser(channel.user.id).status}</small>
+				</div>
 			</div>
 			<div class="flex justify-end items-center space-x-2">
 				<Accept bind:user={channel.user} />
@@ -52,7 +66,7 @@
 	<header
 		class="border-b border-surface-500/50 p-4 hover:bg-surface-500/10 hover:cursor-pointer transition"
 	>
-		<div class="grid grid-cols-[1fr_auto] gap-2">
+		<div class="grid grid-cols-[1fr_auto] items-center gap-2">
 			<div
 				class="space-y-2"
 				on:click={() => {

@@ -97,4 +97,114 @@ export class ChatController {
 	) {
 		return await this.chatService.kickUserFromChannel(req.user.id, id, userId);
 	}
+
+	// Post /:id/ban/:userId
+	@Post('/:id/ban/:userId')
+	async banUserFromChannel(
+		@Req() req,
+		@Param('id') id: number,
+		@Param('userId', {
+			transform: (value) => {
+				const userId = parseInt(value);
+				if (isNaN(userId)) throw new BadRequestException('Invalid user id');
+				return userId;
+			}
+		})
+		userId: number
+	) {
+		return await this.chatService.banUserFromChannel(req.user.id, id, userId);
+	}
+
+	// Delete /:id/ban/:userId
+	@Delete('/:id/ban/:userId')
+	async unBanUserFromChannel(
+		@Req() req,
+		@Param('id') id: number,
+		@Param('userId', {
+			transform: (value) => {
+				const userId = parseInt(value);
+				if (isNaN(userId)) throw new BadRequestException('Invalid user id');
+				return userId;
+			}
+		})
+		userId: number
+	) {
+		return await this.chatService.unBanUserFromChannel(req.user.id, id, userId);
+	}
+
+	// Post /:id/admin/:userId
+	@Post('/:id/admin/:userId')
+	async adminUserFromChannel(
+		@Req() req,
+		@Param('id') id: number,
+		@Param('userId', {
+			transform: (value) => {
+				const userId = parseInt(value);
+				if (isNaN(userId)) throw new BadRequestException('Invalid user id');
+				return userId;
+			}
+		})
+		userId: number
+	) {
+		return await this.chatService.adminUserFromChannel(req.user.id, id, userId);
+	}
+
+	// Delete /:id/admin/:userId
+	@Delete('/:id/admin/:userId')
+	async unAdminUserFromChannel(
+		@Req() req,
+		@Param('id') id: number,
+		@Param('userId', {
+			transform: (value) => {
+				const userId = parseInt(value);
+				if (isNaN(userId)) throw new BadRequestException('Invalid user id');
+				return userId;
+			}
+		})
+		userId: number
+	) {
+		return await this.chatService.unAdminUserFromChannel(
+			req.user.id,
+			id,
+			userId
+		);
+	}
+
+	// Post /:id/mute/:userId
+	@Post('/:id/mute/:userId')
+	async muteUserFromChannel(
+		@Req() req,
+		@Param('id') id: number,
+		@Param('userId', {
+			transform: (value) => {
+				const userId = parseInt(value);
+				if (isNaN(userId)) throw new BadRequestException('Invalid user id');
+				return userId;
+			}
+		})
+		userId: number
+	) {
+		return await this.chatService.muteUserFromChannel(req.user.id, id, userId);
+	}
+
+	// Delete /:id/mute/:userId
+	@Delete('/:id/mute/:userId')
+	async unMuteUserFromChannel(
+		@Req() req,
+		@Param('id') id: number,
+		@Param('userId', {
+			transform: (value) => {
+				const userId = parseInt(value);
+				if (isNaN(userId)) throw new BadRequestException('Invalid user id');
+				return userId;
+			}
+		})
+		userId: number
+	) {
+		return await this.chatService.unMuteUserFromChannel(
+			req.user.id,
+			id,
+			userId
+		);
+	}
 }

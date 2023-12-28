@@ -128,13 +128,13 @@
 			{#if channels[selectedChatIndex]}
 				<div class="relative h-full grid grid-rows-[auto_1fr_auto]">
 					{#if showHeader}
-						<ChatHeader channel={channels[selectedChatIndex]} />
+						<ChatHeader bind:channel={channels[selectedChatIndex]} />
 					{/if}
 					{#if showConversation}
-						<ChatConversation bind:elemChat channel={channels[selectedChatIndex]} />
+						<ChatConversation bind:elemChat bind:channel={channels[selectedChatIndex]} />
 					{/if}
 					{#if showPrompt}
-						<ChatPrompt bind:elemChat channel={channels[selectedChatIndex]} />
+						<ChatPrompt bind:elemChat bind:channel={channels[selectedChatIndex]} />
 					{/if}
 				</div>
 			{:else}
@@ -150,10 +150,10 @@
 					<ChatHeader channel={channels[selectedChatIndex]} />
 				{/if}
 				{#if showConversation}
-					<ChatConversation bind:elemChat channel={channels[selectedChatIndex]} />
+					<ChatConversation bind:elemChat bind:channel={channels[selectedChatIndex]} />
 				{/if}
 				{#if showPrompt}
-					<ChatPrompt bind:elemChat channel={channels[selectedChatIndex]} />
+					<ChatPrompt bind:elemChat bind:channel={channels[selectedChatIndex]} />
 				{/if}
 			{:else}
 				<div class="flex items-center justify-center h-full">

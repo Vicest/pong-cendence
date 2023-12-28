@@ -6,7 +6,8 @@ import {
 	OnGatewayInit,
 	SubscribeMessage,
 	WebSocketGateway,
-	WebSocketServer
+	WebSocketServer,
+	WsException
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
@@ -64,6 +65,8 @@ export class ChatGateway
 				.leftJoinAndSelect('Channel.users', 'channels_relation')
 				.leftJoinAndSelect('Channel.owner', 'owner')
 				.leftJoinAndSelect('Channel.admins', 'admins')
+				.leftJoinAndSelect('Channel.banned', 'banned')
+				.leftJoinAndSelect('Channel.muted', 'muted')
 				.leftJoinAndSelect('Channel.messages', 'messages')
 				.leftJoinAndSelect('messages.sender', 'sender')
 				.orderBy('messages.created_at', 'ASC')
@@ -182,30 +185,88 @@ export class ChatGateway
 		});
 	}
 
+	public userBannedChannel(userId: number, channel: Channel) {
+		this.server.to('channel_' + channel.id).emit('channel:banned', {
+			userId: userId,
+			channel
+		});
+		this.server.sockets.forEach((socket) => {
+			if (socket.data.user?.id === userId) {
+				socket.leave('channel_' + channel.id);
+			}
+		});
+	}
+
+	public userUnbannedChannel(userId: number, channel: Channel) {
+		this.server.sockets.forEach((socket) => {
+			if (socket.data.user?.id === userId) {
+				socket.join('channel_' + channel.id);
+			}
+		});
+		this.server.to('channel_' + channel.id).emit('channel:unbanned', {
+			userId: userId,
+			channel
+		});
+	}
+
+	public userAdminedChannel(userId: number, channel: Channel) {
+		this.server.to('channel_' + channel.id).emit('channel:admined', {
+			userId: userId,
+			channel
+		});
+	}
+
+	public userUnadminedChannel(userId: number, channel: Channel) {
+		this.server.to('channel_' + channel.id).emit('channel:unadmined', {
+			userId: userId,
+			channel
+		});
+	}
+
+	public userMutedChannel(userId: number, channel: Channel) {
+		this.server.to('channel_' + channel.id).emit('channel:muted', {
+			userId: userId,
+			channel
+		});
+	}
+
+	public userUnmutedChannel(userId: number, channel: Channel) {
+		this.server.to('channel_' + channel.id).emit('channel:unmuted', {
+			userId: userId,
+			channel
+		});
+	}
+
 	@SubscribeMessage('channel_message')
 	async handleChannelMessage(
 		@ConnectedSocket() client: Socket,
 		@MessageBody() data: { message: string; channel: number }
 	) {
-		try {
-			const channel = await this.channelRepository.findOne({
-				where: { id: data.channel }
-			});
-			if (!channel) throw new Error('Channel not found');
-			console.log('channel_' + channel.id);
-			const message = await this.usersService.sendChannelMessage(
-				client.data.user,
-				channel,
-				data.message
-			);
-			this.server.to('channel_' + channel.id).emit('channel_message', {
-				channel: channel.id,
-				message: message.content,
-				sender: client.data.user.id
-			});
-		} catch (error) {
-			this.log.error(error, this.constructor.name);
-		}
+		const channel = await this.channelRepository.findOne({
+			where: { id: data.channel },
+			relations: ['muted', 'banned']
+		});
+		if (!channel) throw new Error('Channel not found');
+		let canSend =
+			channel.banned.some((user) => {
+				return user.id === client.data.user.id;
+			}) &&
+			channel.muted.some((user) => {
+				return user.id === client.data.user.id;
+			})
+				? false
+				: true;
+		if (!canSend) throw new WsException('User cannot send messages');
+		const message = await this.usersService.sendChannelMessage(
+			client.data.user,
+			channel,
+			data.message
+		);
+		this.server.to('channel_' + channel.id).emit('channel_message', {
+			channel: channel.id,
+			message: message.content,
+			sender: client.data.user.id
+		});
 	}
 
 	async handleConnection(@ConnectedSocket() client: Socket, ...args) {
@@ -213,7 +274,11 @@ export class ChatGateway
 			const decoded = this.jwtService.verify(this.getAuthCookie(client));
 			client.data.user = decoded;
 			const chatRooms = await this.getChatRooms(client.data.user);
-			for (const room of chatRooms.filter((room) => room.joined)) {
+			for (const room of chatRooms.filter(
+				(room) =>
+					room.joined &&
+					room.banned.map((b) => b.id).indexOf(client.data.user.id) === -1
+			)) {
 				client.join('channel_' + room.id);
 			}
 			client.emit('rooms', chatRooms);

@@ -192,16 +192,17 @@ export class UsersService {
 	public async removeFriend(id: number, friend: number): Promise<User> {
 		let user = await this.userRepository.findOne({
 			where: { id },
-			relations: ['friends', 'channels', 'invitations']
+			relations: ['friends', 'channels', 'invitations', 'blocked']
 		});
 		const friendUser = await this.userRepository.findOne({
 			where: { id: friend },
-			relations: ['friends', 'invitations']
+			relations: ['friends', 'invitations', 'blocked']
 		});
 
 		user.invitations = user.invitations.filter(
 			(user) => user.id !== friendUser.id
 		);
+		user.blocked = user.blocked.filter((user) => user.id !== friendUser.id);
 		user.friends = user.friends.filter((user) => user.id !== friendUser.id);
 		this.userRepository.save(user);
 
@@ -214,6 +215,10 @@ export class UsersService {
 		friendUser.invitations = friendUser.invitations.filter(
 			(_user) => _user.id !== user.id
 		);
+		friendUser.blocked = friendUser.blocked.filter(
+			(_user) => _user.id !== user.id
+		);
+		this.userRepository.save(friendUser);
 		this.usersGateway.server
 			.to(['user_' + id, 'user_' + friend])
 			.emit('user:friend_removed', {
@@ -274,12 +279,14 @@ export class UsersService {
 		});
 		let targetUser = await this.userRepository.findOne({
 			where: { id: target },
-			relations: ['friends']
+			relations: ['friends', 'invitations']
 		});
 		user.invitations = user.invitations.filter(
 			(user) => user.id !== targetUser.id
 		);
-
+		targetUser.invitations = targetUser.invitations.filter(
+			(user) => user.id !== user.id
+		);
 		targetUser.friends.push(user);
 		await this.userRepository.save(targetUser);
 		targetUser = await this.userRepository.findOne({
