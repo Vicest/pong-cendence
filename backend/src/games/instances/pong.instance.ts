@@ -136,6 +136,14 @@ export class PongInstance extends EventEmitter {
 	}
 
 	private hitsPaddle(player): boolean {
+		if (this.state.ball.speedX < 0)
+			this.state.ball.speedX -= 0.5;
+		else
+			this.state.ball.speedX += 0.5;
+		if (this.state.ball.speedY < 0)
+			this.state.ball.speedY -= 0.5;
+		else
+			this.state.ball.speedY += 0.5;
 		const lamda = (player.x - this.state.ball.x) / this.state.ball.speedX;
 		const yCollision = this.state.ball.y + (lamda * this.state.ball.speedY);
 		return (yCollision >= player.y && yCollision <= player.y + player.paddle.height);
