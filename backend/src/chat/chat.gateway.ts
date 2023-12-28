@@ -289,11 +289,13 @@ export class ChatGateway
 		@ConnectedSocket() client: Socket,
 		@MessageBody() data: { message: string; channel: number }
 	) {
+		if (data.message.length === 0)
+			throw new WsException('Message cannot be empty');
 		const channel = await this.channelRepository.findOne({
 			where: { id: data.channel },
 			relations: ['muted', 'banned']
 		});
-		if (!channel) throw new Error('Channel not found');
+		if (!channel) throw new WsException('Channel not found');
 		let canSend =
 			channel.banned.some((user) => {
 				return user.id === client.data.user.id;
