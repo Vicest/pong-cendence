@@ -48,6 +48,8 @@ export class ChatService {
 			type: MessageType.CHANNEL,
 			owner: user,
 			admins: [user],
+			banned: [],
+			muted: [],
 			users: [user, ...users],
 			hasPassword: typeof data.password !== 'undefined' && data.password !== ''
 		});
