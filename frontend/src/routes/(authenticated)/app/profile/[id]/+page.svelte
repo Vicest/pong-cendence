@@ -56,14 +56,14 @@
 					<!-- I know I should not hardcode the 1 and 2 for games ids, but it is what it is -->
 					<button
 						type="button"
-						class="btn btn-sm variant-filled"
+						class="btn variant-ghost-surface z-10"
 						disabled={profilePerson?.status !== 'online'}
 						on:click={() => sendChallenge(profilePerson?.id, 1, profilePerson?.nickname)}
 						>classic</button
 					>
 					<button
 						type="button"
-						class="btn btn-sm variant-filled"
+						class="btn variant-ghost-surface z-10"
 						disabled={profilePerson?.status !== 'online'}
 						on:click={() => sendChallenge(profilePerson?.id, 2, profilePerson?.nickname)}
 						>boundless</button
@@ -93,9 +93,5 @@
 		height: 100%;
 		z-index: 10000;
 		border-radius: 50%;
-	}
-	.profile-avatar-label:hover {
-		background: rgba(255, 255, 255, 0.7);
-		cursor: pointer;
 	}
 </style>
