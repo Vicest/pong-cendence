@@ -54,6 +54,12 @@
 		<button
 			class={currentMessage ? 'variant-filled-primary' : 'input-group-shim'}
 			on:click={addMessage}
+			disabled={userList.blockedMe(channel.user.id) ||
+				userList.blockedByMe(channel.user.id) ||
+				!(channel.type === 'Channel' || userList.areFriends(channel.user.id)) ||
+				(channel.type === 'Channel' && channelList.isBanned(channel.id, $currentUser.id)) ||
+				(channel.type === 'Channel' && channelList.isMuted(channel.id, $currentUser.id)) ||
+				(channel.type === 'Channel' && !channelList.iJoined(channel.id))}
 		>
 			<i class="fa-solid fa-paper-plane" />
 		</button>

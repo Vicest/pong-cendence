@@ -180,14 +180,19 @@ export class AuthController {
 	}
 	@UseGuards(JwtGuard)
 	@Post('2FAchange')
-	async post2fachange(@Body() body, @Req() req) {
-		console.log(req.user);
-		const usr = await this.userservice.findOne(req.user.login);
-		this.authService.twofachangestatus(usr, body.token);
+	async post2fachange(@Body() body, @Req() req, @Res() res: Response) {
+		let validate = await this.authService.check2FAToken(req.user, body.token);
+		if (validate)
+		{
+			const usr = await this.userservice.findOne(req.user.login);
+			this.authService.twofachangestatus(usr, body.token);
+			return res.sendStatus(200);
+		}
+		return res.sendStatus(400);
 	}
 	@UseGuards(JwtGuard)
 	@Get('get2FAstatus')
-	async get2fastatus(@Req() req) {
+	async get2fastatus(@Req() req): Promise<boolean> {
 		return req.user.two_factor_auth_enabled;
 	}
 
