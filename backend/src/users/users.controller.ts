@@ -97,6 +97,13 @@ export class UsersController {
 		return userRank;
 	}
 
+	@Get(':id/history')
+	async getHistory(@Param('id', ParseIntPipe) id: number) {
+		if (!(await this.userService.exists(id))) throw new NotFoundException();
+		const history = await this.userService.getUserMatches(id);
+		return history;
+	}
+
 	// POST /users/:id
 	@Post(':id')
 	updateUser(@Param('id', ParseIntPipe) id: number, @Body() body) {

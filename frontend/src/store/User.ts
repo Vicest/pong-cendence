@@ -250,4 +250,15 @@ export const init = async () => {
 			console.log(err);
 		})
 		.finally(() => {});
+
+	userList.update( (persons: Person[]) => {
+		console.log('check')
+		for (let userIdx in persons) {
+			Api.get(`/users/${persons[userIdx].id}/history`).then((matchHistory) => {
+				console.log('History: ', matchHistory.data);
+				persons[userIdx].history = matchHistory.data;
+			}).catch();
+		}
+		return persons;
+	});
 };

@@ -167,30 +167,31 @@ export class UsersService {
 		const query = this.matchRepository
 			.createQueryBuilder('match')
 			.innerJoin('match.players', 'matchPlayer', 'matchPlayer.user = :userId', { userId })
-			//.where('match.status = finished');
+			.innerJoinAndSelect('match.players', 'match_player')
+			.innerJoinAndSelect('match_player.user', 'user')
+			.where('match.status = \'finished\'');
 		const matchList = await query.getMany();
-		console.log('User ', userId, ' matches:\n', matchList);
+		//console.log('User ', userId, ' matches:\n', matchList);
 		return matchList;
-		//const query = this.userRepository
-		//	.createQueryBuilder('user')
-		//	.leftJoinAndSelect('user.matches', 'matchPlayer')
-		//	.where('user.id = :userId', { userId });
-		//const user = await query.getOne();
-		//return user.matches;
 	}
 
 	public async getUserRank(id: number) {
 		const matchesPlayed = await this.getUserMatches(id);
-		//const rankedMatches = matchesPlayed.filter(
-		//	(userPlayer) => userPlayer.rankShift !== 0
-		//);
+		const rankedMatches = matchesPlayed.filter(
+			(match) => match.players[0].rankShift !== 0
+		);
 		let totalRankShift: number = 0;
-		//for (const userPlayer of rankedMatches) {
-		//	totalRankShift += userPlayer.isWinner
-		//		? userPlayer.rankShift
-		//		: -userPlayer.rankShift;
-		//}
-		////No ranked matches means you are 'Unranked'
+		for (const match of rankedMatches) {
+			for(const matchPlayer of match.players) {
+				//The rankShift is set in the winnerPlayer
+				if (!matchPlayer.isWinner)
+					continue ;
+				totalRankShift += matchPlayer.user.id == id
+				? matchPlayer.rankShift
+				: -matchPlayer.rankShift;
+			}
+		}
+		//No ranked matches means you are 'Unranked'
 		return matchesPlayed.length > 0 ? 1500 + totalRankShift : -1;
 	}
 

@@ -4,9 +4,19 @@
 	import { get } from 'svelte/store';
 	import { Avatar, getToastStore } from '@skeletonlabs/skeleton';
 	import { MatchMakingSocket } from '$services/socket';
+	import { currentUser } from '../../../../../store/Auth';
+	import { PongGame } from '$lib/GameEngine/Games/Pong';
 
 	$: profilePerson = get(userList).find((person) => {
 		return person.id.toString() === $page.params.id;
+	});
+
+	$: findUser = (id: number) => {
+		return $userList.find((user) => user.id === id) as Person;
+	};
+
+	$: matchHistory = profilePerson?.history.sort((a, b) => {
+		return a.created_at - b.created_at;
 	});
 
 	//I know, not pretty, still functional
@@ -70,9 +80,48 @@
 					>
 				</div>
 			</div>
-			<div class="flex flex-col justify-center items-center my-10 card w-full p-10">
-				<div class="text-center font-bold mb-4">MATCH HISTORY</div>
-			</div>
+			{#if matchHistory != undefined}
+				<div class="flex flex-col justify-center items-center my-10 card w-full p-10">
+					<div class="text-center font-bold mb-4">MATCH HISTORY</div>
+					{#each matchHistory as match}
+						<div class="flex flex-row justify-center items-center my-10 card w-full p-10">
+							{#if match.players[0].isWinner}
+								{#if match.players[0].rankShift != 0}
+									Elo shift: {match.players[0].rankShift}
+								{:else}
+									Unranked game
+								{/if}
+							{:else if match.players[1].rankShift != 0}
+								Elo shift: {match.players[1].rankShift}
+							{:else}
+								Unranked game
+							{/if}
+							<!--Winner/Loser-->
+							{#if match.players[0].isWinner}
+								Winner
+							{:else}
+								Loser
+							{/if}
+							<Avatar
+								src={findUser(match.players[0].user.id).avatar}
+								width="w-10"
+								class="border-4 border-white rounded-full"
+							/>
+							<div class="text-center font-bold mb-4">vs</div>
+							<Avatar
+								src={findUser(match.players[1].user.id).avatar}
+								width="w-10"
+								class="border-4 border-white rounded-full"
+							/>
+							{#if match.players[1].isWinner}
+								Winner
+							{:else}
+								Loser
+							{/if}
+						</div>
+					{/each}
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
