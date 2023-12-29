@@ -4,8 +4,6 @@
 	import { get } from 'svelte/store';
 	import { Avatar, getToastStore } from '@skeletonlabs/skeleton';
 	import { MatchMakingSocket } from '$services/socket';
-	import { currentUser } from '../../../../../store/Auth';
-	import { PongGame } from '$lib/GameEngine/Games/Pong';
 
 	$: profilePerson = get(userList).find((person) => {
 		return person.id.toString() === $page.params.id;
