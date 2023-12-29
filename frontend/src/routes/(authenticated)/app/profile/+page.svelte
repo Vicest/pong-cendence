@@ -134,7 +134,7 @@
 	<div class="flex flex-col justify-center items-center my-10 card w-full p-10">
 		<div class="flex gap-5 justify-center items-center mt-4 relative">
 			<span class="text-2xl font-bold">2FA</span>
-			<div class="ml-2 cursor-pointer" on:click={get2FAData}>
+			<div class="ml-2 cursor-pointer" on:click={get2FAData} aria-hidden="true">
 				<Fa icon={faEdit} class="text-2xl" />
 			</div>
 		</div>

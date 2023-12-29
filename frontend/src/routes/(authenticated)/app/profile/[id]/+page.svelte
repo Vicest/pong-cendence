@@ -83,9 +83,6 @@
 		width: 100%;
 		margin: 0 10px;
 	}
-	.input-avatar {
-		display: none;
-	}
 	.profile-avatar-label {
 		position: absolute;
 		top: 0;
