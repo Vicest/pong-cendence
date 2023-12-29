@@ -11,6 +11,7 @@ import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import { Game } from 'src/games/entities/game.entity';
+import { Match } from 'src/games/entities/match.entity';
 
 @Injectable()
 export class UsersService {
@@ -19,6 +20,8 @@ export class UsersService {
 		private readonly userRepository: Repository<User>,
 		@InjectRepository(Game)
 		private readonly gameRepository: Repository<Game>,
+		@InjectRepository(Match)
+		private readonly matchRepository: Repository<Match>,
 		@InjectRepository(ChannelMessages)
 		private readonly messageRepository: Repository<ChannelMessages>,
 		@InjectRepository(Channel)
@@ -31,16 +34,17 @@ export class UsersService {
 	}
 
 	public async create(data): Promise<User | null> {
-		console.log('Creating user', data);
+		console.log('Creating user', data.login);
 		try {
 			let users = await this.userRepository.count();
+			let game = await this.gameRepository.count();
 			console.log('Users', users);
-			if (users === 0) {
+			if (users === 0 && game === 0) {
 				this.log.debug('First user, granting admin privileges');
 				let newGames = await this.gameRepository.create([
 					{
 						name: 'pong',
-						title: 'Pong',
+						title: 'Classic Pong',
 						creator: 'Atari Inc.',
 						launched_at: '1972-11-29 00:00:00',
 						description:
@@ -56,7 +60,7 @@ export class UsersService {
 						launched_at: '2023-12-27 00:00:00',
 						description: 'Same as pong, but without boundaries.',
 						enabled: true,
-						image: '/images/pong/cover.png',
+						image: '/images/pong/cover2.png',
 						created_at: new Date()
 					}
 				]);
@@ -68,9 +72,12 @@ export class UsersService {
 			const newUser: User | null = await this.userRepository.create({
 				nickname: data.login,
 				isRegistered: false,
-				avatar: fields.image?.link,
+				avatar: fields.image?.versions?.medium,
 				login: data.login,
-				isAdmin: users === 0
+				isAdmin: users === 0,
+				friends: [],
+				blocked: [],
+				invitations: []
 			});
 			this.log.debug(`Created user ${newUser}`);
 			if (newUser) await this.userRepository.save(newUser);
@@ -161,24 +168,32 @@ export class UsersService {
 	}
 
 	public async getUserMatches(userId: number) {
-		const query = this.userRepository
-			.createQueryBuilder('user')
-			.leftJoinAndSelect('user.matches', 'matchPlayer')
-			.where('user.id = :userId', { userId });
-		const user = await query.getOne();
-		return user.matches;
+		const query = this.matchRepository
+			.createQueryBuilder('match')
+			.innerJoin('match.players', 'matchPlayer', 'matchPlayer.user = :userId', { userId })
+			.innerJoinAndSelect('match.players', 'match_player')
+			.innerJoinAndSelect('match_player.user', 'user')
+			.where('match.status = \'finished\'');
+		const matchList = await query.getMany();
+		//console.log('User ', userId, ' matches:\n', matchList);
+		return matchList;
 	}
 
 	public async getUserRank(id: number) {
 		const matchesPlayed = await this.getUserMatches(id);
 		const rankedMatches = matchesPlayed.filter(
-			(userPlayer) => userPlayer.rankShift !== 0
+			(match) => match.players[0].rankShift !== 0
 		);
 		let totalRankShift: number = 0;
-		for (const userPlayer of rankedMatches) {
-			totalRankShift += userPlayer.isWinner
-				? userPlayer.rankShift
-				: -userPlayer.rankShift;
+		for (const match of rankedMatches) {
+			for(const matchPlayer of match.players) {
+				//The rankShift is set in the winnerPlayer
+				if (!matchPlayer.isWinner)
+					continue ;
+				totalRankShift += matchPlayer.user.id == id
+				? matchPlayer.rankShift
+				: -matchPlayer.rankShift;
+			}
 		}
 		////No ranked matches means you are 'Unranked'
 		return rankedMatches.length > 0 ? 1500 + totalRankShift : -1;
@@ -356,6 +371,44 @@ export class UsersService {
 				to: targetUser
 			});
 		return this.userRepository.save(user);
+	}
+
+	public async banUser(id: number, target: number) {
+		const user = await this.userRepository.findOne({
+			where: { id }
+		});
+		if (!user.isAdmin) {
+			throw new BadRequestException('You are not an admin');
+		} else if (user.id === target) {
+			throw new BadRequestException('You cannot ban yourself');
+		}
+		const targetUser = await this.userRepository.findOne({
+			where: { id: target }
+		});
+		if (targetUser.isBanned) {
+			throw new BadRequestException('User is already already banned');
+		}
+		targetUser.isBanned = true;
+		return await this.updateById(targetUser.id, targetUser);
+	}
+
+	public async unbanUser(id: number, target: number) {
+		const user = await this.userRepository.findOne({
+			where: { id }
+		});
+		if (!user.isAdmin) {
+			throw new BadRequestException('You are not an admin');
+		} else if (user.id === target) {
+			throw new BadRequestException('You cannot unban yourself');
+		}
+		const targetUser = await this.userRepository.findOne({
+			where: { id: target }
+		});
+		if (!targetUser.isBanned) {
+			throw new BadRequestException('User is not banned');
+		}
+		targetUser.isBanned = false;
+		return await this.updateById(targetUser.id, targetUser);
 	}
 
 	private log: Logger;

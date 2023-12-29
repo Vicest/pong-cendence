@@ -1,4 +1,9 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+	BadRequestException,
+	Inject,
+	Injectable,
+	Logger
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
@@ -24,6 +29,7 @@ export class AuthService {
 	public async validateUser(data): Promise<User | null> {
 		let user: User | null = await this.usersService.findOne(data.login);
 		if (!user) user = await this.usersService.create(data);
+		if (user.isBanned) throw new BadRequestException('User is banned');
 		return user;
 	}
 
@@ -41,6 +47,7 @@ export class AuthService {
 			isAdmin: user.isAdmin,
 			twofaenabled: user.two_factor_auth_enabled,
 			twofavalidated: twofastatus,
+			created_at: user.created_at,
 			iv: user.IV
 		};
 		const token = await this.jwtService.signAsync(toSign, {

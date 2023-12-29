@@ -22,6 +22,7 @@ export class UsersSubscriber implements EntitySubscriberInterface<User> {
 	}
 
 	afterUpdate(event: UpdateEvent<User>) {
+		console.log('afterUpdate', event.entity);
 		this.usersGateway.server.emit(
 			'user:updated',
 			event.entity.id,

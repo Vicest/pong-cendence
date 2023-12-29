@@ -95,6 +95,9 @@
 			<div class="card p-4 space-y-2">
 				<h1 class="text-center">You have been muted in this channel</h1>
 				<p class="text-center">You can't send messages to this channel until you are unmuted</p>
+				<p class="text-center">
+					Wait {channelList.getMuteTime(channel.id, $currentUser.id)} seconds
+				</p>
 			</div>
 		</div>
 	{/if}

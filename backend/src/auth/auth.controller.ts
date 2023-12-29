@@ -69,31 +69,32 @@ export class AuthController {
 		private userservice: UsersService
 	) {}
 
-	@Get('/fake/:login')
-	async testUser(@Param('login') login: string, @Req() req, @Res() res) {
-		console.log('You need a create an endpoint to bypass the authentication system you just implemented: Roll for Sanity');
-		const user = await this.userservice.findOne(login);
+	//TODO: ELIMINAR
+	// @Get('/fake/:login')
+	// async testUser(@Param('login') login: string, @Req() req, @Res() res) {
+	// 	console.log('You need a create an endpoint to bypass the authentication system you just implemented: Roll for Sanity');
+	// 	const user = await this.userservice.findOne(login);
 
-		console.log(`Test User: ${JSON.stringify(user)}`)
-		const { token, refreshToken } = await this.authService.grantTokenPair(
-			user,
-			false
-		);
-		return res
-			.cookie('token', token, {
-				httpOnly: true,
-				sameSite: 'strict',
-				secure: this.env.get('NODE_ENV') === 'production' ? true : false,
-				maxAge: this.jwtConfig.expiresIn * 1000
-			})
-			.cookie('refreshToken', refreshToken, {
-				httpOnly: true,
-				sameSite: 'strict',
-				secure: this.env.get('NODE_ENV') === 'production' ? true : false,
-				maxAge: this.jwtConfig.refreshExpiresIn * 1000
-			})
-			.redirect(this.frontendConfig.baseUrl.concat('/app'));
-	}
+	// 	console.log(`Test User: ${JSON.stringify(user)}`)
+	// 	const { token, refreshToken } = await this.authService.grantTokenPair(
+	// 		user,
+	// 		false
+	// 	);
+	// 	return res
+	// 		.cookie('token', token, {
+	// 			httpOnly: true,
+	// 			sameSite: 'strict',
+	// 			secure: this.env.get('NODE_ENV') === 'production' ? true : false,
+	// 			maxAge: this.jwtConfig.expiresIn * 1000
+	// 		})
+	// 		.cookie('refreshToken', refreshToken, {
+	// 			httpOnly: true,
+	// 			sameSite: 'strict',
+	// 			secure: this.env.get('NODE_ENV') === 'production' ? true : false,
+	// 			maxAge: this.jwtConfig.refreshExpiresIn * 1000
+	// 		})
+	// 		.redirect(this.frontendConfig.baseUrl.concat('/app'));
+	// }
 
 	@UseGuards(AdminGuard)
 	@Get('admin')
@@ -170,8 +171,8 @@ export class AuthController {
 			.redirect(this.frontendConfig.baseUrl.concat('/app'));
 	}
 	@UseGuards(JwtGuard)
-	@Post('2FA')
-	async post2fa(@Req() req) {
+	@Get('2FA')
+	async get2fa(@Req() req) {
 		if (req.user.two_factor_auth_enabled == false) {
 			const usr = await this.userservice.findOne(req.user.login);
 			return this.authService.generateTwoFactorAuthenticationSecret(usr);
@@ -179,14 +180,19 @@ export class AuthController {
 	}
 	@UseGuards(JwtGuard)
 	@Post('2FAchange')
-	async post2fachange(@Body() body, @Req() req) {
-		console.log(req.user);
-		const usr = await this.userservice.findOne(req.user.login);
-		this.authService.twofachangestatus(usr, body.token);
+	async post2fachange(@Body() body, @Req() req, @Res() res: Response) {
+		let validate = await this.authService.check2FAToken(req.user, body.token);
+		if (validate)
+		{
+			const usr = await this.userservice.findOne(req.user.login);
+			this.authService.twofachangestatus(usr, body.token);
+			return res.sendStatus(200);
+		}
+		return res.sendStatus(400);
 	}
 	@UseGuards(JwtGuard)
 	@Get('get2FAstatus')
-	async get2fastatus(@Req() req) {
+	async get2fastatus(@Req() req): Promise<boolean> {
 		return req.user.two_factor_auth_enabled;
 	}
 
@@ -195,13 +201,16 @@ export class AuthController {
 	async post2fcheck(@Req() req, @Body() body, @Res() res: Response) {
 		let user = await this.authService.validateUser(req.user);
 		let validate = await this.authService.check2FAToken(user, body.token);
-		console.log(validate);
 		if (validate) {
+			req.user.twofavalidated = true;
+			req.user.twofaenabled = true;
+			user.two_factor_auth_enabled = true;
+			await this.userservice.save(user);
 			const { token, refreshToken } = await this.authService.grantTokenPair(
 				req.user,
 				true
 			);
-			res
+			return res
 				.cookie('token', token, {
 					httpOnly: true,
 					sameSite: 'strict',

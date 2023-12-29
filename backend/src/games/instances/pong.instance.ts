@@ -86,12 +86,14 @@ export class PongInstance extends EventEmitter {
 			ball: {
 				x: PongInstance.canvasWidth / 2,
 				y: PongInstance.canvasHeight / 2,
-				speedX: PongInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1),
-				speedY: PongInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1),
+				speedX:
+					PongInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1),
+				speedY:
+					PongInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1),
 				radius: PongInstance.ballRadius
 			}
 		};
-		console.log(this.players[0].user.nickname, this.players[1].user.nickname)
+		console.log(this.players[0].user.nickname, this.players[1].user.nickname);
 		this.log.debug('Pong instance created', this.constructor.name);
 	}
 
@@ -117,13 +119,13 @@ export class PongInstance extends EventEmitter {
 	}
 
 	public handleInput(userId: number, data: PongInstanceInput[]) {
-		const index = this.players.findIndex((matchPlayer) => matchPlayer.user.id === userId);
+		const index = this.players.findIndex(
+			(matchPlayer) => matchPlayer.user.id === userId
+		);
 		this.state.players[index].input = data;
 		if (data.some((input) => input[27])) {
-			if (this.state.status === 'paused')
-				this.state.status = 'running';
-			else if (this.state.status === 'running')
-				this.state.status = 'paused';
+			if (this.state.status === 'paused') this.state.status = 'running';
+			else if (this.state.status === 'running') this.state.status = 'paused';
 		}
 	}
 
@@ -131,20 +133,23 @@ export class PongInstance extends EventEmitter {
 		scorer.score += 1;
 		this.state.ball.x = PongInstance.canvasWidth / 2;
 		this.state.ball.y = PongInstance.canvasHeight / 2;
-		this.state.ball.speedX = PongInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1);
-		this.state.ball.speedY = PongInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1);
+		this.state.ball.speedX =
+			PongInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1);
+		this.state.ball.speedY =
+			PongInstance.ballSpeed * (Math.floor(Math.random() * 2) * 2 - 1);
 	}
 
 	private hitsPaddle(player): boolean {
 		const lamda = (player.x - this.state.ball.x) / this.state.ball.speedX;
-		const yCollision = this.state.ball.y + (lamda * this.state.ball.speedY);
-		return (yCollision >= player.y && yCollision <= player.y + player.paddle.height);
+		const yCollision = this.state.ball.y + lamda * this.state.ball.speedY;
+		return (
+			yCollision >= player.y && yCollision <= player.y + player.paddle.height
+		);
 	}
 
 	private moveBall() {
 		let newX = this.state.ball.x + this.state.ball.speedX;
 		let newY = this.state.ball.y + this.state.ball.speedY;
-
 
 		// Walls collision
 		if (newY < 0) {
@@ -158,11 +163,11 @@ export class PongInstance extends EventEmitter {
 		//Paddle collision
 		if (newX < this.state.players[0].x) {
 			if (this.hitsPaddle(this.state.players[0])) {
-				newX = this.state.players[0].x + (this.state.players[0].x -newX);
+				newX = this.state.players[0].x + (this.state.players[0].x - newX);
 				this.state.ball.speedX *= -1;
 			} else {
 				this.score(this.state.players[1]);
-				return ;
+				return;
 			}
 		} else if (newX > this.state.players[1].x) {
 			if (this.hitsPaddle(this.state.players[1])) {
@@ -170,7 +175,7 @@ export class PongInstance extends EventEmitter {
 				this.state.ball.speedX *= -1;
 			} else {
 				this.score(this.state.players[0]);
-				return ;
+				return;
 			}
 		}
 		this.state.ball.x = newX;
@@ -193,8 +198,7 @@ export class PongInstance extends EventEmitter {
 		if (this.state.status === 'waiting') {
 			this.state.countdown =
 				this.match.created_at.getTime() + PongInstance.waitingTime - Date.now();
-			if (this.state.countdown <= 0)
-				this.state.status = 'running';
+			if (this.state.countdown <= 0) this.state.status = 'running';
 			return;
 		}
 		this.movePaddles();

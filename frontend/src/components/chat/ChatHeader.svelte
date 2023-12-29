@@ -10,13 +10,16 @@
 	import Join from './buttons/Join.svelte';
 	import Leave from './buttons/Leave.svelte';
 	import Delete from './buttons/Delete.svelte';
+	import Play from './buttons/Play.svelte';
 	import { faUser } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
-	import { getModalStore, type ModalSettings } from '@skeletonlabs/skeleton';
+	import { getModalStore, getToastStore, type ModalSettings } from '@skeletonlabs/skeleton';
 	import ChannelDetailsModal from './ChannelDetailsModal.svelte';
 	import { goto } from '$app/navigation';
 	import { userList } from '../../store/User';
 	export let channel: ChannelsChat;
+	import type { ToastSettings, ToastStore } from '@skeletonlabs/skeleton';
+
 
 	$: findUser = (id: number) => {
 		return $userList.find((user) => user.id === id) as Person;
@@ -52,6 +55,7 @@
 				</div>
 			</div>
 			<div class="flex justify-end items-center space-x-2">
+				<Play bind:user={channel.user} />
 				<Accept bind:user={channel.user} />
 				<Block bind:user={channel.user} />
 				<Cancel bind:user={channel.user} />

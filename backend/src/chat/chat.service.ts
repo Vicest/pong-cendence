@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ChannelPasswordDto } from './dto/channel.password.dto';
 import { promisify } from 'util';
 import { createCipheriv, createDecipheriv, randomBytes, scrypt } from 'crypto';
+import { ChannelMuted } from './entities/channel.muted.entity';
 
 @Injectable()
 export class ChatService {
@@ -15,6 +16,8 @@ export class ChatService {
 		private readonly userRepository: Repository<User>,
 		@InjectRepository(Channel)
 		private readonly channelRepository: Repository<Channel>,
+		@InjectRepository(ChannelMuted)
+		private readonly channelMutedRepository: Repository<ChannelMuted>,
 		private readonly chatGateway: ChatGateway
 	) {
 		this.log = new Logger();
@@ -79,6 +82,8 @@ export class ChatService {
 		});
 		if (channelName && channelName.id !== channelId)
 			throw new BadRequestException('Channel name already exists');
+		if (typeof data.password !== 'undefined' && data.password !== '')
+			data.password = await this.encryptstring(data.password, channel.IV);
 		await this.channelRepository.update(channelId, {
 			...data,
 			hasPassword: typeof data.password !== 'undefined' && data.password !== ''
@@ -102,7 +107,7 @@ export class ChatService {
 		});
 		if (!user) throw new BadRequestException('User not found');
 		else if (!channel) throw new BadRequestException('Channel not found');
-		else if (channel.owner.id !== userId)
+		else if (channel.owner.id !== userId && user.isAdmin === false)
 			throw new BadRequestException('You are not the owner of this channel');
 		await this.channelRepository.delete(channelId);
 		this.chatGateway.channelDeleted(channel);
@@ -128,14 +133,17 @@ export class ChatService {
 				'muted'
 			]
 		});
+		if (!channel) throw new BadRequestException('Channel not found');
 		const { password } = await this.channelRepository.findOne({
 			where: { id: channelId },
 			select: ['password']
 		});
 		let decryptedPassword = await this.decryptstring(password, channel.IV);
 		if (!user) throw new BadRequestException('User not found');
-		else if (!channel) throw new BadRequestException('Channel not found');
-		else if (typeof data !== 'undefined' && decryptedPassword !== data.password)
+		else if (
+			decryptedPassword !== '' &&
+			decryptedPassword !== (data?.password ?? '')
+		)
 			throw new BadRequestException('Invalid password');
 		else if (channel.banned.some((u) => u.id === userId))
 			throw new BadRequestException('User is banned from channel');
@@ -164,6 +172,16 @@ export class ChatService {
 		channel.users = channel.users.filter((u) => u.id !== userId);
 		await this.channelRepository.save(channel);
 		this.chatGateway.userLeftChannel(userId, channel);
+		let channelUsers = await this.channelRepository.findOne({
+			where: { id: channelId },
+			relations: ['users']
+		});
+		if (channelUsers.users.length === 0) {
+			await this.channelRepository.delete({
+				id: channelId
+			});
+			this.chatGateway.channelDeleted(channel);
+		}
 		return {
 			status: 'success',
 			message: 'User left channel'
@@ -346,7 +364,8 @@ export class ChatService {
 	public async muteUserFromChannel(
 		userId: number,
 		channelId: number,
-		mutedUserId: number
+		mutedUserId: number,
+		time: number
 	) {
 		const user = await this.userRepository.findOne({
 			where: { id: userId },
@@ -358,7 +377,7 @@ export class ChatService {
 		});
 		const channel = await this.channelRepository.findOne({
 			where: { id: channelId },
-			relations: ['users', 'admins', 'owner', 'banned', 'muted']
+			relations: ['users', 'admins', 'owner', 'banned']
 		});
 		if (!user) throw new BadRequestException('User not found');
 		else if (!channel) throw new BadRequestException('Channel not found');
@@ -367,9 +386,12 @@ export class ChatService {
 			mutedUserId === userId
 		)
 			throw new BadRequestException('You can not mute yourself');
-		channel.muted = [...channel.muted, mutedUser];
-		this.chatGateway.userMutedChannel(mutedUserId, channel);
-		await this.channelRepository.save(channel);
+		let channelMuted = new ChannelMuted();
+		channelMuted.channel = channel;
+		channelMuted.user = mutedUser;
+		channelMuted.expire = new Date(Date.now() + time * 60000);
+		let muted = await this.channelMutedRepository.save(channelMuted);
+		this.chatGateway.userMutedChannel(mutedUserId, channel, muted);
 		return {
 			status: 'success',
 			message: 'User muted from channel'
@@ -400,7 +422,8 @@ export class ChatService {
 			mutedUserId === userId
 		)
 			throw new BadRequestException('You can not unmute yourself');
-		channel.muted = channel.muted.filter((u) => u.id !== mutedUserId);
+		let channelMutedCopy = channel.muted.find((m) => m.user.id === mutedUserId);
+		channel.muted = channel.muted.filter((u) => u.user.id !== mutedUserId);
 		this.chatGateway.userUnmutedChannel(mutedUserId, channel);
 		await this.channelRepository.save(channel);
 		return {

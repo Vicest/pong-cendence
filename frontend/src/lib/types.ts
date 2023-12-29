@@ -9,8 +9,11 @@ export interface Person {
 	invitations: Person[];
 	friends: Person[];
 	isAdmin: boolean;
+	created_at: Date;
+	isBanned: boolean;
 	rank: number;
 	inQueue: boolean;
+	history: any[];//I know, I know, define a match...
 }
 
 export interface MessageFeed {
@@ -30,7 +33,11 @@ export interface ChannelsChat {
 	users: Person[];
 	admins: Person[];
 	banned: Person[];
-	muted: Person[];
+	muted: {
+		user: Person;
+		channel: ChannelsChat;
+		expire: Date;
+	}[];
 	user: Person;
 	index: number;
 	owner: Person;

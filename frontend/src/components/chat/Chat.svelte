@@ -55,7 +55,7 @@
 	let channels: ChannelsChat[];
 
 	$: channels = $channelList
-		.filter((channel) => channel.joined)
+		.filter((channel) => channel.joined || $currentUser.isAdmin)
 		.filter((channel) => {
 			return (id === -1 ? true : channel.id === id) || showAllContacts;
 		})

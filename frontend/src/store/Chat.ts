@@ -42,8 +42,8 @@ export const adminUserFromChannel = async (id: number, userId: number) => {
 	return Api.post(`/chat/${id}/admin/${userId}`);
 };
 
-export const muteUserFromChannel = async (id: number, userId: number) => {
-	return Api.post(`/chat/${id}/mute/${userId}`);
+export const muteUserFromChannel = async (id: number, userId: number, time: number) => {
+	return Api.post(`/chat/${id}/mute/${userId}`, { data: { time } });
 };
 
 export const unMuteUserFromChannel = async (id: number, userId: number) => {
@@ -87,18 +87,34 @@ function createChannelListStore() {
 			return state.some((c) => c.id === id && c.admins.some((a) => a.id === userId));
 		},
 		isMuted(id: number, userId: number) {
-			return state.some((c) => c.id === id && c.muted.some((a) => a.id === userId));
+			return state.some((c) => c.id === id && c.muted.some((a) => a.user.id === userId));
+		},
+		getMuteTime(id: number, userId: number) {
+			let time = state.find((c) => c.id === id)?.muted.find((a) => a.user.id === userId)?.expire;
+			if (!time) return 0;
+			let timeDiff = new Date(time).getTime() - new Date().getTime();
+			return (
+				Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) +
+				24 * Math.floor(timeDiff / (1000 * 60 * 60 * 24)) +
+				'h' +
+				Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60)) +
+				'm' +
+				Math.floor((timeDiff % (1000 * 60)) / 1000) +
+				's'
+			);
 		},
 		iMuted(id: number) {
-			return state.some((c) => c.id === id && c.muted.some((a) => a.id === get(currentUser).id));
+			return state.some(
+				(c) => c.id === id && c.muted.some((a) => a.user.id === get(currentUser).id)
+			);
 		},
 		isBanned(id: number, userId: number) {
 			return state.some((c) => c.id === id && c.banned.some((a) => a.id === userId));
 		},
 		friendSearchList: () => {
-			return state
-				.filter((channel) => channel.type === 'Direct' && !channel.joined)
-				.map((channel) => channel.user);
+			return get(userList).filter(
+				(user) => !user.friends.some((f) => f.id === get(currentUser).id)
+			);
 		},
 		chatSearchList: () => {
 			return state.filter((channel) => channel.type === 'Channel' && !channel.joined);
@@ -217,10 +233,16 @@ export const init = () => {
 
 	ChatSocket.on(
 		'channel:muted',
-		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+		({ userId, channel, muted }: { userId: number; channel: ChannelsChat; muted: any }) => {
 			channelList.update((channels) => {
 				return channels.map((ch) => {
-					if (ch.id === channel.id) ch.muted.push(get(userList).find((u) => u.id === userId));
+					if (ch.id === channel.id) {
+						console.log(muted);
+						ch.muted.push({
+							...muted,
+							user: get(userList).find((u) => u.id === userId)
+						});
+					}
 					return ch;
 				});
 			});
@@ -232,7 +254,7 @@ export const init = () => {
 		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
 			channelList.update((channels) => {
 				return channels.map((ch) => {
-					if (ch.id === channel.id) ch.muted = ch.muted.filter((u) => u.id !== userId);
+					if (ch.id === channel.id) ch.muted = ch.muted.filter((m) => m.user.id !== userId);
 					return ch;
 				});
 			});

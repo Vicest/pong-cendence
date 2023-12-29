@@ -9,6 +9,14 @@
 		return person.id.toString() === $page.params.id;
 	});
 
+	$: findUser = (id: number) => {
+		return $userList.find((user) => user.id === id) as Person;
+	};
+
+	$: matchHistory = profilePerson?.history.sort((a, b) => {
+		return a.created_at - b.created_at;
+	});
+
 	//I know, not pretty, still functional
 	let toastStore = getToastStore();
 	function sendChallenge(
@@ -56,28 +64,62 @@
 					<!-- I know I should not hardcode the 1 and 2 for games ids, but it is what it is -->
 					<button
 						type="button"
-						class="btn btn-sm variant-filled"
+						class="btn variant-ghost-surface z-10"
 						disabled={profilePerson?.status !== 'online'}
 						on:click={() => sendChallenge(profilePerson?.id, 1, profilePerson?.nickname)}
 						>classic</button
 					>
 					<button
 						type="button"
-						class="btn btn-sm variant-filled"
+						class="btn variant-ghost-surface z-10"
 						disabled={profilePerson?.status !== 'online'}
 						on:click={() => sendChallenge(profilePerson?.id, 2, profilePerson?.nickname)}
 						>boundless</button
 					>
 				</div>
 			</div>
-			<div class="flex flex-col justify-center items-center my-10 card w-full p-10">
-				<div class="text-center font-bold mb-4">MATCH HISTORY</div>
-				<!--
-				{#each profilePerson.matches as match}
-					match.id
-				{/each}
-				-->
-			</div>
+			{#if matchHistory != undefined}
+				<div class="flex flex-col justify-center items-center my-10 card w-full p-10">
+					<div class="text-center font-bold mb-4">MATCH HISTORY</div>
+					{#each matchHistory as match}
+						<div class="flex flex-row justify-center items-center my-10 card w-full p-10">
+							{#if match.players[0].isWinner}
+								{#if match.players[0].rankShift != 0}
+									Elo shift: {match.players[0].rankShift}
+								{:else}
+									Unranked game
+								{/if}
+							{:else if match.players[1].rankShift != 0}
+								Elo shift: {match.players[1].rankShift}
+							{:else}
+								Unranked game
+							{/if}
+							<!--Winner/Loser-->
+							{#if match.players[0].isWinner}
+								Winner
+							{:else}
+								Loser
+							{/if}
+							<Avatar
+								src={findUser(match.players[0].user.id).avatar}
+								width="w-10"
+								class="border-4 border-white rounded-full"
+							/>
+							<div class="text-center font-bold mb-4">vs</div>
+							<Avatar
+								src={findUser(match.players[1].user.id).avatar}
+								width="w-10"
+								class="border-4 border-white rounded-full"
+							/>
+							{#if match.players[1].isWinner}
+								Winner
+							{:else}
+								Loser
+							{/if}
+						</div>
+					{/each}
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
@@ -88,9 +130,6 @@
 		width: 100%;
 		margin: 0 10px;
 	}
-	.input-avatar {
-		display: none;
-	}
 	.profile-avatar-label {
 		position: absolute;
 		top: 0;
@@ -98,9 +137,5 @@
 		height: 100%;
 		z-index: 10000;
 		border-radius: 50%;
-	}
-	.profile-avatar-label:hover {
-		background: rgba(255, 255, 255, 0.7);
-		cursor: pointer;
 	}
 </style>
