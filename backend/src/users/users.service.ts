@@ -37,8 +37,9 @@ export class UsersService {
 		console.log('Creating user', data.login);
 		try {
 			let users = await this.userRepository.count();
+			let game = await this.gameRepository.count();
 			console.log('Users', users);
-			if (users === 0) {
+			if (users === 0 && game === 0) {
 				this.log.debug('First user, granting admin privileges');
 				let newGames = await this.gameRepository.create([
 					{
@@ -73,7 +74,10 @@ export class UsersService {
 				isRegistered: false,
 				avatar: fields.image?.versions?.medium,
 				login: data.login,
-				isAdmin: users === 0
+				isAdmin: users === 0,
+				friends: [],
+				blocked: [],
+				invitations: []
 			});
 			this.log.debug(`Created user ${newUser}`);
 			if (newUser) await this.userRepository.save(newUser);
@@ -166,8 +170,10 @@ export class UsersService {
 	public async getUserMatches(userId: number) {
 		const query = this.matchRepository
 			.createQueryBuilder('match')
-			.innerJoin('match.players', 'matchPlayer', 'matchPlayer.user = :userId', { userId })
-			//.where('match.status = finished');
+			.innerJoin('match.players', 'matchPlayer', 'matchPlayer.user = :userId', {
+				userId
+			});
+		//.where('match.status = finished');
 		const matchList = await query.getMany();
 		console.log('User ', userId, ' matches:\n', matchList);
 		return matchList;

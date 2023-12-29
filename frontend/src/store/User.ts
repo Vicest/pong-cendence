@@ -148,8 +148,17 @@ export const init = async () => {
 				}
 			});
 
-			UsersSocket.on('user:created', (createdUser) => {
+			UsersSocket.on('user:created', (id, createdUser) => {
 				userList.update((users) => {
+					if (typeof createdUser.friends === 'undefined') {
+						createdUser.friends = [];
+					}
+					if (typeof createdUser.invitations === 'undefined') {
+						createdUser.invitations = [];
+					}
+					if (typeof createdUser.blocked === 'undefined') {
+						createdUser.blocked = [];
+					}
 					return [...users, createdUser];
 				});
 			});
