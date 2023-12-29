@@ -20,7 +20,6 @@
 	export let channel: ChannelsChat;
 	import type { ToastSettings, ToastStore } from '@skeletonlabs/skeleton';
 
-
 	$: findUser = (id: number) => {
 		return $userList.find((user) => user.id === id) as Person;
 	};
@@ -93,7 +92,6 @@
 				<small class="opacity-50">{channel.description}</small>
 			</div>
 			<div class="flex justify-end items-center space-x-2">
-				<Join bind:channel />
 				<Leave bind:channel />
 				<Delete bind:channel />
 			</div>

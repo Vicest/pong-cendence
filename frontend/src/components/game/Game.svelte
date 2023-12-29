@@ -19,7 +19,7 @@
 		}
 		let gameInstance = get(gameInstances).find((instance) => instance.id === id);
 		if (typeof gameInstance !== 'undefined') {
-			let players = get(userList)
+			let players = $userList
 				.filter((user) => gameInstance?.players.includes(user.id))
 				.sort((a, b) => {
 					if (gameInstance?.players.indexOf(a.id) < gameInstance?.players.indexOf(b.id)) {

@@ -5,7 +5,7 @@
 	import { Avatar, getToastStore } from '@skeletonlabs/skeleton';
 	import { MatchMakingSocket } from '$services/socket';
 
-	$: profilePerson = get(userList).find((person) => {
+	$: profilePerson = $userList.find((person) => {
 		return person.id.toString() === $page.params.id;
 	});
 

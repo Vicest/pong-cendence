@@ -1,4 +1,4 @@
-import { readable, writable } from 'svelte/store';
+import { get, readable, writable } from 'svelte/store';
 import type { Game, GameInstance } from '$lib/types';
 import type { DrawerSettings } from '@skeletonlabs/skeleton';
 import { userList } from './User';
@@ -58,11 +58,12 @@ export const init = () => {
 		});
 	});
 
-	GamesSocket.on('match:created', (id, game) => {
+	GamesSocket.on('match:created', (id, match) => {
 		gameInstances.update((matches) => {
 			return matches.concat({
-				...game,
-				players: game.players.map((matchPlayer) => matchPlayer.user.id)
+				...match,
+				game: match.game.id,
+				players: match.players.map((matchPlayer) => matchPlayer.user.id)
 			});
 		});
 	});

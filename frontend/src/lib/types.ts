@@ -13,7 +13,7 @@ export interface Person {
 	isBanned: boolean;
 	rank: number;
 	inQueue: boolean;
-	history: any[];//I know, I know, define a match...
+	history: any[]; //I know, I know, define a match...
 }
 
 export interface MessageFeed {

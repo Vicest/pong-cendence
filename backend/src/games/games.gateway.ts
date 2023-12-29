@@ -42,6 +42,22 @@ export class GamesGateway
 		this.log = new Logger();
 	}
 
+	async addMatch(_match: Match) {
+		let active = await this.gamesService.getActiveMatches();
+		const match = active.find((m) => m.id === _match.id);
+		if (match) {
+			switch (match.game.name) {
+				case PongInstance.slug:
+					this.MatchInstances[match.id] = new PongInstance(match);
+					break;
+				case BoundlessInstance.slug:
+					this.MatchInstances[match.id] = new BoundlessInstance(match);
+					break;
+			}
+			this.ActiveMatches.push(match);
+		}
+	}
+
 	async afterInit(server) {
 		this.ActiveMatches = await this.gamesService.getActiveMatches();
 		this.ActiveMatches.forEach((match) => {
@@ -115,6 +131,8 @@ export class GamesGateway
 			if (state.status === 'finished') {
 				console.log('Match: ', match, '\nState: ', state);
 				this.gamesService.setMatchWinner(match.id, state.winnerId);
+				this.userService.updateStatusById(state.players[0].id, 'online');
+				this.userService.updateStatusById(state.players[1].id, 'online');
 			}
 			if (changed || JSON.stringify(previousState) !== JSON.stringify(state)) {
 				this.sendTick(match, state);

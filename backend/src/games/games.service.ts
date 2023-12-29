@@ -97,6 +97,13 @@ export class GamesService {
 			where: { status: Not('finished') },
 			relations: ['game', 'players', 'players.user', 'events']
 		});
+		for (let index = 0; index < activeMatches.length; index++) {
+			activeMatches[index].players = activeMatches[index].players.sort(
+				(a, b) => {
+					return a.id - b.id;
+				}
+			);
+		}
 		return activeMatches;
 	}
 
@@ -108,12 +115,19 @@ export class GamesService {
 		console.log(`Winnner of match ${matchId}: ${winnerId}`);
 		const toUpdate = await this.matchPlayerRepository
 			.createQueryBuilder('matchUser')
-			.innerJoinAndSelect('matchUser.user', 'user', 'user.id = :winnerId', { winnerId })
-			.innerJoinAndSelect('matchUser.match', 'match', 'match.id = :matchId', { matchId })
+			.innerJoinAndSelect('matchUser.user', 'user', 'user.id = :winnerId', {
+				winnerId
+			})
+			.innerJoinAndSelect('matchUser.match', 'match', 'match.id = :matchId', {
+				matchId
+			})
 			.getOne();
 		console.log(`Setting winner of ${matchId} as ${winnerId}.`);
-		console.log("Update relation: ", toUpdate);
-		return await this.matchPlayerRepository.update(toUpdate.id, { id: toUpdate.id, isWinner: true });
+		console.log('Update relation: ', toUpdate);
+		return await this.matchPlayerRepository.update(toUpdate.id, {
+			id: toUpdate.id,
+			isWinner: true
+		});
 	}
 
 	private log: Logger;
