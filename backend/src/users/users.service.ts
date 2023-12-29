@@ -11,6 +11,7 @@ import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import { Game } from 'src/games/entities/game.entity';
+import { Match } from 'src/games/entities/match.entity';
 
 @Injectable()
 export class UsersService {
@@ -19,6 +20,8 @@ export class UsersService {
 		private readonly userRepository: Repository<User>,
 		@InjectRepository(Game)
 		private readonly gameRepository: Repository<Game>,
+		@InjectRepository(Match)
+		private readonly matchRepository: Repository<Match>,
 		@InjectRepository(ChannelMessages)
 		private readonly messageRepository: Repository<ChannelMessages>,
 		@InjectRepository(Channel)
@@ -161,25 +164,32 @@ export class UsersService {
 	}
 
 	public async getUserMatches(userId: number) {
-		const query = this.userRepository
-			.createQueryBuilder('user')
-			.leftJoinAndSelect('user.matches', 'matchPlayer')
-			.where('user.id = :userId', { userId });
-		const user = await query.getOne();
-		return user.matches;
+		const query = this.matchRepository
+			.createQueryBuilder('match')
+			.innerJoin('match.players', 'matchPlayer', 'matchPlayer.user = :userId', { userId })
+			//.where('match.status = finished');
+		const matchList = await query.getMany();
+		console.log('User ', userId, ' matches:\n', matchList);
+		return matchList;
+		//const query = this.userRepository
+		//	.createQueryBuilder('user')
+		//	.leftJoinAndSelect('user.matches', 'matchPlayer')
+		//	.where('user.id = :userId', { userId });
+		//const user = await query.getOne();
+		//return user.matches;
 	}
 
 	public async getUserRank(id: number) {
 		const matchesPlayed = await this.getUserMatches(id);
-		const rankedMatches = matchesPlayed.filter(
-			(userPlayer) => userPlayer.rankShift !== 0
-		);
+		//const rankedMatches = matchesPlayed.filter(
+		//	(userPlayer) => userPlayer.rankShift !== 0
+		//);
 		let totalRankShift: number = 0;
-		for (const userPlayer of rankedMatches) {
-			totalRankShift += userPlayer.isWinner
-				? userPlayer.rankShift
-				: -userPlayer.rankShift;
-		}
+		//for (const userPlayer of rankedMatches) {
+		//	totalRankShift += userPlayer.isWinner
+		//		? userPlayer.rankShift
+		//		: -userPlayer.rankShift;
+		//}
 		////No ranked matches means you are 'Unranked'
 		return matchesPlayed.length > 0 ? 1500 + totalRankShift : -1;
 	}
