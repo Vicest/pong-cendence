@@ -140,7 +140,10 @@ export class ChatService {
 		});
 		let decryptedPassword = await this.decryptstring(password, channel.IV);
 		if (!user) throw new BadRequestException('User not found');
-		else if (decryptedPassword !== data?.password ?? '')
+		else if (
+			decryptedPassword !== '' &&
+			decryptedPassword !== (data?.password ?? '')
+		)
 			throw new BadRequestException('Invalid password');
 		else if (channel.banned.some((u) => u.id === userId))
 			throw new BadRequestException('User is banned from channel');

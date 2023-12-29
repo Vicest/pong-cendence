@@ -9,7 +9,15 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 	app.useGlobalPipes(new ValidationPipe());
 	const conf: ConfigService = app.get(ConfigService);
-	['BACKEND_PORT', 'FRONTEND_PORT', 'BACKEND_BASE'].forEach((key) => {
+	[
+		'BACKEND_PORT',
+		'FRONTEND_PORT',
+		'BACKEND_BASE',
+		'JWT_SECRET',
+		'JWT_REFRESH_SECRET',
+		'CLIENT_ID',
+		'CLIENT_SECRET'
+	].forEach((key) => {
 		if (!conf.get(key)) {
 			throw new Error(`Missing configuration key: ${key}`);
 		}
