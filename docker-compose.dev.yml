@@ -1,0 +1,72 @@
+version: "3.5"
+services:
+  postgres:
+    container_name: postgres-container
+    env_file: .env
+    image: postgres:alpine
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    expose:
+      - ${POSTGRES_PORT}
+    networks:
+      - pong-network
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    restart: always
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend-container
+    hostname: backend
+    image: "backend-image"
+    env_file: .env
+    depends_on:
+      - postgres
+    ports:
+      - ${BACKEND_PORT}:${BACKEND_PORT}
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public
+    volumes:
+      - ./backend:/app
+    networks:
+      - pong-network
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend-container
+    hostname: frontend
+    image: "frontend-image"
+    env_file: .env
+    ports:
+      - ${FRONTEND_PORT}:${FRONTEND_PORT}
+    volumes:
+      - ./frontend:/usr/src/frontend
+    environment:
+      - PUBLIC_BACKEND_PORT=${BACKEND_PORT}
+      - PUBLIC_BACKEND_BASE=${BACKEND_BASE}
+    networks:
+      - pong-network
+    restart: always
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    ports:
+      - ${ADMINER_PORT}:8080
+    environment:
+      - ADMINER_DEFAULT_SERVER=postgres
+    depends_on:
+      - postgres
+    networks:
+      - pong-network
+    restart: always
+
+networks:
+  pong-network:
+    name: pong-network
+    driver: bridge

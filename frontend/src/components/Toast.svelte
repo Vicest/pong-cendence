@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { MatchMakingSocket } from '$services/socket';
 	import { Toast, getToastStore } from '@skeletonlabs/skeleton';
+	import { lastError } from '../store/Common';
 	import { matchMakingChallenges } from '../store/Matchmaking';
 	import { userList } from '../store/User';
 	import { gameList } from '../store/Game';
 	const toastStore = getToastStore();
 
 	matchMakingChallenges.subscribe((challenges) => {
-		console.log('challenges', challenges);
 		if (challenges.length === 0) return;
 		let challenge = challenges[challenges.length - 1];
 		let user = $userList.find((user) => user.id === challenge.opponentId);
@@ -28,6 +28,17 @@
 				}
 			}
 		});
+	});
+
+	lastError.subscribe((message) => {
+		if (message) {
+			toastStore.trigger({
+				message,
+				timeout: 1200,
+				background: 'variant-filled-error'
+			});
+		}
+		lastError.set(null);
 	});
 
 	/*MatchMakingSocket.on('beChallenged', (opponentId, gameId, timeout) => {
@@ -51,4 +62,4 @@
 	});*/
 </script>
 
-<Toast />
+<Toast zIndex="z-50" />

@@ -1,13 +1,11 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, SetMetadata, UseGuards } from '@nestjs/common';
 import { JwtGuard } from 'src/auth/guards/jwt.guard';
 import { GamesService } from './games.service';
 
 @Controller('games')
 @UseGuards(JwtGuard)
 export class GamesController {
-	constructor(
-		private readonly gameService: GamesService
-	) {}
+	constructor(private readonly gameService: GamesService) {}
 
 	@Get('/')
 	getAll() {
@@ -23,7 +21,8 @@ export class GamesController {
 	}
 
 	@Get('/:id')
-	getOne(@Param('id') id: number) {
+	@SetMetadata('skipJwtGuard', true)
+	getOne(@Param('id', ParseIntPipe) id: number) {
 		let game = this.gameService.findGame(id);
 		return game;
 	}

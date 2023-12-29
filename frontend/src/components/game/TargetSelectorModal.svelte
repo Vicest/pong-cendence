@@ -16,25 +16,11 @@
 	import { selectedGame } from '../../store/Common';
 	import { goto } from '$app/navigation';
 	import ChatAvatar from '../chat/ChatAvatar.svelte';
-	import { Api } from '$services/api';
 	import { GamesSocket, MatchMakingSocket } from '$services/socket';
 
 	let toastStore = getToastStore();
-	//TODO I don't really know how to handle this.
-	//If the user closes the Modal, front forgets about the state, but back retains it.
-	let playerInQueue = false;
-
-	function queueToggle() {
-		if (!playerInQueue) {
-			Api.post('/matchmaking/queue');
-		} else {
-			Api.delete('/matchmaking/queue');
-		}
-		playerInQueue = !playerInQueue;
-	}
 
 	function sendChallenge(targetId: number) {
-		console.log(`I challenged inside: ${selectedUser.login}`);
 		MatchMakingSocket.emit('challenge', {
 			opponentId: targetId,
 			gameId: $selectedGame?.id
@@ -42,7 +28,6 @@
 		toastStore.trigger({
 			message: `You challenged ${selectedUser.nickname}`
 		});
-		//Api.post(`matchmaking/challenge/${targetId}`);
 	}
 
 	export let parent: SvelteComponent;
@@ -94,7 +79,6 @@
 	</ListBox>
 	<!-- prettier-ignore -->
 	<footer class="modal-footer flex justify-center items-center space-x-4">
-		<SlideToggle name="slider-label" on:click={() => queueToggle()}>Queueing  </SlideToggle>
 		<button class="btn variant-filled-primary"on:click={() => {
 			sendChallenge(selectedUser.id);
 			console.log(`I challenged: ${selectedUser.login}`);

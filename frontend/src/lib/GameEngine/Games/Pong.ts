@@ -22,6 +22,7 @@ export class PongGame extends GameEngine {
 
 	private gameState: {
 		status: 'paused' | 'running' | 'finished' | 'waiting';
+		countdown: number;
 		players: {
 			x: number;
 			y: number;
@@ -33,7 +34,7 @@ export class PongGame extends GameEngine {
 				width: number;
 				height: number;
 			};
-			avatar: string;
+			avatar?: string;
 		}[];
 		ball: {
 			x: number;
@@ -48,6 +49,7 @@ export class PongGame extends GameEngine {
 		super('Pong', game, '16/9', players, userId, [UP_ARROW, DOWN_ARROW, W, S, ESC]);
 		this.gameState = {
 			status: game.status,
+			countdown: 0,
 			players: [],
 			ball: {
 				x: this.p.width / 2,
@@ -72,31 +74,6 @@ export class PongGame extends GameEngine {
 			this.p.textAlign(this.p.CENTER, this.p.CENTER);
 			this.p.fill(255, 255, 255);
 			this.p.text('Game finished', this.p.width / 2, this.p.height / 2 - 50);
-
-			// Add clickable button to leave game
-			this.p.textSize(16);
-			this.p.textAlign(this.p.CENTER, this.p.CENTER);
-			this.p.fill(255, 255, 255);
-			this.p.text('Click here to reset', this.p.width / 2, this.p.height / 2);
-			if (
-				this.p.mouseX > this.p.width / 2 - 100 &&
-				this.p.mouseX < this.p.width / 2 + 100 &&
-				this.p.mouseY > this.p.height / 2 - 25 &&
-				this.p.mouseY < this.p.height / 2 + 25
-			) {
-				this.p.cursor(this.p.HAND);
-			} else {
-				this.p.cursor(this.p.ARROW);
-			}
-			if (
-				this.p.mouseIsPressed &&
-				this.p.mouseX > this.p.width / 2 - 100 &&
-				this.p.mouseX < this.p.width / 2 + 100 &&
-				this.p.mouseY > this.p.height / 2 - 25 &&
-				this.p.mouseY < this.p.height / 2 + 25
-			) {
-				this.resetGame();
-			}
 		}
 		if (
 			typeof this.gameState === 'undefined' ||
@@ -114,6 +91,8 @@ export class PongGame extends GameEngine {
 		this.drawBall();
 		if (this.gameState.status === 'paused') {
 			this.pauseScene();
+		} else if (this.gameState.status === 'waiting') {
+			this.waitingScene();
 		}
 	}
 
@@ -134,26 +113,26 @@ export class PongGame extends GameEngine {
 		this.players.forEach((player, index) => {
 			// Draw player avatar
 			if (!this.cache.avatars) this.cache.avatars = {};
-			if (!this.cache.avatars[player.avatar])
+			if (player.avatar && !this.cache.avatars[player.avatar])
 				this.cache.avatars[player.avatar] = this.p.loadImage(player.avatar);
 			if (this.gameState.status === 'paused') {
 				this.p.tint(255, this.alphaValue);
 			} else {
 				this.p.noTint();
 			}
-			this.p.image(
-				this.cache.avatars[player.avatar],
-				this.p.width / 2 + (index === 0 ? -50 : 0),
-				0,
-				50,
-				50,
-				0,
-				0,
-				0,
-				0,
-				this.p.COVER
-			);
-
+			if (player.avatar && this.cache.avatars[player.avatar])
+				this.p.image(
+					this.cache.avatars[player.avatar],
+					this.p.width / 2 + (index === 0 ? -50 : 0),
+					0,
+					50,
+					50,
+					0,
+					0,
+					0,
+					0,
+					this.p.COVER
+				);
 			this.p.textSize(16);
 			this.p.textAlign(this.p.CENTER, this.p.CENTER);
 			this.p.fill(255, this.alphaValue);
@@ -226,9 +205,19 @@ export class PongGame extends GameEngine {
 			this.p.textAlign(this.p.CENTER, this.p.CENTER);
 			this.p.fill(255, 255, 255);
 			this.p.text('Controls:', this.p.width / 2, this.p.height / 2 + 25);
-			this.p.text('Player 1: W and S', this.p.width / 2, this.p.height / 2 + 50);
-			this.p.text('Player 2: UP and DOWN', this.p.width / 2, this.p.height / 2 + 75);
+			this.p.text('W and S', this.p.width / 2, this.p.height / 2 + 50);
 		}
+	}
+
+	public waitingScene() {
+		this.p.textSize(32);
+		this.p.textAlign(this.p.CENTER, this.p.CENTER);
+		this.p.fill(255, 255, 255);
+		this.p.text(
+			`Game starting in ${Math.ceil(this.gameState.countdown / 1000)}.`,
+			this.p.width / 2,
+			this.p.height / 2 - 50
+		);
 	}
 
 	public destroy() {

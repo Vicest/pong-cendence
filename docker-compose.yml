@@ -10,10 +10,14 @@ services:
       - ${POSTGRES_PORT}
     networks:
       - pong-network
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
     restart: always
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
     container_name: backend-container
     hostname: backend
     image: "backend-image"
@@ -22,7 +26,6 @@ services:
       - postgres
     ports:
       - ${BACKEND_PORT}:${BACKEND_PORT}
-      - ${BACKEND_WEBSOCKETS_PORT}:${BACKEND_WEBSOCKETS_PORT}
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}?schema=public
     volumes:
@@ -32,7 +35,9 @@ services:
     restart: always
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
     container_name: frontend-container
     hostname: frontend
     image: "frontend-image"

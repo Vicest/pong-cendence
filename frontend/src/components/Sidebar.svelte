@@ -6,6 +6,13 @@
 	import SidebarMatch from './game/SidebarMatch.svelte';
 	import { gameInstances } from '../store/Game';
 	import { Api } from '$services/api';
+	import {
+		ChatSocket,
+		GamesSocket,
+		MatchMakingSocket,
+		Socket,
+		UsersSocket
+	} from '$services/socket';
 	const drawerStore = getDrawerStore();
 
 	$: activeMatches = $gameInstances.filter((game) =>
@@ -15,6 +22,9 @@
 	let arenaTile: number = 0;
 	const logOut = () => {
 		Api.post('/auth/logout').then(() => {
+			[Socket, UsersSocket, GamesSocket, MatchMakingSocket, ChatSocket].forEach((s) => {
+				s.disconnect();
+			});
 			goto('/');
 		});
 	};

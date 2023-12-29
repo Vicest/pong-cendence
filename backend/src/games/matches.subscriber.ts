@@ -30,11 +30,11 @@ export class MatchesSubscriber implements EntitySubscriberInterface<Match> {
 	}
 
 	afterInsert(event: InsertEvent<Match>) {
-		this.gamesGateway.afterInit(this.gamesGateway.server);
-		this.gamesGateway.server.emit(
-			'match:created',
-			event.entity.id,
-			event.entity
-		);
+		const match = event.entity;
+		console.log('match created', match);
+		setTimeout(() => {
+			this.gamesGateway.addMatch(match);
+		}, 50);
+		this.gamesGateway.server.emit('match:created', match.id, match);
 	}
 }

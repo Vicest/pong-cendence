@@ -6,10 +6,11 @@ import {
 	ManyToMany,
 	JoinTable
 } from 'typeorm';
-import { Channel } from '../../chat/entities/channel.entity';
-import { UserMessages } from 'src/chat/entities/message/user.entity';
-import { ChannelMessages } from 'src/chat/entities/message/channel.entity';
-import { UserRelation } from './userRelations.entity';
+import { IsOptional, IsBase64, MaxLength, MinLength } from 'class-validator';
+import { ChannelMessages } from 'src/chat/entities/channel.message.entity';
+import { Channel } from 'src/chat/entities/channel.entity';
+import { MatchPlayer } from 'src/games/entities/matchPlayer.entity';
+import { ChannelMuted } from 'src/chat/entities/channel.muted.entity';
 
 @Entity({
 	name: 'Users'
@@ -17,60 +18,72 @@ import { UserRelation } from './userRelations.entity';
 export class User {
 	@PrimaryGeneratedColumn()
 	id: number;
+
 	@Column({
 		type: 'varchar',
 		unique: true,
 		length: 20
 	})
 	login: string;
+
 	@Column({
 		type: 'varchar',
 		unique: true,
 		length: 20
 	})
+	@MinLength(4)
+	@MaxLength(20)
+	@IsOptional()
 	nickname: string;
+
 	@Column({
 		type: 'bool',
 		default: false,
 		update: false
 	})
 	isRegistered: boolean;
+
 	@Column({
 		type: 'bool',
 		default: false
 	})
 	isAdmin: boolean;
-	//@Column({
-	//  type: 'text',
-	//  unique: true
-	//})
-	//email: string;
+
+	@Column({
+		type: 'bool',
+		default: false
+	})
+	isBanned: boolean;
+
 	@Column({
 		type: 'text',
 		nullable: true,
 		default: null
 	})
+	@IsBase64()
+	@IsOptional()
 	avatar: string;
+
 	@Column({
 		type: 'bytea',
 		nullable: true,
 		default: null
-	  })
-	  two_factor_auth_secret: Buffer;
-	
-	  @Column({
-		default: false
-	  })
-	  two_factor_auth_enabled: boolean;
-	
-	  @Column({
-		type: 'bytea',
-		default: null
-	  })
-	  IV: Buffer;
+	})
+	two_factor_auth_secret: Buffer;
 
 	@Column({
-		enum: ['online', 'offline', 'away', 'busy', 'invisible'],
+		default: false
+	})
+	two_factor_auth_enabled: boolean;
+
+	@Column({
+		type: 'bytea',
+		default: null
+	})
+	IV: Buffer;
+
+	@Column({
+		enum: ['online', 'offline', 'busy'],
 		default: 'offline'
 	})
 	status: string;
@@ -81,79 +94,61 @@ export class User {
 	})
 	created_at: Date;
 
-	@ManyToMany(() => Channel, (channel) => channel.members)
+	@ManyToMany(() => User, (user) => user.friends, {
+		cascade: ['insert']
+	})
 	@JoinTable({
-		name: 'ChannelMembers',
+		name: 'UserFriends',
 		joinColumn: {
-			name: 'user_id'
+			name: 'user',
+			referencedColumnName: 'id'
 		},
 		inverseJoinColumn: {
-			name: 'channel_id'
+			name: 'friend',
+			referencedColumnName: 'id'
 		}
 	})
-	channels: Channel[];
-
-	// @ManyToMany(() => Channel, (channel) => channel.members)
-	// channels: Channel[];
-
-	@OneToMany(() => ChannelMessages, (message) => message.sender)
-	channel_messages: ChannelMessages[];
-
-	// message.sender || message.receiver
-	// @OneToMany(() => UserMessages, (message => message.sender || message.receiver ))
-	// messages_privatosos: UserMessages[];
-
-	@OneToMany(() => UserMessages, (message) => message.sender)
-	sent_messages: UserMessages[];
-
-	@OneToMany(() => UserMessages, (message) => message.receiver)
-	received_messages: UserMessages[];
-
-	_privateMessages: UserMessages[];
-
-	async loadPrivateMessages(): Promise<void> {
-		const privateMessages = await Promise.all([
-			this.sent_messages,
-			this.received_messages
-		]);
-		this._privateMessages = privateMessages[0].concat(privateMessages[1]);
-	}
-
-	get privateMessages(): UserMessages[] {
-		return this._privateMessages;
-	}
-
-	@OneToMany(() => UserRelation, (UserRelation) => UserRelation.sender)
-	relationshared: UserRelation[];
-
-	@OneToMany(() => UserRelation, (UserRelation) => UserRelation.receptor)
-	relationsharedAsReceiver: UserRelation[];
-
-	_relationList: UserRelation[];
-
-	async loadrelationsList(): Promise<void> {
-		const relationList = await Promise.all([
-			this.relationshared,
-			this.relationsharedAsReceiver
-		]);
-		this._relationList = relationList[0].concat(relationList[1]);
-	}
-
-	get relationsList(): UserRelation[] {
-		return this._relationList;
-	}
-
 	friends: User[];
 
-	// @ManyToMany(() => UserRelation, UserRelation => (UserRelation.receptor))
-	// @JoinTable({
-	//   name: 'UserRelation',
-	//   joinColumn: {
-	//     name: 'receptor'
-	//   },
-	//   inverseJoinColumn: {
-	//     name: 'sender'
-	//   }
-	// })
-	// relationshared: UserRelation[];
+	@OneToMany(() => ChannelMuted, (muted) => muted.user)
+	muted: ChannelMuted[];
+
+	@OneToMany(() => MatchPlayer, (match) => match.user)
+	matches: MatchPlayer[];
+
+	@ManyToMany(() => User)
+	@JoinTable({
+		name: 'UserBlocked',
+		joinColumn: {
+			name: 'user',
+			referencedColumnName: 'id'
+		},
+		inverseJoinColumn: {
+			name: 'blocked',
+			referencedColumnName: 'id'
+		}
+	})
+	blocked: User[];
+
+	@ManyToMany(() => User, (user) => user.invitations, {
+		cascade: ['insert']
+	})
+	@JoinTable({
+		name: 'UserInvitations',
+		joinColumn: {
+			name: 'user',
+			referencedColumnName: 'id'
+		},
+		inverseJoinColumn: {
+			name: 'invited',
+			referencedColumnName: 'id'
+		}
+	})
+	invitations: User[];
+
+	@OneToMany(() => Channel, (channel) => channel.owner)
+	channels: Channel[];
+
+	@OneToMany(() => ChannelMessages, (message) => message.sender)
+	messages: ChannelMessages[];
 }

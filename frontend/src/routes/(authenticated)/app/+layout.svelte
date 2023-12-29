@@ -28,10 +28,15 @@
 				]);
 			})
 			.catch((err) => {
+				console.log(err);
 				if (err.statusCode === 403 || err.statusCode === 401) {
 					goto('/login');
 				} else if (err.statusCode === 400 && err.message === '2FA not validated') {
 					goto('/login/2fa');
+				} else if (err.statusCode === 400 && err.message === 'User is banned') {
+					goto('/banned');
+				} else {
+					goto('/login');
 				}
 			});
 	});
@@ -40,9 +45,7 @@
 <!-- App Shell -->
 {#if $loading}
 	<div class="flex justify-center items-center h-screen animate-pulse">
-		<a href="/" aria-label="Home">
-			<img src="/images/logo.png" alt="logo" class="h-20" />
-		</a>
+		<img src="/images/logo.png" alt="logo" class="h-20" />
 	</div>
 {:else}
 	<Drawer />

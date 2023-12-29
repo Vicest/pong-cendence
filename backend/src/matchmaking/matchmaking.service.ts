@@ -3,18 +3,26 @@ import { Interval } from '@nestjs/schedule';
 import { QueuePlayer } from './queue-player';
 import { UsersService } from '../users/users.service';
 import { User } from 'src/users/entities/user.entity';
+import { GamesService } from 'src/games/games.service';
+import { MatchMakingGateway } from './matchmaking.gateway';
 
 @Injectable()
 export class MatchMakingService {
-	constructor(private userService: UsersService) {
+	constructor(
+		private userService: UsersService,
+		private gameService: GamesService,
+		private matchMakingGateway: MatchMakingGateway
+	) {
 		this.log = new Logger();
 		this.queuedPlayers_ = [];
 	}
 
-	public async joinQueue(user: User): Promise<boolean> {
-		this.log.verbose(`ID: ${user.id} joins queue.`);
+	public getAll(): number[] {
+		return this.queuedPlayers_.map((qp: QueuePlayer) => qp.id);
+	}
 
-		const joiningPlayer = await this.userService.find(user.id);
+	public async joinQueue(user: User): Promise<boolean> {
+		const joiningPlayer: User | null = await this.userService.find(user.id);
 		if (joiningPlayer === null) {
 			this.log.warn(
 				`ID: ${user.id} requested joining queue but not found in DB.`
@@ -22,11 +30,11 @@ export class MatchMakingService {
 			return false;
 		}
 
-		const queuedPlayer = new QueuePlayer(
-			user,
-			123 /*TODO joiningPlayer.Rating*/
-		);
-		console.log('The qp: ', queuedPlayer);
+		let rank = await this.userService.getUserRank(joiningPlayer.id);
+		this.log.verbose(`ID: ${user.id}, ranked ${rank} joins queue.`);
+		rank = rank !== -1 ? rank : 1500;
+		const queuedPlayer = new QueuePlayer(user, rank);
+		this.log.verbose(`The queued player: ${JSON.stringify(queuedPlayer)}`);
 		if (
 			this.queuedPlayers_.find((player: QueuePlayer): boolean => {
 				return player.id == queuedPlayer.id;
@@ -37,30 +45,35 @@ export class MatchMakingService {
 			);
 			return false;
 		}
-		//TODO Check user status. Can't join if not online, not gaming, etc...
+		//Can't join if not online: gaming, etc...
+		if ((await this.userService.find(user.id)).status !== 'online')
+			return ;
 		this.queuedPlayers_.push(queuedPlayer);
+		this.matchMakingGateway.server.to(user.id.toString()).emit('user:queue', 'joined');
 		return true;
 	}
 
 	public leaveQueue(id: number): void {
-		this.log.verbose(`ID: ${id} leaves queue.\n ${this.queuedPlayers_}`);
+		this.log.verbose(
+			`ID: ${id} leaves queue. Queued players: ${this.queuedPlayers_.length}`
+		);
 		const leavingPlayer = (queuedPlayer: QueuePlayer) => {
 			return id == queuedPlayer.id;
 		};
 		const index = this.queuedPlayers_.findIndex(leavingPlayer);
 		if (index == -1) {
-			//TODO use a LOGGER
 			return this.log.warn(`Player not in queue: ${id}`);
 		}
 		this.queuedPlayers_.splice(index, 1);
+		this.matchMakingGateway.server.to(id.toString()).emit('user:queue', 'left');
+
 	}
 
 	private log: Logger;
 	private queuedPlayers_: QueuePlayer[];
 
-	@Interval(1000) //TODO tick_rate in env
-	private matchMakingTick(): void {
-		//this.log.debug(JSON.stringify(this.queuedPlayers_))
+	@Interval(1000)
+	private async matchMakingTick(): Promise<void> {
 		const checkDate: number = Date.now();
 		const compareMax: number = this.queuedPlayers_.length - 1;
 		for (let iPlayer: number = 0; iPlayer < compareMax; iPlayer++) {
@@ -95,13 +108,35 @@ export class MatchMakingService {
 
 			lhs.matchedWith = candidates[0].id;
 			candidates[0].matchedWith = lhs.id;
-			//TODO use a LOGGER
 			this.log.verbose(`Match found: ${lhs.id} vs ${candidates[0].id}`);
-			// TODO this.gamesService.createMatch(...);
-			//vvv afterInsert vvv
+
+			const p1 = await this.userService.find(lhs.id);
+			const rankShiftP1Wins = QueuePlayer.ratingIncrease(
+				lhs.rating,
+				candidates[0].rating
+			);
+			const p2 = await this.userService.find(candidates[0].id);
+			const rankShiftP2Wins = QueuePlayer.ratingIncrease(
+				candidates[0].rating,
+				lhs.rating
+			);
+
+			const gameId = await this.gameService.findGameByName('pong');
+			const match = await this.gameService.createMatch(
+				{
+					game: gameId,
+					status: 'waiting'
+				},
+				{ p1, rankShift: rankShiftP1Wins },
+				{ p2, rankShift: rankShiftP2Wins }
+			);
+			this.matchMakingGateway.sendMatchCreated(
+				lhs.id,
+				candidates[0].id,
+				match.id
+			);
 			this.leaveQueue(lhs.id);
 			this.leaveQueue(candidates[0].id);
-			//TODO ^^ also change user status as busy. A nivel de match listener^^
 		}
 	}
 }

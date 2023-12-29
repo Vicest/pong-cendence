@@ -5,7 +5,6 @@
 	import { get } from 'svelte/store';
 	import { currentUser } from '../../store/Auth';
 	import { onDestroy, tick } from 'svelte';
-	import { beforeNavigate } from '$app/navigation';
 
 	export let id: number | string;
 	let game: PongGame;
@@ -20,25 +19,23 @@
 		}
 		let gameInstance = get(gameInstances).find((instance) => instance.id === id);
 		if (typeof gameInstance !== 'undefined') {
-			let players = get(userList).filter((user) => gameInstance?.players.includes(user.id));
+			let players = $userList
+				.filter((user) => gameInstance?.players.includes(user.id))
+				.sort((a, b) => {
+					if (gameInstance?.players.indexOf(a.id) < gameInstance?.players.indexOf(b.id)) {
+						return -1;
+					} else {
+						return 1;
+					}
+				});
 			loading = false;
 			await tick();
 			game = new PongGame(gameInstance, players, get(currentUser).id);
 		}
 	}
 
-	beforeNavigate(({ cancel }) => {
-		if (
-			game.playable &&
-			!confirm('Are you sure you want to leave this page? All the progress will be lost.')
-		) {
-			cancel();
-			game.destroy();
-		}
-	});
-
 	onDestroy(() => {
-		game.destroy();
+		if (typeof game !== 'undefined') game.destroy();
 	});
 </script>
 

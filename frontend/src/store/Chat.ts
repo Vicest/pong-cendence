@@ -1,314 +1,296 @@
-import exp from 'constants';
+import { goto } from '$app/navigation';
+import type { ChannelsChat } from '$lib/types';
+import { ChatSocket } from '$services/socket';
 import { get, writable } from 'svelte/store';
-import type { Person, PrivateMessageFeed } from '$lib/types';
+import { userList } from './User';
+import { currentUser } from './Auth';
 import { Api } from '$services/api';
-import { Socket } from '$services/socket';
-import { loading as Authloading, currentUser } from './Auth';
 
-export const receptor = writable<Person>();
-export const type_Channel = writable();
-export const chat_history = writable();
-
-export const priv_chat_history = writable<PrivateMessageFeed[]>([]);
-// export const priv_msg = writable<PrivateMessageFeed[]>([]);
-
-export const init = () => {
-	Socket.connect();
-	Socket.on('priv_msg:created', (createdMsg) => {
-		console.log('Mensaje de chat me llego :)', createdMsg, get(receptor));
-		if (get(receptor)) {
-			if (get(receptor).id === createdMsg.sender.id || get(receptor).id === createdMsg.receiver.id)
-				priv_chat_history.update((msg) => {
-					console.log('Actualizamos el mensaje');
-					return [...msg, createdMsg];
-				});
-		}
-		console.log('Actualizamos el historial privado');
-	});
+export const sendJoinChanneldRequest = (id: number) => {
+	return Api.post(`/chat/${id}/join`);
 };
 
-export const mock_user_list = writable<Array<Person>>([]);
-export const mock_friends = writable<Array<Person>>([]);
-export const mock_blocked = writable<Array<Person>>([]);
-export const mock_priv_msg = writable([{}]);
-export const mock_channels = writable([{}]);
+export const sendLeaveChanneldRequest = (id: number) => {
+	return Api.post(`/chat/${id}/leave`);
+};
 
-mock_blocked.set([
-	{
-		id: 6,
-		nickname: 'mtacuna',
-		avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/mtacuna.jpg',
-		two_factor_auth_enabled: false
-	}
-]);
+export const sendCreateChanneldRequest = (data) => {
+	return Api.post('/chat', { data });
+};
 
-mock_friends.set([
-	{
-		id: 2,
-		nickname: 'vicmarti',
-		avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/vicmarti.jpg',
-		two_factor_auth_enabled: false
-	},
-	{
-		id: 8,
-		nickname: 'priezu-m',
-		avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/priezu-m.jpg',
-		two_factor_auth_enabled: false
-	},
-	{
-		id: 3,
-		nickname: 'aborbol',
-		avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/aborbol.jpg',
-		two_factor_auth_enabled: false
-	},
-	{
-		id: 4,
-		nickname: 'josuna',
-		avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/josuna.jpg',
-		two_factor_auth_enabled: false
-	},
-	{
-		id: 5,
-		nickname: 'msantos-',
-		avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/msantos-.jpg',
-		two_factor_auth_enabled: false
-	}
-]);
+export const sendDeleteChanneldRequest = async (id: number) => {
+	return await Api.delete(`/chat/${id}`);
+};
 
-mock_channels.set([
-	{
-		id: 1,
-		nickname: 'El Grupaso',
-		description: 'Este canal es de prueba',
-		password: '',
-		created_at: '2023-11-28T03:23:37.913Z',
-		messages: [
-			{
-				id: 1,
-				content: 'Hola :)',
-				created_at: '2023-11-28T03:25:38.149Z',
-				sender: {
-					id: 1,
-					nickname: 'mortiz-d',
-					email: null,
-					avatar: 'https://cdn.intra.42.fr/users/033957f65007645106a06dd59c0e7f34/mortiz-d.jpg',
-					two_factor_auth_secret: null,
-					two_factor_auth_enabled: false
+export const kickUserFromChannel = async (id: number, userId: number) => {
+	return Api.post(`/chat/${id}/kick/${userId}`);
+};
+
+export const banUserFromChannel = async (id: number, userId: number) => {
+	return Api.post(`/chat/${id}/ban/${userId}`);
+};
+
+export const unBanUserFromChannel = async (id: number, userId: number) => {
+	return Api.delete(`/chat/${id}/ban/${userId}`);
+};
+
+export const unAdminUserFromChannel = async (id: number, userId: number) => {
+	return Api.delete(`/chat/${id}/admin/${userId}`);
+};
+
+export const adminUserFromChannel = async (id: number, userId: number) => {
+	return Api.post(`/chat/${id}/admin/${userId}`);
+};
+
+export const muteUserFromChannel = async (id: number, userId: number, time: number) => {
+	return Api.post(`/chat/${id}/mute/${userId}`, { data: { time } });
+};
+
+export const unMuteUserFromChannel = async (id: number, userId: number) => {
+	return Api.delete(`/chat/${id}/mute/${userId}`);
+};
+
+export const updateChannel = async (id: number, data) => {
+	return Api.put(`/chat/${id}`, data);
+};
+
+function createChannelListStore() {
+	const { set, subscribe } = writable<ChannelsChat[]>([]);
+	let state: ChannelsChat[] = [];
+	subscribe((v) => (state = v));
+	return {
+		subscribe,
+		get,
+		set,
+		update: (fn: (channels: ChannelsChat[]) => ChannelsChat[]) => {
+			set(fn(state));
+		},
+		find: (id: number) => {
+			return state.find((c) => c.id === id);
+		},
+		joined(id: number) {
+			return state.some((c) => c.id === id);
+		},
+		iJoined(id: number) {
+			return state.some((c) => c.id === id && c.joined);
+		},
+		iOwn(id: number) {
+			return state.some((c) => c.id === id && c.owner.id === get(currentUser).id);
+		},
+		isOwner(id: number, userId: number) {
+			return state.some((c) => c.id === id && c.owner.id === userId);
+		},
+		iAdmin(id: number) {
+			return state.some((c) => c.id === id && c.admins.some((a) => a.id === get(currentUser).id));
+		},
+		isAdmin(id: number, userId: number) {
+			return state.some((c) => c.id === id && c.admins.some((a) => a.id === userId));
+		},
+		isMuted(id: number, userId: number) {
+			return state.some((c) => c.id === id && c.muted.some((a) => a.user.id === userId));
+		},
+		getMuteTime(id: number, userId: number) {
+			let time = state.find((c) => c.id === id)?.muted.find((a) => a.user.id === userId)?.expire;
+			if (!time) return 0;
+			let timeDiff = new Date(time).getTime() - new Date().getTime();
+			return (
+				Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) +
+				24 * Math.floor(timeDiff / (1000 * 60 * 60 * 24)) +
+				'h' +
+				Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60)) +
+				'm' +
+				Math.floor((timeDiff % (1000 * 60)) / 1000) +
+				's'
+			);
+		},
+		iMuted(id: number) {
+			return state.some(
+				(c) => c.id === id && c.muted.some((a) => a.user.id === get(currentUser).id)
+			);
+		},
+		isBanned(id: number, userId: number) {
+			return state.some((c) => c.id === id && c.banned.some((a) => a.id === userId));
+		},
+		friendSearchList: () => {
+			return get(userList).filter(
+				(user) => !user.friends.some((f) => f.id === get(currentUser).id)
+			);
+		},
+		chatSearchList: () => {
+			return state.filter((channel) => channel.type === 'Channel' && !channel.joined);
+		}
+	};
+}
+
+export const channelList = createChannelListStore();
+
+export const joinChannel = (id: number, password?: string) => {
+	Api.post(`/chat/${id}/join`, typeof password !== 'undefined' ? { data: { password } } : {});
+};
+
+export const init = () => {
+	ChatSocket.connect();
+
+	ChatSocket.on('rooms', (data) => channelList.set(data));
+
+	ChatSocket.on('channel_message', (data: { channel: number; message: string; sender: number }) => {
+		channelList.update((channels) => {
+			return channels.map((channel) => {
+				if (channel.id === data.channel) {
+					channel.messages.push({
+						id: Math.random(),
+						content: data.message,
+						created_at: new Date(),
+						sender: get(userList).find((user) => user.id === data.sender)
+					});
 				}
-			},
-			{
-				id: 4,
-				content: 'Hey!',
-				created_at: '2023-11-28T03:26:11.892Z',
-				sender: {
-					id: 2,
-					nickname: 'vicmarti',
-					email: null,
-					avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/vicmarti.jpg',
-					two_factor_auth_secret: null,
-					two_factor_auth_enabled: false
+				return channel;
+			});
+		});
+	});
+
+	ChatSocket.on(
+		'channel:joined',
+		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id && userId === get(currentUser).id) {
+						channel.joined = true;
+						return channel; // In order to retrieve users property from new channel
+					} else if (ch.id === channel.id) {
+						ch.users.push(get(userList).find((u) => u.id === userId));
+					}
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on(
+		'channel:left',
+		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id && userId === get(currentUser).id) {
+						ch.joined = false;
+					}
+					if (ch.id === channel.id) {
+						ch.users = ch.users.filter((u) => u.id !== userId);
+					}
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on(
+		'channel:banned',
+		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id) ch.banned.push(get(userList).find((u) => u.id === userId));
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on(
+		'channel:unbanned',
+		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id) ch.banned = ch.banned.filter((u) => u.id !== userId);
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on(
+		'channel:admined',
+		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id) ch.admins.push(get(userList).find((u) => u.id === userId));
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on(
+		'channel:unadmined',
+		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id) ch.admins = ch.admins.filter((u) => u.id !== userId);
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on(
+		'channel:muted',
+		({ userId, channel, muted }: { userId: number; channel: ChannelsChat; muted: any }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id) {
+						console.log(muted);
+						ch.muted.push({
+							...muted,
+							user: get(userList).find((u) => u.id === userId)
+						});
+					}
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on(
+		'channel:unmuted',
+		({ userId, channel }: { userId: number; channel: ChannelsChat }) => {
+			channelList.update((channels) => {
+				return channels.map((ch) => {
+					if (ch.id === channel.id) ch.muted = ch.muted.filter((m) => m.user.id !== userId);
+					return ch;
+				});
+			});
+		}
+	);
+
+	ChatSocket.on('channel:created', (channel: ChannelsChat) => {
+		channelList.update((channels) => {
+			return [
+				...channels,
+				{
+					...channel,
+					joined: true,
+					messages: []
 				}
-			},
-			{
-				id: 5,
-				content: 'saludos',
-				created_at: '2023-11-28T03:26:21.665Z',
-				sender: {
-					id: 3,
-					nickname: 'aborbol',
-					email: null,
-					avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/aborbol.jpg',
-					two_factor_auth_secret: null,
-					two_factor_auth_enabled: false
+			];
+		});
+	});
+
+	ChatSocket.on('channel:updated', (channel: ChannelsChat) => {
+		channelList.update((channels) => {
+			return channels.map((ch) => {
+				if (ch.id === channel.id) {
+					return {
+						...ch,
+						...channel
+					};
 				}
-			}
-		],
-		members: [
-			{
-				id: 1,
-				nickname: 'mortiz-d',
-				email: null,
-				avatar: 'https://cdn.intra.42.fr/users/033957f65007645106a06dd59c0e7f34/mortiz-d.jpg',
-				two_factor_auth_secret: null,
-				two_factor_auth_enabled: false
-			},
-			{
-				id: 2,
-				nickname: 'vicmarti',
-				email: null,
-				avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/vicmarti.jpg',
-				two_factor_auth_secret: null,
-				two_factor_auth_enabled: false
-			},
-			{
-				id: 3,
-				nickname: 'aborbol',
-				email: null,
-				avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/aborbol.jpg',
-				two_factor_auth_secret: null,
-				two_factor_auth_enabled: false
-			}
-		]
-	},
-	{
-		id: 2,
-		nickname: 'El gran Grupo',
-		description: 'Este canal es de prueba',
-		password: '',
-		created_at: '2023-11-28T03:23:50.021Z',
-		messages: [
-			{
-				id: 2,
-				content: 'Hola :(',
-				created_at: '2023-11-28T03:25:49.555Z',
-				sender: {
-					id: 1,
-					nickname: 'mortiz-d',
-					email: null,
-					avatar: 'https://cdn.intra.42.fr/users/033957f65007645106a06dd59c0e7f34/mortiz-d.jpg',
-					two_factor_auth_secret: null,
-					two_factor_auth_enabled: false
-				}
-			},
-			{
-				id: 6,
-				content: 'No eres bienvenido',
-				created_at: '2023-11-28T03:26:58.771Z',
-				sender: {
-					id: 4,
-					nickname: 'josuna',
-					email: null,
-					avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/josuna.jpg',
-					two_factor_auth_secret: null,
-					two_factor_auth_enabled: false
-				}
-			},
-			{
-				id: 7,
-				content: 'Largate',
-				created_at: '2023-11-28T03:27:13.518Z',
-				sender: {
-					id: 5,
-					nickname: 'msantos-',
-					email: null,
-					avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/msantos-.jpg',
-					two_factor_auth_secret: null,
-					two_factor_auth_enabled: false
-				}
-			}
-		],
-		members: [
-			{
-				id: 1,
-				nickname: 'mortiz-d',
-				email: null,
-				avatar: 'https://cdn.intra.42.fr/users/033957f65007645106a06dd59c0e7f34/mortiz-d.jpg',
-				two_factor_auth_secret: null,
-				two_factor_auth_enabled: false
-			},
-			{
-				id: 4,
-				nickname: 'josuna',
-				email: null,
-				avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/josuna.jpg',
-				two_factor_auth_secret: null,
-				two_factor_auth_enabled: false
-			},
-			{
-				id: 5,
-				nickname: 'msantos-',
-				email: null,
-				avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/msantos-.jpg',
-				two_factor_auth_secret: null,
-				two_factor_auth_enabled: false
-			}
-		]
-	},
-	{
-		id: 3,
-		nickname: 'La tercera Ronda',
-		description: 'Este canal es de prueba',
-		password: '',
-		created_at: '2023-11-28T03:24:08.684Z',
-		messages: [
-			{
-				id: 3,
-				content: 'Hola :l',
-				created_at: '2023-11-28T03:25:57.293Z',
-				sender: {
-					id: 1,
-					nickname: 'mortiz-d',
-					email: null,
-					avatar: 'https://cdn.intra.42.fr/users/033957f65007645106a06dd59c0e7f34/mortiz-d.jpg',
-					two_factor_auth_secret: null,
-					two_factor_auth_enabled: false
-				}
-			},
-			{
-				id: 8,
-				content: 'Este era el sitio para llorar no?',
-				created_at: '2023-11-28T03:27:28.747Z',
-				sender: {
-					id: 8,
-					nickname: 'priezu-m',
-					email: null,
-					avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/priezu-m.jpg',
-					two_factor_auth_secret: null,
-					two_factor_auth_enabled: false
-				}
-			},
-			{
-				id: 9,
-				content: 'Si .... :,l',
-				created_at: '2023-11-28T03:27:41.764Z',
-				sender: {
-					id: 9,
-					nickname: 'afelicia',
-					email: null,
-					avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/afelicia.jpg',
-					two_factor_auth_secret: null,
-					two_factor_auth_enabled: false
-				}
-			},
-			{
-				id: 10,
-				content: 'Que depresivo todo :v',
-				created_at: '2023-11-28T03:28:01.066Z',
-				sender: {
-					id: 1,
-					nickname: 'mortiz-d',
-					email: null,
-					avatar: 'https://cdn.intra.42.fr/users/033957f65007645106a06dd59c0e7f34/mortiz-d.jpg',
-					two_factor_auth_secret: null,
-					two_factor_auth_enabled: false
-				}
-			}
-		],
-		members: [
-			{
-				id: 1,
-				nickname: 'mortiz-d',
-				email: null,
-				avatar: 'https://cdn.intra.42.fr/users/033957f65007645106a06dd59c0e7f34/mortiz-d.jpg',
-				two_factor_auth_secret: null,
-				two_factor_auth_enabled: false
-			},
-			{
-				id: 9,
-				nickname: 'afelicia',
-				email: null,
-				avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/afelicia.jpg',
-				two_factor_auth_secret: null,
-				two_factor_auth_enabled: false
-			},
-			{
-				id: 8,
-				nickname: 'priezu-m',
-				email: null,
-				avatar: 'https://cdn.intra.42.fr/users/651ee96345c2c4c45bc14f3aa9e71738/priezu-m.jpg',
-				two_factor_auth_secret: null,
-				two_factor_auth_enabled: false
-			}
-		]
-	}
-]);
+				return ch;
+			});
+		});
+	});
+
+	ChatSocket.on('channel:deleted', (channel: ChannelsChat) => {
+		channelList.update((channels) => {
+			return channels.filter((ch) => ch.id !== channel.id);
+		});
+	});
+};

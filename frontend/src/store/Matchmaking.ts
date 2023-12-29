@@ -1,7 +1,7 @@
 import { goto } from '$app/navigation';
 import { MatchMakingSocket } from '$services/socket';
-import { getToastStore } from '@skeletonlabs/skeleton';
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
+import { currentUser } from './Auth';
 
 export const matchMakingChallenges = writable<
 	{
@@ -14,23 +14,22 @@ export const matchMakingChallenges = writable<
 export const init = () => {
 	MatchMakingSocket.connect();
 
-	MatchMakingSocket.on('beChallenged', (challengerId) => {
+	MatchMakingSocket.on('beChallenged', (challengeInfo) => {
 		matchMakingChallenges.update((challenges) => {
-			return challenges.concat(challengerId);
+			return challenges.concat(challengeInfo);
 		});
 	});
 
-	MatchMakingSocket.on('challengeDeleted', (id) => {
+	MatchMakingSocket.on('challengeDeleted', (removeId) => {
 		matchMakingChallenges.update((challenges) => {
-			return challenges.filter((id) => id !== id);
+			return challenges
+				.map((challenge) => `${challenge.opponentId}-${get(currentUser).id}-${challenge.gameId}`)
+				.filter((id) => id !== removeId);
 		});
 	});
 
-	MatchMakingSocket.on('challengeAccepted', (id) => {
-		matchMakingChallenges.update((challenges) => {
-			return challenges.filter((id) => id !== id);
-		});
-		console.log('challengeAccepted', id);
-		goto(`/app/arena/${id}`);
+	MatchMakingSocket.on('challengeAccepted', (matchId) => {
+		matchMakingChallenges.set([]);
+		goto(`/app/arena/${matchId}`);
 	});
 };

@@ -1,15 +1,23 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { ChatController } from './chat.controller';
 import { UsersModule } from '../users/users.module';
 import { ChatGateway } from './chat.gateway';
-import { UsersService } from 'src/users/users.service';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { User } from 'src/users/entities/user.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Channel } from './entities/channel.entity';
+import { ChannelMessages } from './entities/channel.message.entity';
+import { ChatSubscriber } from './chat.subscriber';
+import { GamesModule } from 'src/games/games.module';
+import { ChannelMuted } from './entities/channel.muted.entity';
 
 @Module({
 	imports: [
-		UsersModule,
+		forwardRef(() => UsersModule),
+		forwardRef(() => GamesModule),
+		TypeOrmModule.forFeature([User, Channel, ChannelMessages, ChannelMuted]),
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
 			useFactory: (env: ConfigService) => ({
@@ -18,8 +26,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 			inject: [ConfigService]
 		})
 	],
-	providers: [ChatService, ChatGateway],
+	providers: [ChatService, ChatGateway, ChatSubscriber],
 	controllers: [ChatController],
-	exports: [ChatGateway]
+	exports: [ChatGateway, ChatService]
 })
 export class ChatModule {}

@@ -11,11 +11,13 @@ import {
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { Inject, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { Match } from './entities/match.entity';
 import { PongInstance } from './instances/pong.instance';
 import { GamesService } from './games.service';
+import { BoundlessInstance } from './instances/boundless.instance';
+import { UsersService } from 'src/users/users.service';
 
 @WebSocketGateway({
 	cors: true,
@@ -26,16 +28,34 @@ export class GamesGateway
 {
 	private log: Logger;
 	public ActiveMatches: Match[];
-	private MatchInstances: { [key: number]: PongInstance } = {};
+	private MatchInstances: { [key: number]: PongInstance | BoundlessInstance } =
+		{};
 
 	@WebSocketServer()
 	server: Namespace;
 
 	constructor(
 		private jwtService: JwtService,
+		private userService: UsersService,
 		private gamesService: GamesService
 	) {
 		this.log = new Logger();
+	}
+
+	async addMatch(_match: Match) {
+		let active = await this.gamesService.getActiveMatches();
+		const match = active.find((m) => m.id === _match.id);
+		if (match) {
+			switch (match.game.name) {
+				case PongInstance.slug:
+					this.MatchInstances[match.id] = new PongInstance(match);
+					break;
+				case BoundlessInstance.slug:
+					this.MatchInstances[match.id] = new BoundlessInstance(match);
+					break;
+			}
+			this.ActiveMatches.push(match);
+		}
 	}
 
 	async afterInit(server) {
@@ -44,6 +64,9 @@ export class GamesGateway
 			switch (match.game.name) {
 				case PongInstance.slug:
 					this.MatchInstances[match.id] = new PongInstance(match);
+					break;
+				case BoundlessInstance.slug:
+					this.MatchInstances[match.id] = new BoundlessInstance(match);
 					break;
 			}
 		});
@@ -61,21 +84,6 @@ export class GamesGateway
 			gameId: match.id,
 			state: this.MatchInstances[gameId].getState()
 		});
-	}
-
-	@SubscribeMessage('reset')
-	async handleResetGame(
-		@ConnectedSocket() client: Socket,
-		@MessageBody() gameId: string
-	) {
-		let id = parseInt(gameId);
-		this.gamesService.updateMatchStatus(id, 'running');
-		this.ActiveMatches = await this.gamesService.getActiveMatches();
-		if (!this.MatchInstances[id]) {
-			this.MatchInstances[id] = new PongInstance(
-				this.ActiveMatches.find((match) => match.id === id)
-			);
-		}
 	}
 
 	@SubscribeMessage('leave')
@@ -107,6 +115,7 @@ export class GamesGateway
 
 	@Interval(1000 / 60)
 	GameEngine() {
+		if (typeof this.ActiveMatches === 'undefined') return;
 		this.ActiveMatches.forEach(async (match, key) => {
 			const previousState = JSON.parse(
 				JSON.stringify(this.MatchInstances[match.id].getState())
@@ -118,6 +127,12 @@ export class GamesGateway
 				this.gamesService.updateMatchStatus(match.id, state.status);
 				this.ActiveMatches = await this.gamesService.getActiveMatches();
 				changed = true;
+			}
+			if (state.status === 'finished') {
+				console.log('Match: ', match, '\nState: ', state);
+				this.gamesService.setMatchWinner(match.id, state.winnerId);
+				this.userService.updateStatusById(state.players[0].id, 'online');
+				this.userService.updateStatusById(state.players[1].id, 'online');
 			}
 			if (changed || JSON.stringify(previousState) !== JSON.stringify(state)) {
 				this.sendTick(match, state);
@@ -143,10 +158,11 @@ export class GamesGateway
 		return token.split('=')[1];
 	}
 
-	handleConnection(@ConnectedSocket() client: Socket, ...args) {
+	handleConnection(@ConnectedSocket() client: Socket) {
 		try {
 			const decoded = this.jwtService.verify(this.getAuthCookie(client));
 			client.data.user = decoded;
+			client.join(decoded.id.toString());
 			this.log.debug(`${decoded.login} connected`, this.constructor.name);
 		} catch (error) {
 			this.log.error(`${error}`, this.constructor.name);
@@ -154,11 +170,31 @@ export class GamesGateway
 		}
 	}
 
-	handleDisconnect(client) {
+	async handleDisconnect(@ConnectedSocket() client: Socket) {
+		const id: number = client.data.user.id;
+		client.leave(id.toString());
 		this.log.debug(
-			`${client.data.user.login} disconnected`,
+			`${client.data.user.login} disconnected an instance`,
 			this.constructor.name
 		);
+
+		const clientInstances = await this.server.in(id.toString()).fetchSockets();
+		if (clientInstances.length === 0) {
+			for (let gameId in this.MatchInstances) {
+				const match = this.MatchInstances[gameId];
+				let state = match.getState();
+				if (state.status === 'finished') continue;
+				if (state.players[0].id === id || state.players[1].id === id) {
+					state.status = 'finished';
+					if (state.players[0].id === id) state.winnerId = state.players[1].id;
+					else state.winnerId = state.players[0].id;
+				}
+			}
+			this.log.debug(
+				`${client.data.user.login} disconnected all instances`,
+				this.constructor.name
+			);
+		}
 	}
 
 	//TODO: On game creation add it to ActiveMatches

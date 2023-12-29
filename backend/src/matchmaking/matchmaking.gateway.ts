@@ -3,25 +3,25 @@ import {
 	MessageBody,
 	OnGatewayConnection,
 	OnGatewayDisconnect,
-	OnGatewayInit,
 	SubscribeMessage,
 	WebSocketGateway,
 	WebSocketServer
 } from '@nestjs/websockets';
 import { Namespace, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger, forwardRef } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { Challenge } from './challenge';
 import { GamesService } from 'src/games/games.service';
 import { UsersService } from 'src/users/users.service';
+import { MatchMakingService } from './matchmaking.service';
 
 @WebSocketGateway({
 	cors: true,
 	namespace: 'matchmaking'
 })
 export class MatchMakingGateway
-	implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+	implements OnGatewayConnection, OnGatewayDisconnect
 {
 	private log: Logger;
 	private pendingChallenges_: Challenge[];
@@ -39,6 +39,8 @@ export class MatchMakingGateway
 	} = {};
 
 	constructor(
+		@Inject(forwardRef(() => MatchMakingService))
+		private matchMakingService: MatchMakingService,
 		private jwtService: JwtService,
 		private gameService: GamesService,
 		private userService: UsersService
@@ -50,11 +52,9 @@ export class MatchMakingGateway
 	@WebSocketServer()
 	server: Namespace;
 
-	afterInit(server) {}
-
 	@Interval(1000 / 60)
 	inputEngine() {
-		Object.keys(this.UserIoInstances).forEach((game_id) => {
+		(Object.keys(this.UserIoInstances) || []).forEach((game_id) => {
 			let game = this.UserIoInstances[game_id];
 			this.server.emit('IoEvent', {
 				game: parseInt(game_id),
@@ -94,15 +94,25 @@ export class MatchMakingGateway
 		}
 	}
 
-	handleDisconnect(@ConnectedSocket() client: Socket) {
-		try {
-			const decoded = this.jwtService.verify(client.handshake.auth.token);
-			client.data.user = decoded;
-			this.log.debug(`${decoded.login} disconnected`, this.constructor.name);
-			client.leave(decoded.id.toString());
-		} catch (error) {
-			this.log.error(`Error on disconnect: ${error}`);
-			client.disconnect();
+	async handleDisconnect(@ConnectedSocket() client: Socket) {
+		const id: number = client.data.user.id;
+		client.leave(id.toString());
+		this.log.debug(
+			`${client.data.user.login} disconnected an instance`,
+			this.constructor.name
+		);
+
+		const clientInstances = await this.server.in(id.toString()).fetchSockets();
+		if (clientInstances.length == 0) {
+			let myChallenges = this.pendingChallenges_.filter(
+				(c) => c.challengerId === id
+			);
+			myChallenges.forEach((c) => this.deleteChallenge(c));
+			this.matchMakingService.leaveQueue(id);
+			this.log.debug(
+				`${client.data.user.login} disconnected all instances`,
+				this.constructor.name
+			);
 		}
 	}
 
@@ -123,7 +133,8 @@ export class MatchMakingGateway
 			);
 			return;
 		}
-		//Don't accept dupplicate challenges
+		//Don't accept duplicate challenges
+		//TODO check id user state is 'online'?
 		for (const challenge of this.pendingChallenges_) {
 			if (
 				challenge.hasPlayer(challengerId) &&
@@ -188,18 +199,27 @@ export class MatchMakingGateway
 		if (response.accept) {
 			const p1 = await this.userService.find(challengerId);
 			const p2 = await this.userService.find(responseId);
-			//TODO Add socket emit?? to listener
+
 			const gameId = await this.gameService.findGame(challenge.gameId);
-			const match = await this.gameService.createMatch({
-				game: gameId,
-				players: [p1, p2],
-				status: 'waiting'
-			});
+			const match = await this.gameService.createMatch(
+				{
+					game: gameId,
+					status: 'waiting'
+				},
+				{ p1, rankShift: 0 },
+				{ p2, rankShift: 0 }
+			);
 			console.log(`Challenge accepted`, match);
-			this.server
-				.to([challengerId.toString(), responseId.toString()])
-				.emit('challengeAccepted', match.id);
+			await this.userService.updateStatusById(p1.id, 'busy');
+			await this.userService.updateStatusById(p2.id, 'busy');
+			this.sendMatchCreated(challengerId, responseId, match.id);
 		}
+	}
+
+	public sendMatchCreated(challengerId, responseId, matchId) {
+		this.server
+			.to([challengerId.toString(), responseId.toString()])
+			.emit('challengeAccepted', matchId);
 	}
 
 	private deleteChallenge(challenge: Challenge) {

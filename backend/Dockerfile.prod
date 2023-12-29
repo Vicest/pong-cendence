@@ -1,0 +1,6 @@
+FROM node:alpine
+
+EXPOSE ${BACKEND_PORT}
+
+WORKDIR /app
+ENTRYPOINT yarn install && yarn run build && yarn run start

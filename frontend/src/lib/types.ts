@@ -4,9 +4,47 @@ export interface Person {
 	nickname: string;
 	avatar: string;
 	two_factor_auth_enabled: boolean;
-	status: 'online' | 'offline' | 'away' | 'busy' | 'invisible';
-	// feed: MessageFeed[];
+	status: 'online' | 'offline' | 'busy';
+	blocked: Person[];
+	invitations: Person[];
+	friends: Person[];
+	isAdmin: boolean;
+	created_at: Date;
+	isBanned: boolean;
+	rank: number;
+	inQueue: boolean;
+	history: any[]; //I know, I know, define a match...
 }
+
+export interface MessageFeed {
+	id: number;
+	content: string;
+	created_at: Date;
+	sender: Person;
+}
+
+export interface ChannelsChat {
+	id: number;
+	name: string;
+	description: string;
+	messages: MessageFeed[];
+	created_at: Date;
+	type: 'Channel' | 'Direct';
+	users: Person[];
+	admins: Person[];
+	banned: Person[];
+	muted: {
+		user: Person;
+		channel: ChannelsChat;
+		expire: Date;
+	}[];
+	user: Person;
+	index: number;
+	owner: Person;
+	joined: boolean;
+	hasPassword: boolean;
+}
+
 export interface PrivateMessageFeed {
 	created_at: any;
 	content: any;
@@ -26,10 +64,9 @@ export interface Group {
 	password: string;
 	created_at: Date;
 	members: Person[];
-	// feed: MessageFeed[];
 }
 
-type GameType = 'pong' | 'tetris';
+type GameType = 'pong' | 'boundless';
 
 export interface Game {
 	id: number;
@@ -47,6 +84,7 @@ export interface GameInstance {
 	id: number;
 	game: GameType;
 	players: number[];
+	channel: ChannelsChat;
 	created_at: Date;
 	status: 'waiting' | 'running' | 'finished' | 'paused';
 }

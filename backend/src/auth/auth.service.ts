@@ -1,4 +1,9 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+	BadRequestException,
+	Inject,
+	Injectable,
+	Logger
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
@@ -24,6 +29,7 @@ export class AuthService {
 	public async validateUser(data): Promise<User | null> {
 		let user: User | null = await this.usersService.findOne(data.login);
 		if (!user) user = await this.usersService.create(data);
+		if (user.isBanned) throw new BadRequestException('User is banned');
 		return user;
 	}
 
@@ -41,6 +47,7 @@ export class AuthService {
 			isAdmin: user.isAdmin,
 			twofaenabled: user.two_factor_auth_enabled,
 			twofavalidated: twofastatus,
+			created_at: user.created_at,
 			iv: user.IV
 		};
 		const token = await this.jwtService.signAsync(toSign, {
@@ -55,6 +62,17 @@ export class AuthService {
 		return { token, refreshToken };
 	}
 
+	public async twofachangestatus(user: User, token: string) {
+		if ((await this.check2FAToken(user, token)) == true) {
+			if (user.two_factor_auth_enabled == true) {
+				user.two_factor_auth_enabled = false;
+				user.two_factor_auth_secret = null;
+			} else {
+				user.two_factor_auth_enabled = true;
+			}
+			await this.usersService.updateUser(user.id, user);
+		}
+	}
 	public async generateTwoFactorAuthenticationSecret(user: User) {
 		const secret = authenticator.generateSecret();
 		const otpauthUrl = authenticator.keyuri(
@@ -63,14 +81,12 @@ export class AuthService {
 			secret
 		);
 		let iv = randomBytes(16);
-		console.log('User: ', user);
 		if (user.IV == null) {
 			user.IV = iv;
 		} else {
 			iv = user.IV;
 		}
 		user.two_factor_auth_secret = await this.encryptstring(secret, iv);
-		user.two_factor_auth_enabled = true;
 		await this.usersService.updateUser(user.id, user);
 		return toDataURL(otpauthUrl);
 	}
@@ -90,7 +106,6 @@ export class AuthService {
 	}
 
 	public async decryptstring(todecrypt: Buffer, iv: Buffer) {
-		console.log('decrypt:', todecrypt);
 		const password = '6QURUCWJ';
 		const key = (await promisify(scrypt)(password, 'salt', 32)) as Buffer;
 		const decipher = createDecipheriv('aes-256-ctr', key, iv);
