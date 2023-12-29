@@ -12,6 +12,7 @@ export interface Person {
 	created_at: Date;
 	isBanned: boolean;
 	rank: number;
+	history: any[];//I know, I know, define a match...
 }
 
 export interface MessageFeed {
