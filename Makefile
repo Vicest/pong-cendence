@@ -1,8 +1,8 @@
 all:
-	docker-compose -f ./docker-compose.yml up
+	docker-compose -f ./docker-compose.yml up --build
 
 dev: devclean
-	docker-compose -f ./docker-compose.dev.yml up
+	docker-compose -f ./docker-compose.dev.yml up --build
 
 re: fclean all
 
