@@ -115,7 +115,6 @@ export class GamesGateway
 			if (state.status === 'finished') {
 				console.log('Match: ', match, '\nState: ', state);
 				this.gamesService.setMatchWinner(match.id, state.winnerId);
-				this.userService
 			}
 			if (changed || JSON.stringify(previousState) !== JSON.stringify(state)) {
 				this.sendTick(match, state);

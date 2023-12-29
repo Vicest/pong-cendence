@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { Api } from '$services/api';
 import type { Person } from '$lib/types';
 import { MatchMakingSocket } from '$services/socket';
@@ -23,19 +23,18 @@ export const init = async () => {
 			loading.set(false);
 		}, 1000);
 		MatchMakingSocket.on('user:queue', (status: 'joined' | 'left') => {
-			if (status === 'joined')
+			if (status === 'joined') {
 				currentUser.update((person) => {
 					person.inQueue = true;
 					return person;
-				})
-			else if (status === 'left')
+				});
+			} else if (status === 'left') {
 				currentUser.update((person) => {
 					person.inQueue = false;
 					return person;
-				})
-			else
-				console.log('Invalid data for message user:queue');
-		})
+				});
+			} else console.log('Invalid data for message user:queue');
+		});
 		return res.data;
 	} catch (error) {
 		throw error;

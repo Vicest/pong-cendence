@@ -28,6 +28,7 @@
 				]);
 			})
 			.catch((err) => {
+				console.log(err);
 				if (err.statusCode === 403 || err.statusCode === 401) {
 					goto('/login');
 				} else if (err.statusCode === 400 && err.message === '2FA not validated') {
