@@ -44,7 +44,7 @@ export class UsersService {
 				let newGames = await this.gameRepository.create([
 					{
 						name: 'pong',
-						title: 'Pong',
+						title: 'Classic Pong',
 						creator: 'Atari Inc.',
 						launched_at: '1972-11-29 00:00:00',
 						description:
@@ -60,7 +60,7 @@ export class UsersService {
 						launched_at: '2023-12-27 00:00:00',
 						description: 'Same as pong, but without boundaries.',
 						enabled: true,
-						image: '/images/pong/cover.png',
+						image: '/images/pong/cover2.png',
 						created_at: new Date()
 					}
 				]);
