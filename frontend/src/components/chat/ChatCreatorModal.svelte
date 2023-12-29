@@ -56,12 +56,14 @@
 			description: chatForm.description,
 			password: chatForm.password,
 			users: selected
-		}).then((res) => {
-			parent.onClose();
-			if (res.status === HttpStatusCode.Created) {
-				goto(`/app/chat/${res.data.id}`);
-			}
-		});
+		})
+			.then((res) => {
+				parent.onClose();
+				if (res.status === HttpStatusCode.Created) {
+					goto(`/app/chat/${res.data.id}`);
+				}
+			})
+			.catch((err) => console.log(err));
 	}
 </script>
 

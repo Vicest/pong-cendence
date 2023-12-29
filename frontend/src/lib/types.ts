@@ -12,6 +12,7 @@ export interface Person {
 	created_at: Date;
 	isBanned: boolean;
 	rank: number;
+	inQueue: boolean;
 	history: any[];//I know, I know, define a match...
 }
 
@@ -65,7 +66,7 @@ export interface Group {
 	members: Person[];
 }
 
-type GameType = 'pong' | 'tetris';
+type GameType = 'pong' | 'boundless';
 
 export interface Game {
 	id: number;

@@ -210,6 +210,8 @@ export class MatchMakingGateway
 				{ p2, rankShift: 0 }
 			);
 			console.log(`Challenge accepted`, match);
+			await this.userService.updateStatusById(p1.id, 'busy');
+			await this.userService.updateStatusById(p2.id, 'busy');
 			this.sendMatchCreated(challengerId, responseId, match.id);
 		}
 	}

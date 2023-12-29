@@ -11,6 +11,7 @@ import { MatchEvent } from './entities/events.entity';
 import { MatchesSubscriber } from './matches.subscriber';
 import { MatchPlayer } from './entities/matchPlayer.entity';
 import { User } from 'src/users/entities/user.entity';
+import { UsersModule } from 'src/users/users.module';
 import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
@@ -23,7 +24,8 @@ import { ChatModule } from 'src/chat/chat.module';
 			}),
 			inject: [ConfigService]
 		}),
-		forwardRef(() => ChatModule)
+		forwardRef(() => ChatModule),
+		forwardRef(() => UsersModule)
 	],
 	controllers: [GamesController],
 	providers: [GamesService, GamesGateway, MatchesSubscriber],
