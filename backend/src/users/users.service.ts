@@ -44,7 +44,7 @@ export class UsersService {
 				let newGames = await this.gameRepository.create([
 					{
 						name: 'pong',
-						title: 'Pong',
+						title: 'Classic Pong',
 						creator: 'Atari Inc.',
 						launched_at: '1972-11-29 00:00:00',
 						description:
@@ -60,7 +60,7 @@ export class UsersService {
 						launched_at: '2023-12-27 00:00:00',
 						description: 'Same as pong, but without boundaries.',
 						enabled: true,
-						image: '/images/pong/cover.png',
+						image: '/images/pong/cover2.png',
 						created_at: new Date()
 					}
 				]);
@@ -172,32 +172,33 @@ export class UsersService {
 			.createQueryBuilder('match')
 			.innerJoin('match.players', 'matchPlayer', 'matchPlayer.user = :userId', {
 				userId
-			});
-		//.where('match.status = finished');
+			})
+			.innerJoinAndSelect('match.players', 'match_player')
+			.innerJoinAndSelect('match_player.user', 'user')
+			.where("match.status = 'finished'");
 		const matchList = await query.getMany();
-		console.log('User ', userId, ' matches:\n', matchList);
+		//console.log('User ', userId, ' matches:\n', matchList);
 		return matchList;
-		//const query = this.userRepository
-		//	.createQueryBuilder('user')
-		//	.leftJoinAndSelect('user.matches', 'matchPlayer')
-		//	.where('user.id = :userId', { userId });
-		//const user = await query.getOne();
-		//return user.matches;
 	}
 
 	public async getUserRank(id: number) {
 		const matchesPlayed = await this.getUserMatches(id);
-		//const rankedMatches = matchesPlayed.filter(
-		//	(userPlayer) => userPlayer.rankShift !== 0
-		//);
+		const rankedMatches = matchesPlayed.filter(
+			(match) => match.players[0].rankShift !== 0
+		);
 		let totalRankShift: number = 0;
-		//for (const userPlayer of rankedMatches) {
-		//	totalRankShift += userPlayer.isWinner
-		//		? userPlayer.rankShift
-		//		: -userPlayer.rankShift;
-		//}
+		for (const match of rankedMatches) {
+			for (const matchPlayer of match.players) {
+				//The rankShift is set in the winnerPlayer
+				if (!matchPlayer.isWinner) continue;
+				totalRankShift +=
+					matchPlayer.user.id == id
+						? matchPlayer.rankShift
+						: -matchPlayer.rankShift;
+			}
+		}
 		////No ranked matches means you are 'Unranked'
-		return matchesPlayed.length > 0 ? 1500 + totalRankShift : -1;
+		return rankedMatches.length > 0 ? 1500 + totalRankShift : -1;
 	}
 
 	public async exists(id: number): Promise<boolean> {

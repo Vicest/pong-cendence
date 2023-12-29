@@ -25,7 +25,6 @@
 				drawerStore.close();
 				selectedGame.set(game);
 				modalStore.trigger(targetSelectorModal);
-				//goto('/app/arena');
 			}}
 		>
 			<header class="relative">
